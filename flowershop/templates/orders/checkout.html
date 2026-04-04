@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Checkout</h1>
+    
+    <form method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8">
+        {% csrf_token %}
+        
+        <!-- Checkout Form -->
+        <div class="md:col-span-2 space-y-8">
+            <!-- Delivery Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Delivery Information</h2>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Full Name *</label>
+                        <input type="text" name="customer_name" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Email *</label>
+                        <input type="email" name="customer_email" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="john@example.com">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Phone Number *</label>
+                        <input type="tel" name="customer_phone" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="+63 9123 456 789">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">City *</label>
+                        <input type="text" name="delivery_city" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="Manila">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Delivery Address *</label>
+                        <textarea name="delivery_address" required class="w-full border border-gray-300 rounded px-4 py-2" rows="3" placeholder="Street address, Barangay, District"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Postal Code</label>
+                        <input type="text" name="delivery_postal_code" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="1000">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Delivery Date & Time -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Delivery Schedule</h2>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Delivery Date *</label>
+                        <input type="date" name="delivery_date" required class="w-full border border-gray-300 rounded px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Delivery Time Window *</label>
+                        <select name="delivery_time_window" required class="w-full border border-gray-300 rounded px-4 py-2">
+                            <option value="">Select time window</option>
+                            {% for window in delivery_windows %}
+                            <option value="{{ window.id }}">{{ window.get_window_display }} ({{window.start_time}} - {{ window.end_time }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Special Requests -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Special Requests</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">Gift Message</label>
+                    <textarea name="gift_message" class="w-full border border-gray-300 rounded px-4 py-2" rows="3" placeholder="Add a personal message..."></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="anonymous_sender" class="border border-gray-300 rounded px-2 py-1">
+                        <span class="ml-2 text-gray-700">Send as anonymous gift</span>
+                    </label>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">Special Instructions</label>
+                    <textarea name="special_instructions" class="w-full border border-gray-300 rounded px-4 py-2" rows="2" placeholder="e.g., Leave at door, Ring doorbell twice..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Payment Method -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Payment Method</h2>
+                
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="payment_method" value="COD" checked class="border border-gray-300 rounded">
+                        <span class="ml-2">Cash on Delivery (COD)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="payment_method" value="CREDIT_CARD" class="border border-gray-300 rounded">
+                        <span class="ml-2">Credit/Debit Card</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="payment_method" value="GCASH" class="border border-gray-300 rounded">
+                        <span class="ml-2">GCash</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Summary Sidebar -->
+        <div class="bg-white rounded-lg shadow-md p-6 h-fit">
+            <h2 class="text-2xl font-bold mb-6">Order Summary</h2>
+            
+            <div class="space-y-4 mb-6 border-b pb-6 max-h-64 overflow-y-auto">
+                {% for item in items %}
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-bold text-sm">{{ item.get_item_name }}</p>
+                        <p class="text-gray-600 text-xs">Qty: {{ item.quantity }}</p>
+                    </div>
+                    <span class="font-bold">₱{{ item.get_subtotal }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="space-y-4 mb-6 border-b pb-6">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span class="font-bold">₱{{ subtotal }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Fee:</span>
+                    <span class="font-bold">₱{{ delivery_fee }}</span>
+                </div>
+            </div>
+            
+            <div class="flex justify-between text-xl font-bold mb-6">
+                <span>Total:</span>
+                <span class="text-pink-600">₱{{ total }}</span>
+            </div>
+            
+            <button type="submit" class="w-full bg-pink-600 text-white py-3 rounded-lg font-bold hover:bg-pink-700">
+                Place Order
+            </button>
+            
+            <a href="{% url 'cart:cart' %}" class="block w-full text-center mt-3 text-pink-600 border border-pink-600 py-2 rounded-lg hover:bg-pink-50">
+                Back to Cart
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

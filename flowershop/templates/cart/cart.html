@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Shopping Cart</h1>
+    
+    {% if items %}
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- Cart Items -->
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Product</th>
+                            <th class="px-6 py-3 text-left">Price</th>
+                            <th class="px-6 py-3 text-center">Quantity</th>
+                            <th class="px-6 py-3 text-right">Subtotal</th>
+                            <th class="px-6 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="border-b">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center space-x-4">
+                                    <img src="{{ item.get_item_image.url }}" alt="" class="w-16 h-16 object-cover rounded">
+                                    <div>
+                                        <p class="font-bold">{{ item.get_item_name }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">₱{{ item.price_at_purchase }}</td>
+                            <td class="px-6 py-4">
+                                <form method="post" action="{% url 'cart:update_cart_item' item.id %}" class="flex items-center space-x-2">
+                                    {% csrf_token %}
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="w-16 border rounded px-2 py-1">
+                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm">Update</button>
+                                </form>
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold">₱{{ item.get_subtotal }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <a href="{% url 'cart:remove_from_cart' item.id %}" onclick="return confirm('Remove this item?')" class="text-red-600 hover:text-red-800">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Cart Summary -->
+        <div class="bg-white rounded-lg shadow-md p-6 h-fit">
+            <h2 class="text-2xl font-bold mb-6">Order Summary</h2>
+            
+            <div class="space-y-4 mb-6 border-b pb-6">
+                <div class="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span class="font-bold">₱{{ subtotal }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Fee:</span>
+                    <span class="font-bold">₱{{ delivery_fee }}</span>
+                </div>
+            </div>
+            
+            <div class="flex justify-between text-2xl font-bold mb-6">
+                <span>Total:</span>
+                <span class="text-pink-600">₱{{ total }}</span>
+            </div>
+            
+            <a href="{% url 'orders:checkout' %}" class="block w-full bg-pink-600 text-white py-3 rounded-lg font-bold hover:bg-pink-700 text-center mb-3">
+                Proceed to Checkout
+            </a>
+            
+            <a href="{% url 'products:shop' %}" class="block w-full border border-pink-600 text-pink-600 py-3 rounded-lg font-bold hover:bg-pink-50 text-center">
+                Continue Shopping
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <div class="text-6xl text-gray-300 mb-4"><i class="fas fa-shopping-cart"></i></div>
+        <h2 class="text-2xl font-bold text-gray-700 mb-4">Your cart is empty</h2>
+        <a href="{% url 'products:shop' %}" class="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-pink-700">
+            Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

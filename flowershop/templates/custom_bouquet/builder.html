@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block title %}Custom Bouquet Builder - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-b from-orange-50 to-white min-h-screen py-12">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Header -->
+        <div class="mb-12">
+            <h1 class="text-5xl font-bold text-gray-900 mb-2">Build Your Bouquet</h1>
+            <p class="text-gray-600 text-lg">Create a one-of-a-kind arrangement with your favorite flowers</p>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Left Column - Configuration -->
+            <div class="md:col-span-2 space-y-8">
+                <!-- Step 1: Choose Flowers -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                        <h2 class="text-2xl font-bold text-gray-900">Choose Your Flowers</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        {% for flower in flowers %}
+                        <div class="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 transition">
+                            <div class="flex gap-4">
+                                <!-- Flower Image -->
+                                {% if flower.image %}
+                                    <img src="{{ flower.image.url }}" alt="{{ flower.get_name_display }}" class="w-20 h-20 object-cover rounded">
+                                {% else %}
+                                    <div class="w-20 h-20 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-flower text-gray-400"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Flower Info -->
+                                <div class="flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 text-sm">{{ flower.get_name_display }}</h4>
+                                        <p class="text-orange-600 text-xs">₱{{ flower.price }}/stem</p>
+                                    </div>
+                                    
+                                    <!-- Quantity Controls -->
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" class="text-gray-400 hover:text-orange-600 text-lg" onclick="decreaseFlower({{ flower.id }})">−</button>
+                                        <input type="number" id="flower_{{ flower.id }}" value="0" min="0" class="w-8 text-center text-sm font-semibold flower-qty" onchange="updatePrice()" readonly>
+                                        <button type="button" class="text-gray-400 hover:text-orange-600 text-lg" onclick="increaseFlower({{ flower.id }})">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Step 2: Select Size -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                        <h2 class="text-2xl font-bold text-gray-900">Select Size</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-2">
+                        {% for size in sizes %}
+                        <label class="cursor-pointer">
+                            <input type="radio" name="size" value="{{ size.id }}" class="size-input hidden" onchange="updatePrice()" required>
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
+                                <div class="text-gray-600 text-lg mb-2"><i class="fas fa-snowflake"></i></div>
+                                <p class="font-bold text-gray-900 text-sm">{{ size.get_size_display }}</p>
+                                <p class="text-gray-600 text-xs mb-1">{{ size.flower_count_min }}-{{ size.flower_count_max }} stems</p>
+                                <p class="text-orange-600 text-xs font-bold">
+                                    x{% if size.size == 'SMALL' %}1{% elif size.size == 'MEDIUM' %}1.5{% elif size.size == 'LARGE' %}2{% elif size.size == 'PREMIUM' %}2.5{% endif %}
+                                </p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Step 3: Choose Wrapping -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                        <h2 class="text-2xl font-bold text-gray-900">Choose Wrapping</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-2">
+                        {% for style in wrapping_styles %}
+                        <label class="cursor-pointer">
+                            <input type="radio" name="wrapping" value="{{ style.id }}" class="wrapping-input hidden" onchange="updatePrice()" required>
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
+                                <p class="font-bold text-gray-900 text-sm mb-2">{{ style.get_style_display }}</p>
+                                <p class="text-orange-600 text-xs">+₱{{ style.price }}</p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Step 4: Add Extras -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                        <h2 class="text-2xl font-bold text-gray-900">Add Extras</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-4">
+                        {% for extra in extras %}
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="extras" value="{{ extra.id }}" class="extra-input hidden" onchange="updatePrice()">
+                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
+                                <div class="text-2xl mb-2 text-gray-600">
+                                    {% if "chocolate" in extra.get_name_display|lower %}
+                                        <i class="fas fa-gift"></i>
+                                    {% elif "teddy" in extra.get_name_display|lower %}
+                                        <i class="fas fa-teddy-bear-alt"></i>
+                                    {% elif "balloon" in extra.get_name_display|lower %}
+                                        <i class="fas fa-certificate"></i>
+                                    {% elif "card" in extra.get_name_display|lower %}
+                                        <i class="fas fa-pen-fancy"></i>
+                                    {% else %}
+                                        <i class="fas fa-gift"></i>
+                                    {% endif %}
+                                </div>
+                                <p class="font-bold text-gray-900 text-sm mb-1">{{ extra.get_name_display }}</p>
+                                <p class="text-orange-600 text-xs">+₱{{ extra.price }}</p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Order Summary -->
+            <div>
+                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Order Summary</h3>
+                    
+                    <div id="empty-state" class="text-center py-4">
+                        <p class="text-gray-500 text-sm">No flowers selected yet</p>
+                    </div>
+                    
+                    <div id="summary-details" class="space-y-3 mb-6" style="display: none;">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Size (Medium)</span>
+                            <span id="base_price">x1.5</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Wrapping</span>
+                            <span id="wrapping_price">₱50</span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-4 mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">Total</span>
+                            <span id="total_price" class="text-2xl font-bold text-orange-600">₱50</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveBouquet()" class="w-full bg-gray-400 text-white py-3 rounded-lg font-bold hover:bg-gray-500 transition mb-3 flex items-center justify-center gap-2">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    
+                    <p id="stems-text" class="text-center text-gray-500 text-xs">0 stems selected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updatePrice() {
+    const sizeId = document.querySelector('input[name="size"]:checked')?.value;
+    const wrappingId = document.querySelector('input[name="wrapping"]:checked')?.value;
+    
+    if (!sizeId || !wrappingId) return;
+    
+    const flowerIds = [];
+    let totalStems = 0;
+    document.querySelectorAll('.flower-qty').forEach(input => {
+        const qty = parseInt(input.value);
+        totalStems += qty;
+        if (qty > 0) {
+            flowerIds.push(input.id.replace('flower_', ''));
+        }
+    });
+    
+    const extraIds = Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(el => el.value);
+    
+    // Update stems text
+    document.getElementById('stems-text').textContent = `${totalStems} stems selected`;
+    
+    // Show/hide empty state
+    if (totalStems === 0) {
+        document.getElementById('empty-state').style.display = 'block';
+        document.getElementById('summary-details').style.display = 'none';
+    } else {
+        document.getElementById('empty-state').style.display = 'none';
+        document.getElementById('summary-details').style.display = 'block';
+    }
+    
+    fetch(`{% url 'custom_bouquet:pricing' %}?size_id=${sizeId}&wrapping_id=${wrappingId}&flower_ids=${flowerIds.join(',')}&extra_ids=${extraIds.join(',')}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('base_price').textContent = `x${(parseFloat(data.size_price) / 1000).toFixed(1)}`;
+            document.getElementById('wrapping_price').textContent = `₱${parseFloat(data.wrapping_price).toFixed(0)}`;
+            document.getElementById('total_price').textContent = `₱${parseFloat(data.total).toFixed(0)}`;
+        });
+}
+
+function increaseFlower(flowerId) {
+    const input = document.getElementById(`flower_${flowerId}`);
+    input.value = parseInt(input.value) + 1;
+    updatePrice();
+}
+
+function decreaseFlower(flowerId) {
+    const input = document.getElementById(`flower_${flowerId}`);
+    if (parseInt(input.value) > 0) {
+        input.value = parseInt(input.value) - 1;
+        updatePrice();
+    }
+}
+
+function saveBouquet() {
+    const sizeId = document.querySelector('input[name="size"]:checked')?.value;
+    const wrappingId = document.querySelector('input[name="wrapping"]:checked')?.value;
+    
+    if (!sizeId || !wrappingId) {
+        alert('Please select size and wrapping');
+        return;
+    }
+    
+    const flowers = [];
+    document.querySelectorAll('.flower-qty').forEach(input => {
+        const qty = parseInt(input.value);
+        if (qty > 0) {
+            flowers.push({
+                flower_id: input.id.replace('flower_', ''),
+                quantity: qty
+            });
+        }
+    });
+    
+    if (flowers.length === 0) {
+        alert('Please select flowers');
+        return;
+    }
+    
+    const extras = Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(el => ({
+        extra_id: el.value,
+        quantity: 1
+    }));
+    
+    const bouquetData = {
+        size_id: sizeId,
+        wrapping_id: wrappingId,
+        flowers: flowers,
+        extras: extras,
+        personal_message: ''
+    };
+    
+    fetch('{% url "custom_bouquet:save" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(bouquetData)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = data.cart_url;
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+// Initialize on page load
+window.onload = function() {
+    // Initialize price when page loads
+};
+</script>
+{% endblock %}

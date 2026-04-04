@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid md:grid-cols-2 gap-12">
+        <!-- Product Image -->
+        <div>
+            <div class="bg-gray-100 rounded-lg overflow-hidden mb-4">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-auto">
+                {% endif %}
+            </div>
+            
+            <!-- Image Gallery -->
+            {% if product.images.all %}
+            <div class="grid grid-cols-4 gap-2">
+                {% for image in product.images.all %}
+                <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75">
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Product Details -->
+        <div>
+            <h1 class="text-4xl font-bold mb-2">{{ product.name }}</h1>
+            
+            <!-- Rating -->
+            <div class="flex items-center mb-6">
+                <div class="text-yellow-400 mr-2">
+                    {% for i in "x"|rjust:product.rating|safe %}★{% endfor %}
+                    {% for i in "x"|rjust:"5"|add:"-"|add:product.rating|safe %}☆{% endfor %}
+                </div>
+                <span class="text-gray-600">({{ product.review_count }} reviews)</span>
+            </div>
+            
+            <!-- Price -->
+            <div class="mb-6">
+                <span class="text-4xl font-bold text-pink-600 mr-4">₱{{ product.price }}</span>
+                <!-- {% if product.original_price %}
+                <span class="text-lg text-gray-500 line-through">₱{{ product.original_price }}</span>
+                {% endif %} -->
+            </div>
+            
+            <!-- Stock Status -->
+            <div class="mb-6">
+                {% if product.is_available %}
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded font-bold">In Stock</span>
+                {% else %}
+                <span class="bg-red-100 text-red-800 px-3 py-1 rounded font-bold">Out of Stock</span>
+                {% endif %}
+            </div>
+            
+            <!-- Description -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-2">Description</h2>
+                <p class="text-gray-600 text-lg">{{ product.description }}</p>
+            </div>
+            
+            <!-- Add to Cart -->
+            <div class="mb-8">
+                <form method="post" action="{% url 'cart:add_to_cart' %}" class="flex items-center space-x-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    
+                    <div class="flex items-center border rounded">
+                        <button type="button" class="px-4 py-2 text-gray-600" onclick="decreaseQty()">-</button>
+                        <input type="number" id="quantity" name="quantity" value="1" class="w-16 text-center border-l border-r" min="1">
+                        <button type="button" class="px-4 py-2 text-gray-600" onclick="increaseQty()">+</button>
+                    </div>
+                    
+                    <button type="submit" class="flex-1 bg-pink-600 text-white py-3 rounded-lg font-bold hover:bg-pink-700 text-lg">
+                        <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Share -->
+            <div class="mb-8 flex space-x-4">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fab fa-facebook"></i> Share
+                </button>
+                <button class="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700">
+                    <i class="fab fa-pinterest"></i> Pin
+                </button>
+            </div>
+            
+            <!-- Category -->
+            <div class="mb-8 p-4 bg-gray-100 rounded">
+                <p><strong>Category:</strong> <a href="{% url 'products:shop' %}?category={{ product.category.slug }}" class="text-pink-600">{{ product.category.name }}</a></p>
+                <p><strong>Size:</strong> {{ product.get_size_display }}</p>
+                <p><strong>Type:</strong> {{ product.get_product_type_display }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reviews Section -->
+    <div class="mt-16 pt-8 border-t">
+        <h2 class="text-3xl font-bold mb-8">Customer Reviews</h2>
+        
+        {% if reviews %}
+        <div class="space-y-4 mb-8">
+            {% for review in reviews %}
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-bold">{{ review.customer_name }}</h4>
+                        <div class="text-yellow-400 text-sm">
+                            {% for i in "x"|rjust:review.rating|safe %}★{% endfor %}
+                        </div>
+                    </div>
+                    <span class="text-gray-500 text-sm">{{ review.created_at|date:'M d, Y' }}</span>
+                </div>
+                <p class="text-gray-700">{{ review.comment }}</p>
+                {% if review.is_verified_purchase %}
+                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded mt-2 inline-block">✓ Verified Purchase</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600 mb-8">No reviews yet. Be the first to review this product!</p>
+        {% endif %}
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-16 pt-8 border-t">
+        <h2 class="text-3xl font-bold mb-8">You Might Also Like</h2>
+        
+        <div class="grid md:grid-cols-4 gap-6">
+            {% for related in related_products %}
+            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="h-56 overflow-hidden bg-gray-200">
+                    {% if related.image %}
+                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full object-cover">
+                    {% endif %}
+                </div>
+                
+                <div class="p-4">
+                    <h3 class="font-bold mb-2">{{ related.name }}</h3>
+                    <span class="text-xl font-bold text-pink-600">₱{{ related.price }}</span>
+                    
+                    <form method="post" action="{% url 'cart:add_to_cart' %}" class="mt-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ related.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="w-full bg-pink-600 text-white py-2 rounded hover:bg-pink-700">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function increaseQty() {
+    document.getElementById('quantity').value = parseInt(document.getElementById('quantity').value) + 1;
+}
+function decreaseQty() {
+    let qty = parseInt(document.getElementById('quantity').value);
+    if (qty > 1) {
+        document.getElementById('quantity').value = qty - 1;
+    }
+}
+</script>
+{% endblock %}

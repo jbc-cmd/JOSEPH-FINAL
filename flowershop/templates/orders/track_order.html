@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Your Order - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="text-center mb-8">
+            <div class="text-5xl text-pink-600 mb-4"><i class="fas fa-box"></i></div>
+            <h1 class="text-4xl font-bold mb-2">Track Your Order</h1>
+            <p class="text-gray-600">Enter your order details to see the delivery status</p>
+        </div>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">Order Number *</label>
+                <input type="text" name="order_number" required placeholder="ORD-20240316-ABCD1234" class="w-full border border-gray-300 rounded px-4 py-3">
+                <p class="text-gray-600 text-sm mt-1">Find your order number in your confirmation email</p>
+            </div>
+            
+            <div>
+                <label class="block text-gray-700 font-bold mb-2">Email Address *</label>
+                <input type="email" name="email" required placeholder="your@email.com" class="w-full border border-gray-300 rounded px-4 py-3">
+            </div>
+            
+            <button type="submit" class="w-full bg-pink-600 text-white py-3 rounded-lg font-bold hover:bg-pink-700">
+                <i class="fas fa-search mr-2"></i> Track Order
+            </button>
+        </form>
+        
+        <div class="mt-8 pt-8 border-t">
+            <h3 class="font-bold mb-4">Don't have your order number?</h3>
+            <p class="text-gray-600 mb-4">Check your email for your confirmation and tracking information. If you still need help:</p>
+            <p class="text-pink-600 font-bold">📞 Contact us: +63 9123 456 789</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

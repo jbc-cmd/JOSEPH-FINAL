@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="grid md:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="md:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-bold mb-4">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-gray-600 mb-6">{{ user.email }}</p>
+                
+                <nav class="space-y-2">
+                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 bg-pink-100 text-pink-600 font-bold rounded">Profile</a>
+                    <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Order History</a>
+                    <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Logout</a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="md:col-span-3 space-y-8">
+            <!-- Profile Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Profile Information</h2>
+                
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">First Name</label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border rounded px-4 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">Last Name</label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border rounded px-4 py-2">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Email</label>
+                        <input type="email" name="email" value="{{ user.email }}" class="w-full border rounded px-4 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Phone Number</label>
+                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border rounded px-4 py-2">
+                    </div>
+                    
+                    <button type="submit" class="bg-pink-600 text-white px-6 py-2 rounded font-bold hover:bg-pink-700">
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Saved Addresses -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold">Saved Delivery Addresses</h2>
+                    <a href="{% url 'accounts:add_address' %}" class="bg-pink-600 text-white px-4 py-2 rounded font-bold hover:bg-pink-700">
+                        + Add Address
+                    </a>
+                </div>
+                
+                {% if addresses %}
+                <div class="grid md:grid-cols-2 gap-6">
+                    {% for address in addresses %}
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="font-bold">{{ address.label }}</p>
+                            {% if address.is_default %}
+                            <span class="bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded">Default</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-gray-700 font-bold">{{ address.recipient_name }}</p>
+                        <p class="text-gray-600 text-sm">{{ address.address }}</p>
+                        <p class="text-gray-600 text-sm">{{ address.city }}, {{ address.postal_code }}</p>
+                        <p class="text-gray-600 text-sm">{{ address.phone_number }}</p>
+                        
+                        <div class="flex space-x-2 mt-4">
+                            <a href="{% url 'accounts:edit_address' address.id %}" class="text-pink-600 font-bold hover:text-pink-700">Edit</a>
+                            <a href="{% url 'accounts:delete_address' address.id %}" class="text-red-600 font-bold hover:text-red-700" onclick="return confirm('Delete this address?')">Delete</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-600">No saved addresses yet. <a href="{% url 'accounts:add_address' %}" class="text-pink-600 font-bold">Add one now</a></p>
+                {% endif %}
+            </div>
+            
+            <!-- Recent Orders -->
+            {% if recent_orders %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-6">Recent Orders</h2>
+                
+                <div class="space-y-4">
+                    {% for order in recent_orders %}
+                    <div class="border rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold">{{ order.order_number }}</p>
+                            <p class="text-gray-600 text-sm">{{ order.created_at|date:"M d, Y" }} - ₱{{ order.total_amount }}</p>
+                            <span class="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded">{{ order.get_status_display }}</span>
+                        </div>
+                        <a href="{% url 'orders:order_detail' order.id %}" class="text-pink-600 font-bold hover:text-pink-700">View</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <a href="{% url 'accounts:order_history' %}" class="block mt-4 text-center text-pink-600 font-bold hover:text-pink-700">View All Orders</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

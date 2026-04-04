@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Order History - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Order History</h1>
+    
+    {% if orders %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left">Order Number</th>
+                    <th class="px-6 py-3 text-left">Date</th>
+                    <th class="px-6 py-3 text-left">Recipient</th>
+                    <th class="px-6 py-3 text-center">Total</th>
+                    <th class="px-6 py-3 text-center">Status</th>
+                    <th class="px-6 py-3 text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 font-bold text-pink-600">{{ order.order_number }}</td>
+                    <td class="px-6 py-4">{{ order.created_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4">{{ order.customer_name }}</td>
+                    <td class="px-6 py-4 text-center">₱{{ order.total_amount }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm">{{ order.get_status_display }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="text-pink-600 font-bold hover:text-pink-700">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <p class="text-gray-600 text-xl mb-4">You haven't placed any orders yet</p>
+        <a href="{% url 'products:shop' %}" class="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-pink-700">
+            Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

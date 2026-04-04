@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Details - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <a href="{% url 'products:home' %}" class="text-pink-600 hover:text-pink-700 mb-4"><i class="fas fa-arrow-left mr-2"></i>Back to Home</a>
+    
+    <div class="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div class="flex justify-between items-start mb-8">
+            <div>
+                <h1 class="text-4xl font-bold">Order {{ order.order_number }}</h1>
+                <p class="text-gray-600">{{ order.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+            <span class="px-4 py-2 bg-{{ order.status_color }}-100 text-{{ order.status_color }}-800 rounded font-bold">{{ order.get_status_display }}</span>
+        </div>
+        
+        <!-- Order Status Timeline -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-6">Delivery Status</h2>
+            <div class="space-y-4">
+                {% with statuses="PROCESSING,PREPARING,OUT_FOR_DELIVERY,DELIVERED" %}
+                {% regroup order|dictsort:"status" by status as status_groups %}
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full {% if order.status == 'PENDING' %}bg-gray-400{% else %}bg-green-500{% endif %} text-white flex items-center justify-center">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <p class="ml-4 font-bold">Order Placed</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">{{ order.created_at|date:"M d, Y" }}</p>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full {% if order.status in 'PROCESSING,PREPARING,OUT_FOR_DELIVERY,DELIVERED' %}bg-green-500{% else %}bg-gray-400{% endif %} text-white flex items-center justify-center">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <p class="ml-4 font-bold">Processing</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full {% if order.status in 'PREPARING,OUT_FOR_DELIVERY,DELIVERED' %}bg-green-500{% else %}bg-gray-400{% endif %} text-white flex items-center justify-center">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <p class="ml-4 font-bold">Preparing Bouquet</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full {% if order.status in 'OUT_FOR_DELIVERY,DELIVERED' %}bg-green-500{% else %}bg-gray-400{% endif %} text-white flex items-center justify-center">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <p class="ml-4 font-bold">Out for Delivery</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full {% if order.status == 'DELIVERED' %}bg-green-500{% else %}bg-gray-400{% endif %} text-white flex items-center justify-center">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <p class="ml-4 font-bold">Delivered</p>
+                        </div>
+                    </div>
+                    {% if order.delivery_completed_at %}<p class="text-gray-600">{{ order.delivery_completed_at|date:"M d, Y" }}</p>{% endif %}
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delivery Information -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Delivery Information</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <p class="text-gray-600">Recipient</p>
+                    <p class="font-bold">{{ order.customer_name }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-gray-600">Delivery Address</p>
+                    <p class="font-bold">{{ order.delivery_address }}<br>{{ order.delivery_city }} {{ order.delivery_postal_code }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-gray-600">Phone Number</p>
+                    <p class="font-bold">{{ order.customer_phone }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Scheduled Delivery</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <p class="text-gray-600">Date</p>
+                    <p class="font-bold">{{ order.delivery_date }} ({{ order.delivery_date|date:"l" }})</p>
+                </div>
+                
+                <div>
+                    <p class="text-gray-600">Time Window</p>
+                    <p class="font-bold">{{ order.delivery_time_window.get_window_display }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-gray-600">Payment Status</p>
+                    <p class="font-bold">{{ payment.get_payment_method_display }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Items -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold mb-6">Order Items</h2>
+        
+        <div class="space-y-4">
+            {% for item in items %}
+            <div class="flex justify-between items-center border-b pb-4">
+                <div class="flex items-center space-x-4">
+                    <img src="{{ item.get_item_image.url }}" alt="" class="w-16 h-16 object-cover rounded">
+                    <div>
+                        <p class="font-bold">{{ item.get_item_name }}</p>
+                        <p class="text-gray-600">Quantity: {{ item.quantity }}</p>
+                    </div>
+                </div>
+                <span class="font-bold">₱{{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-6 pt-6 border-t space-y-2">
+            <div class="flex justify-between">
+                <span>Subtotal:</span>
+                <span class="font-bold">₱{{ order.subtotal }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Delivery Fee:</span>
+                <span class="font-bold">₱{{ order.delivery_fee }}</span>
+            </div>
+            <div class="flex justify-between text-xl font-bold">
+                <span>Total:</span>
+                <span class="text-pink-600">₱{{ order.total_amount }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Support -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+        <h3 class="font-bold text-blue-900 mb-2">Need Help?</h3>
+        <p class="text-blue-800 mb-4">Contact our customer support team for any questions about your order</p>
+        <p class="text-blue-900 font-bold">📞 +63 9123 456 789 | 📧 support@josephflowershop.com</p>
+    </div>
+</div>
+{% endblock %}
