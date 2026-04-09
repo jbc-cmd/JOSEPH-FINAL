@@ -15,6 +15,7 @@ def bouquet_builder(request):
     sizes = BouquetSize.objects.all()
     wrapping_styles = WrappingStyle.objects.all()
     ribbon_colors = RibbonColor.objects.all()
+    default_ribbon = ribbon_colors.first()
     extras = Extra.objects.all()
     flowers = Flower.objects.filter(availability_status='IN_STOCK')
     
@@ -22,6 +23,7 @@ def bouquet_builder(request):
         'sizes': sizes,
         'wrapping_styles': wrapping_styles,
         'ribbon_colors': ribbon_colors,
+        'default_ribbon': default_ribbon,
         'extras': extras,
         'flowers': flowers,
     }
@@ -34,22 +36,42 @@ def get_bouquet_pricing(request):
         size_id = request.GET.get('size_id')
         wrapping_id = request.GET.get('wrapping_id')
         ribbon_id = request.GET.get('ribbon_id')
-        flower_ids = request.GET.getlist('flower_ids')
-        extra_ids = request.GET.getlist('extra_ids')
-        
+        flower_ids = [flower_id for flower_id in request.GET.getlist('flower_ids') if flower_id]
+        flower_quantities = request.GET.getlist('flower_quantities')
+        extra_ids = [extra_id for extra_id in request.GET.getlist('extra_ids') if extra_id]
+        extra_quantities = request.GET.getlist('extra_quantities')
+
         size = BouquetSize.objects.get(id=size_id)
-        wrapping = WrappingStyle.objects.get(id=wrapping_id)
-        ribbon = RibbonColor.objects.get(id=ribbon_id)
-        
+        wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
+        ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
+
         flowers_price = 0
-        for flower_id in flower_ids:
+        flower_breakdown = []
+        for index, flower_id in enumerate(flower_ids):
             flower = Flower.objects.get(id=flower_id)
-            flowers_price += float(flower.price)
-        
+            quantity = int(flower_quantities[index]) if index < len(flower_quantities) else 1
+            subtotal = float(flower.price) * quantity
+            flowers_price += subtotal
+            flower_breakdown.append({
+                'id': flower.id,
+                'name': flower.get_name_display(),
+                'quantity': quantity,
+                'subtotal': subtotal,
+            })
+
         extras_price = 0
-        for extra_id in extra_ids:
+        extras_breakdown = []
+        for index, extra_id in enumerate(extra_ids):
             extra = Extra.objects.get(id=extra_id)
-            extras_price += float(extra.price)
+            quantity = int(extra_quantities[index]) if index < len(extra_quantities) else 1
+            subtotal = float(extra.price) * quantity
+            extras_price += subtotal
+            extras_breakdown.append({
+                'id': extra.id,
+                'name': extra.get_name_display(),
+                'quantity': quantity,
+                'subtotal': subtotal,
+            })
         
         total = float(size.base_price) + float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
         
@@ -61,6 +83,8 @@ def get_bouquet_pricing(request):
             'flowers_price': flowers_price,
             'extras_price': extras_price,
             'total': total,
+            'flower_breakdown': flower_breakdown,
+            'extras_breakdown': extras_breakdown,
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
@@ -82,8 +106,11 @@ def save_custom_bouquet(request):
         
         # Create bouquet
         size = BouquetSize.objects.get(id=size_id)
-        wrapping = WrappingStyle.objects.get(id=wrapping_id)
-        ribbon = RibbonColor.objects.get(id=ribbon_id)
+        wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
+        ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
+
+        if not wrapping or not ribbon:
+            raise ValueError('Bouquet configuration is incomplete. Please configure wrapping defaults in admin.')
         
         # Calculate total price
         flowers_price = 0

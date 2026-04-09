@@ -1,291 +1,475 @@
+
 {% extends 'base.html' %}
 
 {% block title %}Custom Bouquet Builder - Joseph Flowershop{% endblock %}
 
 {% block content %}
-<div class="bg-gradient-to-b from-orange-50 to-white min-h-screen py-12">
+<div class="bg-gradient-to-b from-orange-50 via-white to-orange-50/40 min-h-screen py-10 md:py-12">
     <div class="max-w-7xl mx-auto px-4">
-        <!-- Header -->
-        <div class="mb-12">
-            <h1 class="text-5xl font-bold text-gray-900 mb-2">Build Your Bouquet</h1>
-            <p class="text-gray-600 text-lg">Create a one-of-a-kind arrangement with your favorite flowers</p>
+        <div class="mb-10 md:mb-12">
+            <p class="text-sm uppercase tracking-[0.35em] text-orange-500 font-semibold mb-3">Custom Bouquet Studio</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-3">Build Your Perfect Bouquet</h1>
+            <p class="text-gray-600 text-lg max-w-3xl">Choose your stems, compare sizes, add elegant finishing touches, and see your bouquet total update in real time.</p>
         </div>
-        
-        <!-- Main Content -->
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Left Column - Configuration -->
-            <div class="md:col-span-2 space-y-8">
-                <!-- Step 1: Choose Flowers -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">1</div>
-                        <h2 class="text-2xl font-bold text-gray-900">Choose Your Flowers</h2>
+
+        <div class="grid xl:grid-cols-[minmax(0,1.55fr)_380px] gap-8 items-start">
+            <div class="space-y-6">
+                <div class="rounded-3xl border border-orange-100 bg-white/85 p-4 shadow-sm">
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="1"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-orange-500">Step 1</span><p class="font-bold text-gray-900 mt-1">Choose flowers</p><p class="text-xs text-gray-500 mt-1">Pick stems to start your bouquet.</p></button>
+                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="2"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 2</span><p class="font-bold text-gray-900 mt-1">Select size</p><p class="text-xs text-gray-500 mt-1">Add your bouquet size surcharge.</p></button>
+                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="3"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 3</span><p class="font-bold text-gray-900 mt-1">Choose wrapping</p><p class="text-xs text-gray-500 mt-1">Switch the finishing wrap anytime.</p></button>
+                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="4"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 4</span><p class="font-bold text-gray-900 mt-1">Extras and message</p><p class="text-xs text-gray-500 mt-1">Optional add-ons for a personal touch.</p></button>
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
+                </div>
+
+                <section id="builder-step-1" class="builder-step-card rounded-3xl border border-orange-100 bg-white/90 p-6 md:p-8 shadow-sm scroll-mt-28" data-step="1">
+                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                        <div class="flex items-start gap-4">
+                            <div class="builder-step-badge flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 font-bold">1</div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap"><h2 class="text-2xl font-bold text-gray-900">Choose your flowers</h2><span class="builder-step-complete hidden inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"><i class="fas fa-check-circle"></i>Completed</span></div>
+                                <p class="text-gray-600 mt-2">Select one or more stems. Prices below are per stem and update the order summary instantly.</p>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl bg-orange-50 px-4 py-3 text-sm text-orange-700 font-semibold"><span id="flower-selection-count">Choose your flowers to start building your bouquet</span></div>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 2xl:grid-cols-3 gap-5">
                         {% for flower in flowers %}
-                        <div class="bg-white rounded-lg p-4 border border-gray-200 hover:border-orange-300 transition">
-                            <div class="flex gap-4">
-                                <!-- Flower Image -->
+                        <article class="flower-card rounded-2xl border border-gray-200 bg-white p-4 transition shadow-sm hover:border-orange-300 hover:shadow-md h-full" data-flower-card data-flower-id="{{ flower.id }}" data-flower-name="{{ flower.get_name_display }}" data-flower-price="{{ flower.price|floatformat:2 }}" data-flower-image="{% if flower.image %}{{ flower.image.url }}{% endif %}">
+                            <div class="flex gap-4 h-full">
                                 {% if flower.image %}
-                                    <img src="{{ flower.image.url }}" alt="{{ flower.get_name_display }}" class="w-20 h-20 object-cover rounded">
+                                <img src="{{ flower.image.url }}" alt="{{ flower.get_name_display }}" class="w-20 h-20 rounded-2xl object-cover shrink-0">
                                 {% else %}
-                                    <div class="w-20 h-20 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-flower text-gray-400"></i>
-                                    </div>
+                                <div class="w-20 h-20 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-300 shrink-0"><i class="fas fa-seedling text-2xl"></i></div>
                                 {% endif %}
-                                
-                                <!-- Flower Info -->
-                                <div class="flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900 text-sm">{{ flower.get_name_display }}</h4>
-                                        <p class="text-orange-600 text-xs">₱{{ flower.price }}/stem</p>
+                                <div class="flex-1 min-w-0 flex flex-col">
+                                    <div class="flex items-start justify-between gap-3 mb-2">
+                                        <h3 class="font-bold text-gray-900 leading-tight pr-2">{{ flower.get_name_display }}</h3>
+                                        <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600 whitespace-nowrap shrink-0">&#8369;{{ flower.price }} / stem</span>
                                     </div>
-                                    
-                                    <!-- Quantity Controls -->
-                                    <div class="flex items-center gap-2">
-                                        <button type="button" class="text-gray-400 hover:text-orange-600 text-lg" onclick="decreaseFlower({{ flower.id }})">−</button>
-                                        <input type="number" id="flower_{{ flower.id }}" value="0" min="0" class="w-8 text-center text-sm font-semibold flower-qty" onchange="updatePrice()" readonly>
-                                        <button type="button" class="text-gray-400 hover:text-orange-600 text-lg" onclick="increaseFlower({{ flower.id }})">+</button>
+                                    <p class="text-sm text-gray-500 leading-6 min-h-[48px]">{{ flower.description|default:"Fresh stems ready for your bouquet."|truncatewords:8 }}</p>
+                                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+                                        <span class="text-xs font-medium text-gray-500">Select quantity</span>
+                                        <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-1 py-1 shrink-0">
+                                            <button type="button" class="flower-qty-btn flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-white hover:text-orange-600 transition" data-flower-action="decrease" data-flower-id="{{ flower.id }}" aria-label="Decrease {{ flower.get_name_display }} quantity"><i class="fas fa-minus text-xs"></i></button>
+                                            <input type="number" id="flower_{{ flower.id }}" value="0" min="0" class="flower-qty w-10 bg-transparent text-center text-sm font-semibold text-gray-900 focus:outline-none" readonly>
+                                            <button type="button" class="flower-qty-btn flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-white hover:text-orange-600 transition" data-flower-action="increase" data-flower-id="{{ flower.id }}" aria-label="Increase {{ flower.get_name_display }} quantity"><i class="fas fa-plus text-xs"></i></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                         {% endfor %}
                     </div>
-                </div>
-                
-                <!-- Step 2: Select Size -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">2</div>
-                        <h2 class="text-2xl font-bold text-gray-900">Select Size</h2>
+                </section>
+
+                <section id="builder-step-2" class="builder-step-card rounded-3xl border border-orange-100 bg-white/90 p-6 md:p-8 shadow-sm scroll-mt-28" data-step="2">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="builder-step-badge flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 font-bold">2</div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap"><h2 class="text-2xl font-bold text-gray-900">Select size</h2><span class="builder-step-complete hidden inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"><i class="fas fa-check-circle"></i>Completed</span></div>
+                            <p class="text-gray-600 mt-2">Final price = selected stems + size + wrapping + extras. Pick the bouquet size that matches your arrangement.</p>
+                        </div>
                     </div>
-                    
-                    <div class="grid grid-cols-4 gap-2">
+                    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
                         {% for size in sizes %}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="size" value="{{ size.id }}" class="size-input hidden" onchange="updatePrice()" required>
-                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
-                                <div class="text-gray-600 text-lg mb-2"><i class="fas fa-snowflake"></i></div>
-                                <p class="font-bold text-gray-900 text-sm">{{ size.get_size_display }}</p>
-                                <p class="text-gray-600 text-xs mb-1">{{ size.flower_count_min }}-{{ size.flower_count_max }} stems</p>
-                                <p class="text-orange-600 text-xs font-bold">
-                                    x{% if size.size == 'SMALL' %}1{% elif size.size == 'MEDIUM' %}1.5{% elif size.size == 'LARGE' %}2{% elif size.size == 'PREMIUM' %}2.5{% endif %}
-                                </p>
+                        <label class="block">
+                            <input type="radio" name="size" value="{{ size.id }}" class="size-input sr-only">
+                            <div class="size-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-size-card data-size-id="{{ size.id }}" data-size-name="{{ size.get_size_display }}" data-size-price="{{ size.base_price|floatformat:2 }}" data-size-min="{{ size.flower_count_min }}" data-size-max="{{ size.flower_count_max }}">
+                                <div class="flex items-start justify-between gap-3"><div><p class="font-bold text-lg text-gray-900">{{ size.get_size_display }}</p><p class="text-sm text-gray-500 mt-1">{{ size.flower_count_min }}-{{ size.flower_count_max }} stems</p></div><span class="hidden size-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span></div>
+                                <p class="text-sm text-gray-500 mt-4">{{ size.description|default:"Balanced bouquet size for your chosen stems." }}</p>
+                                <p class="text-xl font-bold text-orange-600 mt-5">+&#8369;{{ size.base_price }}</p>
                             </div>
                         </label>
                         {% endfor %}
                     </div>
-                </div>
-                
-                <!-- Step 3: Choose Wrapping -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">3</div>
-                        <h2 class="text-2xl font-bold text-gray-900">Choose Wrapping</h2>
+                </section>
+                <section id="builder-step-3" class="builder-step-card rounded-3xl border border-orange-100 bg-white/90 p-6 md:p-8 shadow-sm scroll-mt-28" data-step="3">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="builder-step-badge flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 font-bold">3</div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap"><h2 class="text-2xl font-bold text-gray-900">Choose wrapping</h2><span class="builder-step-complete hidden inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"><i class="fas fa-check-circle"></i>Completed</span></div>
+                            <p class="text-gray-600 mt-2">A wrap is preselected for you, but you can switch to the one that best suits the bouquet.</p>
+                        </div>
                     </div>
-                    
-                    <div class="grid grid-cols-4 gap-2">
+                    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
                         {% for style in wrapping_styles %}
-                        <label class="cursor-pointer">
-                            <input type="radio" name="wrapping" value="{{ style.id }}" class="wrapping-input hidden" onchange="updatePrice()" required>
-                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
-                                <p class="font-bold text-gray-900 text-sm mb-2">{{ style.get_style_display }}</p>
-                                <p class="text-orange-600 text-xs">+₱{{ style.price }}</p>
-                            </div>
-                        </label>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-                <!-- Step 4: Add Extras -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">4</div>
-                        <h2 class="text-2xl font-bold text-gray-900">Add Extras</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-4 gap-4">
-                        {% for extra in extras %}
-                        <label class="cursor-pointer">
-                            <input type="checkbox" name="extras" value="{{ extra.id }}" class="extra-input hidden" onchange="updatePrice()">
-                            <div class="border-2 border-gray-200 rounded-lg p-4 text-center hover:border-orange-300 transition peer-checked:border-orange-400 peer-checked:bg-orange-50">
-                                <div class="text-2xl mb-2 text-gray-600">
-                                    {% if "chocolate" in extra.get_name_display|lower %}
-                                        <i class="fas fa-gift"></i>
-                                    {% elif "teddy" in extra.get_name_display|lower %}
-                                        <i class="fas fa-teddy-bear-alt"></i>
-                                    {% elif "balloon" in extra.get_name_display|lower %}
-                                        <i class="fas fa-certificate"></i>
-                                    {% elif "card" in extra.get_name_display|lower %}
-                                        <i class="fas fa-pen-fancy"></i>
-                                    {% else %}
-                                        <i class="fas fa-gift"></i>
-                                    {% endif %}
+                        <label class="block">
+                            <input type="radio" name="wrapping" value="{{ style.id }}" class="wrapping-input sr-only" {% if forloop.first %}checked{% endif %}>
+                            <div class="wrapping-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-wrapping-card data-wrapping-id="{{ style.id }}" data-wrapping-name="{{ style.get_style_display }}" data-wrapping-price="{{ style.price|floatformat:2 }}">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div class="h-14 w-14 rounded-2xl border border-white/70 shadow-inner {% if style.style == 'KRAFT' %}bg-[#d8b38a]{% elif style.style == 'CELLOPHANE' %}bg-gradient-to-br from-white to-slate-100{% elif style.style == 'FABRIC' %}bg-[#f6c8d8]{% elif style.style == 'BURLAP' %}bg-[#c8a57a]{% elif style.style == 'SATIN' %}bg-[#eadcf6]{% else %}bg-orange-100{% endif %}"></div>
+                                    <span class="hidden wrapping-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span>
                                 </div>
-                                <p class="font-bold text-gray-900 text-sm mb-1">{{ extra.get_name_display }}</p>
-                                <p class="text-orange-600 text-xs">+₱{{ extra.price }}</p>
+                                <p class="font-bold text-gray-900">{{ style.get_style_display }}</p>
+                                <p class="text-sm text-gray-500 mt-2">{{ style.description|default:"Elegant wrapping to finish your bouquet beautifully." }}</p>
+                                <p class="text-lg font-bold text-orange-600 mt-4">+&#8369;{{ style.price }}</p>
                             </div>
                         </label>
                         {% endfor %}
                     </div>
-                </div>
+                </section>
+
+                <section id="builder-step-4" class="builder-step-card rounded-3xl border border-orange-100 bg-white/90 p-6 md:p-8 shadow-sm scroll-mt-28" data-step="4">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="builder-step-badge flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 font-bold">4</div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap"><h2 class="text-2xl font-bold text-gray-900">Add extras and your message</h2><span class="builder-step-complete hidden inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"><i class="fas fa-check-circle"></i>Ready</span></div>
+                            <p class="text-gray-600 mt-2">Optional add-ons and a personal note help make the bouquet feel more thoughtful.</p>
+                        </div>
+                    </div>
+                    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+                        {% for extra in extras %}
+                        <label class="block">
+                            <input type="checkbox" name="extras" value="{{ extra.id }}" class="extra-input sr-only">
+                            <div class="extra-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-extra-card data-extra-id="{{ extra.id }}" data-extra-name="{{ extra.get_name_display }}" data-extra-price="{{ extra.price|floatformat:2 }}">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 text-xl">
+                                        {% if "chocolate" in extra.get_name_display|lower %}<i class="fas fa-gift"></i>{% elif "teddy" in extra.get_name_display|lower %}<i class="fas fa-heart"></i>{% elif "balloon" in extra.get_name_display|lower %}<i class="fas fa-circle"></i>{% elif "card" in extra.get_name_display|lower %}<i class="fas fa-envelope-open-text"></i>{% elif "candle" in extra.get_name_display|lower %}<i class="fas fa-fire"></i>{% elif "wine" in extra.get_name_display|lower %}<i class="fas fa-wine-bottle"></i>{% else %}<i class="fas fa-gift"></i>{% endif %}
+                                    </div>
+                                    <span class="hidden extra-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span>
+                                </div>
+                                <p class="font-bold text-gray-900 mt-4">{{ extra.get_name_display }}</p>
+                                <p class="text-sm text-gray-500 mt-2">{{ extra.description|default:"A lovely extra detail for your bouquet." }}</p>
+                                <p class="text-lg font-bold text-orange-600 mt-4">+&#8369;{{ extra.price }}</p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                        <label for="bouquet-message" class="block text-sm font-semibold text-gray-700 mb-2">Gift message</label>
+                        <textarea id="bouquet-message" rows="4" maxlength="500" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add a heartfelt note for the recipient (optional)"></textarea>
+                        <div class="mt-2 flex items-center justify-between gap-3"><p class="text-xs text-gray-500">Leave a sweet note to include with your bouquet.</p><p id="message-status" class="text-xs font-medium text-gray-400">No message added yet</p></div>
+                    </div>
+                </section>
             </div>
-            
-            <!-- Right Column - Order Summary -->
-            <div>
-                <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Order Summary</h3>
-                    
-                    <div id="empty-state" class="text-center py-4">
-                        <p class="text-gray-500 text-sm">No flowers selected yet</p>
-                    </div>
-                    
-                    <div id="summary-details" class="space-y-3 mb-6" style="display: none;">
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>Size (Medium)</span>
-                            <span id="base_price">x1.5</span>
-                        </div>
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>Wrapping</span>
-                            <span id="wrapping_price">₱50</span>
+
+            <aside class="xl:sticky xl:top-24">
+                <div class="rounded-3xl border border-orange-100 bg-white/95 p-6 shadow-sm">
+                    <div class="flex items-center justify-between gap-3 mb-5"><div><h3 class="text-2xl font-bold text-gray-900">Order Summary</h3><p class="text-sm text-gray-500">Your bouquet updates instantly as you build.</p></div><span id="summary-item-count" class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">0 items</span></div>
+
+                    <div id="bouquet-preview" class="rounded-3xl bg-gradient-to-br from-orange-50 to-rose-50 p-5 border border-orange-100 mb-6">
+                        <div class="flex items-center gap-4">
+                            <div id="preview-image-wrap" class="h-20 w-20 rounded-2xl bg-white/80 border border-white shadow-sm flex items-center justify-center overflow-hidden"><i class="fas fa-seedling text-orange-300 text-3xl"></i></div>
+                            <div class="min-w-0"><p class="text-xs uppercase tracking-[0.25em] text-orange-500 font-semibold">Live Preview</p><p id="preview-title" class="font-bold text-gray-900 mt-2">Your bouquet starts here</p><p id="preview-subtitle" class="text-sm text-gray-500 mt-1">Choose flowers, size, and optional extras.</p></div>
                         </div>
                     </div>
-                    
-                    <div class="border-t border-gray-200 pt-4 mb-6">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-gray-600">Total</span>
-                            <span id="total_price" class="text-2xl font-bold text-orange-600">₱50</span>
+
+                    <div id="summary-empty" class="rounded-2xl border border-dashed border-orange-200 bg-orange-50/60 p-4 mb-6">
+                        <p class="font-semibold text-gray-900">Choose your flowers to start building your bouquet</p>
+                        <p class="text-sm text-gray-500 mt-2">Select flowers, size, and optional extras to see a complete pricing breakdown.</p>
+                    </div>
+
+                    <div id="summary-content" class="hidden">
+                        <div class="space-y-5">
+                            <div>
+                                <div class="flex items-center justify-between gap-3 mb-3"><h4 class="font-semibold text-gray-900">Selected flowers</h4><span id="summary-stems" class="text-xs font-medium text-gray-500">0 stems</span></div>
+                                <div id="summary-flowers" class="space-y-2"><p class="text-sm text-gray-500">Choose your flowers to start building your bouquet</p></div>
+                            </div>
+                            <div class="grid gap-3">
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Size</p><p id="summary-size-name" class="text-sm text-gray-500">Select a bouquet size</p></div><span id="summary-size-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Wrapping</p><p id="summary-wrapping-name" class="text-sm text-gray-500">Classic wrap preselected</p></div><span id="summary-wrapping-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Extras</p><p id="summary-extras-status" class="text-sm text-gray-500">No extras selected</p></div><span id="summary-extras-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Message</p><p id="summary-message-status" class="text-sm text-gray-500">No message added yet</p></div><span id="summary-message-badge" class="text-xs font-semibold text-gray-400">Optional</span></div></div>
+                            </div>
+                            <div class="rounded-2xl border border-orange-100 bg-orange-50/50 px-4 py-4">
+                                <p class="text-sm font-semibold text-gray-900 mb-3">Pricing breakdown</p>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex items-center justify-between text-gray-600"><span>Flowers subtotal</span><span id="breakdown-flowers">&#8369;0</span></div>
+                                    <div class="flex items-center justify-between text-gray-600"><span>Size surcharge</span><span id="breakdown-size">&#8369;0</span></div>
+                                    <div class="flex items-center justify-between text-gray-600"><span>Wrapping surcharge</span><span id="breakdown-wrapping">&#8369;0</span></div>
+                                    <div class="flex items-center justify-between text-gray-600"><span>Extras subtotal</span><span id="breakdown-extras">&#8369;0</span></div>
+                                </div>
+                                <div class="mt-4 border-t border-orange-100 pt-4 flex items-end justify-between gap-3"><div><p class="text-sm text-gray-500">Estimated total</p><p id="summary-total" class="text-3xl font-bold text-orange-600">&#8369;0</p></div><p class="text-xs text-right text-gray-500 max-w-[170px]">Final price = selected stems + size + wrapping + extras</p></div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <button onclick="saveBouquet()" class="w-full bg-gray-400 text-white py-3 rounded-lg font-bold hover:bg-gray-500 transition mb-3 flex items-center justify-center gap-2">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                    
-                    <p id="stems-text" class="text-center text-gray-500 text-xs">0 stems selected</p>
+
+                    <div class="mt-6 space-y-3">
+                        <button id="builder-submit" type="button" class="w-full rounded-2xl bg-gray-300 px-5 py-4 text-base font-bold text-white transition cursor-not-allowed" disabled><i class="fas fa-shopping-bag mr-2"></i><span id="builder-submit-label">Select flowers and size to continue</span></button>
+                        <p id="builder-submit-help" class="text-center text-sm text-gray-500">Complete Step 1 and Step 2 to add your bouquet to cart.</p>
+                    </div>
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
 </div>
-
+{% endblock %}
+{% block extra_js %}
 <script>
-function updatePrice() {
-    const sizeId = document.querySelector('input[name="size"]:checked')?.value;
-    const wrappingId = document.querySelector('input[name="wrapping"]:checked')?.value;
-    
-    if (!sizeId || !wrappingId) return;
-    
-    const flowerIds = [];
-    let totalStems = 0;
-    document.querySelectorAll('.flower-qty').forEach(input => {
-        const qty = parseInt(input.value);
-        totalStems += qty;
-        if (qty > 0) {
-            flowerIds.push(input.id.replace('flower_', ''));
-        }
-    });
-    
-    const extraIds = Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(el => el.value);
-    
-    // Update stems text
-    document.getElementById('stems-text').textContent = `${totalStems} stems selected`;
-    
-    // Show/hide empty state
-    if (totalStems === 0) {
-        document.getElementById('empty-state').style.display = 'block';
-        document.getElementById('summary-details').style.display = 'none';
-    } else {
-        document.getElementById('empty-state').style.display = 'none';
-        document.getElementById('summary-details').style.display = 'block';
+function initializeBouquetBuilder() {
+    const builderPage = document.querySelector('[data-step=\"1\"]');
+    const flowerCards = document.querySelectorAll('[data-flower-card]');
+    if (!builderPage || !flowerCards.length || builderPage.dataset.builderBound === 'true') return;
+    builderPage.dataset.builderBound = 'true';
+
+    const money = (value) => `\u20B1${Number(value || 0).toFixed(2)}`;
+    const messageField = document.getElementById('bouquet-message');
+    const submitButton = document.getElementById('builder-submit');
+    const submitLabel = document.getElementById('builder-submit-label');
+    const submitHelp = document.getElementById('builder-submit-help');
+    const flowerCountLabel = document.getElementById('flower-selection-count');
+    const summaryEmpty = document.getElementById('summary-empty');
+    const summaryContent = document.getElementById('summary-content');
+    const summaryFlowers = document.getElementById('summary-flowers');
+    const summaryStems = document.getElementById('summary-stems');
+    const summaryItemCount = document.getElementById('summary-item-count');
+    const summarySizeName = document.getElementById('summary-size-name');
+    const summarySizePrice = document.getElementById('summary-size-price');
+    const summaryWrappingName = document.getElementById('summary-wrapping-name');
+    const summaryWrappingPrice = document.getElementById('summary-wrapping-price');
+    const summaryExtrasStatus = document.getElementById('summary-extras-status');
+    const summaryExtrasPrice = document.getElementById('summary-extras-price');
+    const summaryMessageStatus = document.getElementById('summary-message-status');
+    const summaryMessageBadge = document.getElementById('summary-message-badge');
+    const breakdownFlowers = document.getElementById('breakdown-flowers');
+    const breakdownSize = document.getElementById('breakdown-size');
+    const breakdownWrapping = document.getElementById('breakdown-wrapping');
+    const breakdownExtras = document.getElementById('breakdown-extras');
+    const summaryTotal = document.getElementById('summary-total');
+    const previewImageWrap = document.getElementById('preview-image-wrap');
+    const previewTitle = document.getElementById('preview-title');
+    const previewSubtitle = document.getElementById('preview-subtitle');
+    const messageStatus = document.getElementById('message-status');
+    const stepConfigs = {1:{required:true,element:document.querySelector('[data-step="1"]')},2:{required:true,element:document.querySelector('[data-step="2"]')},3:{required:false,element:document.querySelector('[data-step="3"]')},4:{required:false,element:document.querySelector('[data-step="4"]')}};
+    const completedScrollState = {};
+
+    function getFlowerSelections() {
+        return Array.from(document.querySelectorAll('[data-flower-card]')).map((card) => {
+            const input = card.querySelector('.flower-qty');
+            const quantity = Number(input.value || 0);
+            return {card,id:card.dataset.flowerId,name:card.dataset.flowerName,image:card.dataset.flowerImage,price:Number(card.dataset.flowerPrice),quantity,subtotal:Number(card.dataset.flowerPrice)*quantity};
+        }).filter((flower) => flower.quantity > 0);
     }
-    
-    fetch(`{% url 'custom_bouquet:pricing' %}?size_id=${sizeId}&wrapping_id=${wrappingId}&flower_ids=${flowerIds.join(',')}&extra_ids=${extraIds.join(',')}`)
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('base_price').textContent = `x${(parseFloat(data.size_price) / 1000).toFixed(1)}`;
-            document.getElementById('wrapping_price').textContent = `₱${parseFloat(data.wrapping_price).toFixed(0)}`;
-            document.getElementById('total_price').textContent = `₱${parseFloat(data.total).toFixed(0)}`;
+    function getSelectedSize() {
+        const checked = document.querySelector('.size-input:checked');
+        if (!checked) return null;
+        const card = checked.closest('label').querySelector('[data-size-card]');
+        return {id:card.dataset.sizeId,name:card.dataset.sizeName,price:Number(card.dataset.sizePrice),min:Number(card.dataset.sizeMin),max:Number(card.dataset.sizeMax)};
+    }
+    function getSelectedWrapping() {
+        const checked = document.querySelector('.wrapping-input:checked');
+        if (!checked) return null;
+        const card = checked.closest('label').querySelector('[data-wrapping-card]');
+        return {id:card.dataset.wrappingId,name:card.dataset.wrappingName,price:Number(card.dataset.wrappingPrice)};
+    }
+    function getSelectedExtras() {
+        return Array.from(document.querySelectorAll('.extra-input:checked')).map((input) => {
+            const card = input.closest('label').querySelector('[data-extra-card]');
+            return {id:card.dataset.extraId,name:card.dataset.extraName,quantity:1,price:Number(card.dataset.extraPrice),subtotal:Number(card.dataset.extraPrice)};
         });
-}
-
-function increaseFlower(flowerId) {
-    const input = document.getElementById(`flower_${flowerId}`);
-    input.value = parseInt(input.value) + 1;
-    updatePrice();
-}
-
-function decreaseFlower(flowerId) {
-    const input = document.getElementById(`flower_${flowerId}`);
-    if (parseInt(input.value) > 0) {
-        input.value = parseInt(input.value) - 1;
-        updatePrice();
     }
-}
+    function getState() {
+        const flowers = getFlowerSelections();
+        const size = getSelectedSize();
+        const wrapping = getSelectedWrapping();
+        const extras = getSelectedExtras();
+        const message = messageField.value.trim();
+        const totalStems = flowers.reduce((sum, flower) => sum + flower.quantity, 0);
+        return {flowers,size,wrapping,extras,message,totalStems,flowersSubtotal:flowers.reduce((sum, flower) => sum + flower.subtotal, 0),extrasSubtotal:extras.reduce((sum, extra) => sum + extra.subtotal, 0),wrappingPrice:wrapping ? wrapping.price : 0,sizePrice:size ? size.price : 0};
+    }
+    function updateVisualSelections() {
+        document.querySelectorAll('[data-flower-card]').forEach((card) => {
+            const qty = Number(card.querySelector('.flower-qty').value || 0);
+            card.classList.toggle('border-orange-300', qty > 0);
+            card.classList.toggle('bg-orange-50/40', qty > 0);
+            card.classList.toggle('shadow-md', qty > 0);
+        });
+        document.querySelectorAll('[data-size-card]').forEach((card) => {
+            const selected = card.closest('label').querySelector('.size-input').checked;
+            card.classList.toggle('border-orange-400', selected);
+            card.classList.toggle('bg-orange-50', selected);
+            card.classList.toggle('shadow-md', selected);
+            card.classList.toggle('scale-[1.02]', selected);
+            card.querySelector('.size-selected-badge').classList.toggle('hidden', !selected);
+        });
+        document.querySelectorAll('[data-wrapping-card]').forEach((card) => {
+            const selected = card.closest('label').querySelector('.wrapping-input').checked;
+            card.classList.toggle('border-orange-400', selected);
+            card.classList.toggle('bg-orange-50', selected);
+            card.classList.toggle('shadow-md', selected);
+            card.querySelector('.wrapping-selected-badge').classList.toggle('hidden', !selected);
+        });
+        document.querySelectorAll('[data-extra-card]').forEach((card) => {
+            const selected = card.closest('label').querySelector('.extra-input').checked;
+            card.classList.toggle('border-orange-400', selected);
+            card.classList.toggle('bg-orange-50', selected);
+            card.classList.toggle('shadow-md', selected);
+            card.querySelector('.extra-selected-badge').classList.toggle('hidden', !selected);
+        });
+    }
+    function updateSteps(state) {
+        const completed = {1: state.totalStems > 0,2: Boolean(state.size),3: Boolean(state.wrapping),4: state.extras.length > 0 || state.message.length > 0};
+        let activeStep = 1;
+        if (completed[1] && !completed[2]) activeStep = 2;
+        else if (completed[1] && completed[2] && !completed[3]) activeStep = 3;
+        else if (completed[1] && completed[2]) activeStep = 4;
 
-function saveBouquet() {
-    const sizeId = document.querySelector('input[name="size"]:checked')?.value;
-    const wrappingId = document.querySelector('input[name="wrapping"]:checked')?.value;
-    
-    if (!sizeId || !wrappingId) {
-        alert('Please select size and wrapping');
-        return;
+        Object.entries(stepConfigs).forEach(([stepNumber, config]) => {
+            const number = Number(stepNumber);
+            const stepEl = config.element;
+            const navButton = document.querySelector(`[data-step-nav="${number}"]`);
+            const completeBadge = stepEl.querySelector('.builder-step-complete');
+            const stepBadge = stepEl.querySelector('.builder-step-badge');
+            const navStatus = navButton.querySelector('.step-nav-status');
+            const isComplete = completed[number];
+            const isActive = activeStep === number;
+            stepEl.classList.toggle('ring-2', isActive);
+            stepEl.classList.toggle('ring-orange-200', isActive);
+            stepEl.classList.toggle('border-green-200', isComplete && !isActive);
+            navButton.classList.toggle('border-orange-300', isActive);
+            navButton.classList.toggle('bg-orange-50', isActive);
+            navButton.classList.toggle('border-green-200', isComplete && !isActive);
+            navButton.classList.toggle('bg-green-50', isComplete && !isActive);
+            stepBadge.classList.toggle('bg-green-100', isComplete && !isActive);
+            stepBadge.classList.toggle('text-green-700', isComplete && !isActive);
+            stepBadge.classList.toggle('bg-orange-100', !isComplete || isActive);
+            stepBadge.classList.toggle('text-orange-600', !isComplete || isActive);
+            completeBadge.classList.toggle('hidden', !isComplete);
+            if (isComplete) {
+                navStatus.textContent = 'Completed';
+                navStatus.className = 'step-nav-status text-xs font-semibold uppercase tracking-wide text-green-600';
+            } else if (isActive) {
+                navStatus.textContent = 'Current';
+                navStatus.className = 'step-nav-status text-xs font-semibold uppercase tracking-wide text-orange-600';
+            } else {
+                navStatus.textContent = `Step ${number}`;
+                navStatus.className = 'step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400';
+            }
+            if (config.required && isComplete && !completedScrollState[number]) {
+                completedScrollState[number] = true;
+                const nextStep = stepConfigs[number + 1];
+                if (nextStep && window.innerWidth >= 768) nextStep.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
     }
-    
-    const flowers = [];
-    document.querySelectorAll('.flower-qty').forEach(input => {
-        const qty = parseInt(input.value);
-        if (qty > 0) {
-            flowers.push({
-                flower_id: input.id.replace('flower_', ''),
-                quantity: qty
-            });
-        }
-    });
-    
-    if (flowers.length === 0) {
-        alert('Please select flowers');
-        return;
-    }
-    
-    const extras = Array.from(document.querySelectorAll('input[name="extras"]:checked')).map(el => ({
-        extra_id: el.value,
-        quantity: 1
-    }));
-    
-    const bouquetData = {
-        size_id: sizeId,
-        wrapping_id: wrappingId,
-        flowers: flowers,
-        extras: extras,
-        personal_message: ''
-    };
-    
-    fetch('{% url "custom_bouquet:save" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify(bouquetData)
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            window.location.href = data.cart_url;
+
+    function updateSummary(state) {
+        const totalItems = state.totalStems + state.extras.length;
+        const total = state.flowersSubtotal + state.sizePrice + state.wrappingPrice + state.extrasSubtotal;
+        flowerCountLabel.textContent = state.totalStems > 0 ? `${state.totalStems} stem${state.totalStems === 1 ? '' : 's'} selected` : 'Choose your flowers to start building your bouquet';
+        summaryItemCount.textContent = `${totalItems} item${totalItems === 1 ? '' : 's'}`;
+        summaryStems.textContent = `${state.totalStems} stem${state.totalStems === 1 ? '' : 's'}`;
+        if (state.totalStems === 0 && !state.size && state.extras.length === 0 && !state.message) {
+            summaryEmpty.classList.remove('hidden');
+            summaryContent.classList.add('hidden');
         } else {
-            alert('Error: ' + data.error);
+            summaryEmpty.classList.add('hidden');
+            summaryContent.classList.remove('hidden');
         }
-    })
-    .catch(err => alert('Error: ' + err));
+        summaryFlowers.innerHTML = state.flowers.length === 0 ? '<p class="text-sm text-gray-500">Choose your flowers to start building your bouquet</p>' : state.flowers.map((flower) => `<div class="flex items-center justify-between gap-3 text-sm"><span class="text-gray-700">${flower.name} x${flower.quantity}</span><span class="font-semibold text-gray-900">${money(flower.subtotal)}</span></div>`).join('');
+        summarySizeName.textContent = state.size ? `${state.size.name} (${state.size.min}-${state.size.max} stems)` : 'Select a bouquet size';
+        summarySizePrice.textContent = money(state.sizePrice);
+        summaryWrappingName.textContent = state.wrapping ? state.wrapping.name : 'No wrapping selected';
+        summaryWrappingPrice.textContent = money(state.wrappingPrice);
+        summaryExtrasStatus.textContent = state.extras.length ? state.extras.map((extra) => `${extra.name} x${extra.quantity}`).join(', ') : 'No extras selected';
+        summaryExtrasPrice.textContent = money(state.extrasSubtotal);
+        summaryMessageStatus.textContent = state.message ? `"${state.message.length > 42 ? `${state.message.slice(0, 42)}...` : state.message}"` : 'No message added yet';
+        summaryMessageBadge.textContent = state.message ? 'Added' : 'Optional';
+        summaryMessageBadge.className = state.message ? 'text-xs font-semibold text-green-600' : 'text-xs font-semibold text-gray-400';
+        breakdownFlowers.textContent = money(state.flowersSubtotal);
+        breakdownSize.textContent = money(state.sizePrice);
+        breakdownWrapping.textContent = money(state.wrappingPrice);
+        breakdownExtras.textContent = money(state.extrasSubtotal);
+        summaryTotal.textContent = money(total);
+        if (state.flowers.length > 0) {
+            const leadFlower = state.flowers[0];
+            previewTitle.textContent = state.size ? `${state.size.name} bouquet in progress` : `${leadFlower.name} bouquet in progress`;
+            previewSubtitle.textContent = state.wrapping ? `${state.totalStems} stems with ${state.wrapping.name.toLowerCase()}` : `${state.totalStems} stems selected`;
+            previewImageWrap.innerHTML = leadFlower.image ? `<img src="${leadFlower.image}" alt="${leadFlower.name}" class="h-full w-full object-cover">` : '<i class="fas fa-seedling text-orange-300 text-3xl"></i>';
+        } else {
+            previewTitle.textContent = 'Your bouquet starts here';
+            previewSubtitle.textContent = 'Choose flowers, size, and optional extras.';
+            previewImageWrap.innerHTML = '<i class="fas fa-seedling text-orange-300 text-3xl"></i>';
+        }
+        messageStatus.textContent = state.message ? `${state.message.length}/500 characters` : 'No message added yet';
+    }
+
+    function updateSubmitState(state) {
+        const isValid = state.totalStems > 0 && Boolean(state.size);
+        submitButton.disabled = !isValid;
+        submitButton.classList.toggle('bg-pink-600', isValid);
+        submitButton.classList.toggle('hover:bg-pink-700', isValid);
+        submitButton.classList.toggle('cursor-pointer', isValid);
+        submitButton.classList.toggle('bg-gray-300', !isValid);
+        submitButton.classList.toggle('cursor-not-allowed', !isValid);
+        submitLabel.textContent = isValid ? 'Add Custom Bouquet to Cart' : 'Select flowers and size to continue';
+        submitHelp.textContent = isValid ? 'Your bouquet is ready. You can still adjust wrapping, extras, or your message before adding it to cart.' : 'Choose at least one flower and one bouquet size before continuing.';
+    }
+
+    function refreshBuilder() {
+        const state = getState();
+        updateVisualSelections();
+        updateSteps(state);
+        updateSummary(state);
+        updateSubmitState(state);
+    }
+    function changeFlowerQuantity(flowerId, delta) {
+        const input = document.getElementById(`flower_${flowerId}`);
+        input.value = Math.max(0, Number(input.value || 0) + delta);
+        refreshBuilder();
+    }
+
+    document.querySelectorAll('.flower-qty-btn').forEach((button) => {
+        button.addEventListener('click', () => changeFlowerQuantity(button.dataset.flowerId, button.dataset.flowerAction === 'increase' ? 1 : -1));
+    });
+    document.querySelectorAll('.size-input, .wrapping-input, .extra-input').forEach((input) => input.addEventListener('change', refreshBuilder));
+    messageField.addEventListener('input', refreshBuilder);
+    document.querySelectorAll('[data-step-nav]').forEach((button) => button.addEventListener('click', () => {
+        const section = document.getElementById(`builder-step-${button.dataset.stepNav}`);
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+
+    submitButton.addEventListener('click', () => {
+        const state = getState();
+        const wrapping = state.wrapping || getSelectedWrapping();
+        const ribbonId = '{{ default_ribbon.id|default:"" }}';
+        if (state.totalStems === 0 || !state.size) {
+            refreshBuilder();
+            return;
+        }
+        const bouquetData = {
+            size_id: state.size.id,
+            wrapping_id: wrapping ? wrapping.id : '',
+            ribbon_id: ribbonId,
+            flowers: state.flowers.map((flower) => ({ flower_id: flower.id, quantity: flower.quantity })),
+            extras: state.extras.map((extra) => ({ extra_id: extra.id, quantity: extra.quantity })),
+            personal_message: state.message
+        };
+        submitButton.disabled = true;
+        submitButton.classList.add('cursor-wait');
+        submitLabel.textContent = 'Adding your bouquet...';
+        fetch('{% url "custom_bouquet:save" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify(bouquetData)
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                window.location.href = data.cart_url;
+                return;
+            }
+            submitButton.disabled = false;
+            submitButton.classList.remove('cursor-wait');
+            alert(`Error: ${data.error}`);
+            refreshBuilder();
+        })
+        .catch((error) => {
+            submitButton.disabled = false;
+            submitButton.classList.remove('cursor-wait');
+            alert(`Error: ${error}`);
+            refreshBuilder();
+        });
+    });
+
+    refreshBuilder();
 }
 
-// Initialize on page load
-window.onload = function() {
-    // Initialize price when page loads
-};
+document.addEventListener('DOMContentLoaded', initializeBouquetBuilder);
+document.addEventListener('turbo:load', initializeBouquetBuilder);
 </script>
 {% endblock %}
