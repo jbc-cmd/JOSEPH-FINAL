@@ -52,7 +52,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="product_id" value="{{ product.id }}">
                     <input type="hidden" name="quantity" value="1">
-                    <input type="hidden" name="next" value="{% url 'orders:checkout' %}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
 
                     <button type="submit" class="w-full md:w-auto min-w-[220px] bg-pink-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-pink-700 text-lg">
                         <i class="fas fa-shopping-bag mr-2"></i> Buy Bouquet
@@ -64,53 +64,6 @@
                 <h2 class="text-2xl font-bold mb-2">Description</h2>
                 <p class="text-gray-600 text-lg">{{ product.description }}</p>
             </div>
-
-            {% if product.composition %}
-            <div class="mb-8 p-6 bg-pink-50 rounded-lg border border-pink-200">
-                <h2 class="text-2xl font-bold mb-4">Bouquet Composition</h2>
-
-                {% if product.composition.total_flowers %}
-                <div class="mb-4">
-                    <p class="text-lg font-semibold text-pink-600">Total Flowers: <span class="text-gray-900">{{ product.composition.total_flowers }}</span></p>
-                </div>
-                {% endif %}
-
-                {% if product.composition.flowers %}
-                <div class="mb-4">
-                    <h3 class="font-bold text-gray-900 mb-3">Flowers Included:</h3>
-                    <div class="space-y-2">
-                        {% for flower in product.composition.flowers %}
-                        <div class="flex items-center justify-between bg-white p-3 rounded border border-pink-100">
-                            <div>
-                                <p class="font-semibold text-gray-900">{{ flower.name }}</p>
-                                <p class="text-sm text-gray-600">Color: <span class="text-pink-600">{{ flower.color }}</span></p>
-                            </div>
-                            <p class="text-lg font-bold text-pink-600">x{{ flower.count }}</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if product.composition.wrapper %}
-                <div class="mb-3 p-3 bg-white rounded border border-pink-100">
-                    <p><strong>Wrapper:</strong> <span class="text-gray-700">{{ product.composition.wrapper }}</span></p>
-                </div>
-                {% endif %}
-
-                {% if product.composition.ribbon %}
-                <div class="mb-3 p-3 bg-white rounded border border-pink-100">
-                    <p><strong>Ribbon:</strong> <span class="text-gray-700">{{ product.composition.ribbon }}</span></p>
-                </div>
-                {% endif %}
-
-                {% if product.composition.notes %}
-                <div class="p-3 bg-white rounded border border-pink-100">
-                    <p><strong>Notes:</strong> <span class="text-gray-700">{{ product.composition.notes }}</span></p>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %}
 
             <div class="mb-8 p-4 bg-gray-100 rounded">
                 <p><strong>Category:</strong> <a href="{% url 'products:shop' %}?category={{ product.category.slug }}" class="text-pink-600">{{ product.category.name }}</a></p>

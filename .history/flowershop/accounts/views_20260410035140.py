@@ -24,20 +24,20 @@ def register(request):
         first_name = request.POST.get('first_name', '')
         last_name = request.POST.get('last_name', '')
         phone_number = request.POST.get('phone_number', '')
-
+        
         # Validation
         if password1 != password2:
             messages.error(request, 'Passwords do not match')
             return redirect('accounts:register')
-
+        
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists')
             return redirect('accounts:register')
-
+        
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered')
             return redirect('accounts:register')
-
+        
         # Create user
         try:
             user = User.objects.create_user(
@@ -47,31 +47,17 @@ def register(request):
                 first_name=first_name,
                 last_name=last_name
             )
-
+            
             # Update profile
             user.profile.phone_number = phone_number
             user.profile.save()
-
-            # Auto-login after registration
-            login(request, user)
-
-            # Clear all existing messages
-            storage = messages.get_messages(request)
-            storage.used = True
-
-            # Check if there's a next parameter for checkout
-            next_url = request.GET.get('next')
-            if next_url and 'checkout' in next_url:
-                messages.success(request, '✓ Account created and logged in! Returning to checkout...')
-                return redirect(next_url)
-            else:
-                messages.success(request, '✓ Account created successfully! Welcome aboard!')
-                return redirect('orders:track_order')
-
+            
+            messages.success(request, 'Account created successfully! Please login.')
+            return redirect('accounts:login')
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
             return redirect('accounts:register')
-
+    
     return render(request, 'accounts/register.html')
 
 
@@ -88,19 +74,10 @@ def login_view(request):
         if user is not None:
             login(request, user)
             next_url = request.GET.get('next', 'products:home')
-            action = request.GET.get('action', '')
 
-            # Clear all existing messages
-            storage = messages.get_messages(request)
-            storage.used = True
-
-            # Show different message based on context
+            # Show different message based on where user is going
             if 'checkout' in next_url:
                 messages.success(request, '✓ You\'ve been logged in! Returning to checkout...')
-            elif action == 'add_to_cart':
-                messages.success(request, '✓ You\'ve been logged in! Your item has been added to cart.')
-                # Redirect to apply pending cart item
-                return redirect('cart:apply_pending')
             else:
                 messages.success(request, f'Welcome back, {user.first_name or user.username}!')
 
@@ -114,11 +91,6 @@ def login_view(request):
 def logout_view(request):
     """User logout."""
     logout(request)
-
-    # Clear all existing messages
-    storage = messages.get_messages(request)
-    storage.used = True
-
     messages.success(request, 'You have been logged out.')
     return redirect('products:home')
 

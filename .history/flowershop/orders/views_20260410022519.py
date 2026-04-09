@@ -25,47 +25,11 @@ def _get_checkout_delivery_address(user):
 
 def checkout(request):
     """Checkout page with order summary."""
-    direct_purchase = request.session.get('direct_purchase')
-
-    if direct_purchase:
-        # Direct purchase from product detail page
-        items = []
-        subtotal = 0
-
-        if direct_purchase['type'] == 'product':
-            product = get_object_or_404(Product, id=direct_purchase['product_id'])
-            item_subtotal = float(product.price) * direct_purchase['quantity']
-            subtotal = item_subtotal
-            items = [{
-                'get_item_name': product.name,
-                'quantity': direct_purchase['quantity'],
-                'get_subtotal': item_subtotal,
-                'price_at_purchase': product.price,
-                'product_id': product.id,
-                'is_direct_purchase': True
-            }]
-        elif direct_purchase['type'] == 'bouquet':
-            bouquet = get_object_or_404(Bouquet, id=direct_purchase['bouquet_id'])
-            item_subtotal = float(bouquet.total_price) * direct_purchase['quantity']
-            subtotal = item_subtotal
-            items = [{
-                'get_item_name': bouquet.name,
-                'quantity': direct_purchase['quantity'],
-                'get_subtotal': item_subtotal,
-                'price_at_purchase': bouquet.total_price,
-                'bouquet_id': bouquet.id,
-                'is_direct_purchase': True
-            }]
-    else:
-        # Regular cart checkout
-        cart = get_or_create_cart(request)
-
-        if not cart.items.exists():
-            messages.error(request, 'Your cart is empty!')
-            return redirect('cart:cart')
-
-        items = list(cart.items.all())
-        subtotal = cart.get_total_price()
+    cart = get_or_create_cart(request)
+    
+    if not cart.items.exists():
+        messages.error(request, 'Your cart is empty!')
+        return redirect('cart:cart')
 
     if not request.user.is_authenticated:
         messages.error(request, 'Please sign in before proceeding to checkout.')
@@ -75,23 +39,17 @@ def checkout(request):
     if not saved_address:
         messages.error(request, 'Please add or update your delivery address in your profile before checkout.')
         return redirect('accounts:profile')
-
+    
     delivery_windows = DeliveryTimeWindow.objects.filter(is_available=True)
-
-    # Create a temporary cart for calculating fees
-    temp_cart = Cart(id=0)
-    temp_cart.items_total = subtotal
-    delivery_fee = temp_cart.get_delivery_fee()
-    total = subtotal + delivery_fee
-
+    
     context = {
-        'items': items,
+        'cart': cart,
+        'items': cart.items.all(),
         'delivery_windows': delivery_windows,
-        'subtotal': subtotal,
-        'delivery_fee': delivery_fee,
-        'total': total,
+        'subtotal': cart.get_total_price(),
+        'delivery_fee': cart.get_delivery_fee(),
+        'total': cart.get_grand_total(),
         'saved_address': saved_address,
-        'is_direct_purchase': bool(direct_purchase),
     }
 
     return render(request, 'orders/checkout.html', context)
@@ -100,26 +58,10 @@ def checkout(request):
 @require_POST
 def create_order(request):
     """Create order from checkout."""
-    direct_purchase = request.session.get('direct_purchase')
-
-    if direct_purchase:
-        # Direct purchase from product detail page
-        if direct_purchase['type'] == 'product':
-            product = get_object_or_404(Product, id=direct_purchase['product_id'])
-            subtotal = float(product.price) * direct_purchase['quantity']
-        elif direct_purchase['type'] == 'bouquet':
-            bouquet = get_object_or_404(Bouquet, id=direct_purchase['bouquet_id'])
-            subtotal = float(bouquet.total_price) * direct_purchase['quantity']
-        else:
-            return JsonResponse({'success': False, 'message': 'Invalid purchase type'})
-    else:
-        # Regular cart checkout
-        cart = get_or_create_cart(request)
-
-        if not cart.items.exists():
-            return JsonResponse({'success': False, 'message': 'Cart is empty'})
-
-        subtotal = cart.get_total_price()
+    cart = get_or_create_cart(request)
+    
+    if not cart.items.exists():
+        return JsonResponse({'success': False, 'message': 'Cart is empty'})
 
     if not request.user.is_authenticated:
         return JsonResponse({
@@ -127,7 +69,7 @@ def create_order(request):
             'message': 'Please sign in before proceeding to checkout.',
             'redirect_url': f"{reverse('accounts:login')}?next={reverse('orders:checkout')}"
         })
-
+    
     try:
         saved_address = _get_checkout_delivery_address(request.user)
         if not saved_address:
@@ -149,20 +91,14 @@ def create_order(request):
         gift_message = request.POST.get('gift_message', '')
         anonymous_sender = request.POST.get('anonymous_sender') == 'on'
         special_instructions = request.POST.get('special_instructions', '')
-
+        
         # Parse delivery date
         from datetime import datetime
         delivery_date = datetime.strptime(delivery_date_str, '%Y-%m-%d').date()
-
+        
         # Get delivery time window
         delivery_time_window = get_object_or_404(DeliveryTimeWindow, id=delivery_time_window_id)
-
-        # Calculate delivery fee and total
-        temp_cart = Cart(id=0)
-        temp_cart.items_total = subtotal
-        delivery_fee = temp_cart.get_delivery_fee()
-        total_amount = subtotal + delivery_fee
-
+        
         # Create order
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
@@ -177,44 +113,22 @@ def create_order(request):
             gift_message=gift_message,
             anonymous_sender=anonymous_sender,
             special_instructions=special_instructions,
-            subtotal=subtotal,
-            delivery_fee=delivery_fee,
-            total_amount=total_amount,
+            subtotal=cart.get_total_price(),
+            delivery_fee=cart.get_delivery_fee(),
+            total_amount=cart.get_grand_total(),
         )
-
+        
         # Create order items
-        if direct_purchase:
-            if direct_purchase['type'] == 'product':
-                product = get_object_or_404(Product, id=direct_purchase['product_id'])
-                OrderItem.objects.create(
-                    order=order,
-                    product=product,
-                    quantity=direct_purchase['quantity'],
-                    price=product.price,
-                    subtotal=float(product.price) * direct_purchase['quantity']
-                )
-            elif direct_purchase['type'] == 'bouquet':
-                bouquet = get_object_or_404(Bouquet, id=direct_purchase['bouquet_id'])
-                OrderItem.objects.create(
-                    order=order,
-                    bouquet=bouquet,
-                    quantity=direct_purchase['quantity'],
-                    price=bouquet.total_price,
-                    subtotal=float(bouquet.total_price) * direct_purchase['quantity']
-                )
-        else:
-            # Regular cart items
-            cart = get_or_create_cart(request)
-            for cart_item in cart.items.all():
-                OrderItem.objects.create(
-                    order=order,
-                    product=cart_item.product,
-                    bouquet=cart_item.bouquet,
-                    quantity=cart_item.quantity,
-                    price=cart_item.price_at_purchase,
-                    subtotal=cart_item.get_subtotal()
-                )
-
+        for cart_item in cart.items.all():
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                bouquet=cart_item.bouquet,
+                quantity=cart_item.quantity,
+                price=cart_item.price_at_purchase,
+                subtotal=cart_item.get_subtotal()
+            )
+        
         # Create delivery record
         delivery = Delivery.objects.create(
             delivery_number=f"DEL-{uuid.uuid4().hex[:10].upper()}",
@@ -227,14 +141,14 @@ def create_order(request):
         )
         order.delivery = delivery
         order.save()
-
+        
         # Create order tracking
         OrderTracking.objects.create(
             order=order,
             track_by_order_number=order.order_number,
             track_by_email=customer_email
         )
-
+        
         # Create payment record
         Payment.objects.create(
             order=order,
@@ -242,24 +156,19 @@ def create_order(request):
             amount=order.total_amount,
             status='PENDING'
         )
-
-        # Clear appropriate cart/session
-        if direct_purchase:
-            # Clear direct purchase from session
-            del request.session['direct_purchase']
-        else:
-            # Clear regular cart
-            cart.items.all().delete()
-
+        
+        # Clear cart
+        cart.items.all().delete()
+        
         # Store order in session for confirmation page
         request.session['order_id'] = order.id
-
+        
         return JsonResponse({
             'success': True,
             'order_number': order.order_number,
             'redirect_url': f'/orders/{order.id}/confirmation/'
         })
-
+    
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
 
