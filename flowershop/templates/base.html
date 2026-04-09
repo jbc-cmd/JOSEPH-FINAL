@@ -83,9 +83,9 @@
                         </button>
                         <div class="absolute right-0 top-full z-50 w-48 pt-2 opacity-0 invisible translate-y-1 transition duration-150 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0">
                             <div class="overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">
-                            <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Profile</a>
-                            <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Orders</a>
-                            <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">Logout</a>
+                                <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Profile</a>
+                                <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Orders</a>
+                                <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">Logout</a>
                             </div>
                         </div>
                     </div>
@@ -110,51 +110,75 @@
     <!-- Cart Drawer -->
     <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/40" onclick="closeCartDrawer()"></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col">
-            <div class="flex items-center justify-between px-6 py-4 border-b">
-                <div>
-                    <h2 class="text-xl font-bold">Your Cart</h2>
-                    <p class="text-sm text-gray-500">{{ cart_total_items }} item{% if cart_total_items != 1 %}s{% endif %}</p>
+        <div class="absolute right-0 top-0 flex h-full w-full max-w-[370px] flex-col bg-white shadow-xl">
+            <div class="flex items-center justify-between border-b border-gray-100 px-5 py-5">
+                <div class="flex items-center gap-3">
+                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#f3c8b8] text-[#d28a69]">
+                        <i class="fas fa-shopping-bag text-xs"></i>
+                    </span>
+                    <div class="flex items-baseline gap-2">
+                        <h2 class="text-[15px] font-semibold text-gray-900">Your Cart</h2>
+                        <p class="text-xs text-gray-400">({{ cart_total_items }} item{% if cart_total_items != 1 %}s{% endif %})</p>
+                    </div>
                 </div>
-                <button onclick="closeCartDrawer()" class="text-gray-500 hover:text-gray-700">
+                <button type="button" onclick="closeCartDrawer()" class="text-gray-700 transition hover:text-gray-900">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto px-6 py-4">
+            <div class="flex-1 overflow-y-auto px-5 py-5">
                 {% if cart and cart.items.all %}
                 <div class="space-y-4">
                     {% for item in cart.items.all %}
-                    <div class="flex items-start gap-4">
-                        {% if item.get_item_image %}
-                        <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="w-16 h-16 object-cover rounded">
-                        {% else %}
-                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        {% endif %}
-                        <div class="flex-1">
-                            <p class="font-semibold text-gray-800">{{ item.get_item_name }}</p>
-                            <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
-                            <p class="text-sm font-semibold text-pink-600">₱{{ item.get_subtotal }}</p>
+                    <div class="rounded-2xl bg-[#fcfcfc] p-3 shadow-[0_0_0_1px_rgba(17,24,39,0.04)]">
+                        <div class="flex items-start gap-3">
+                            {% if item.get_item_image %}
+                            <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="h-16 w-16 rounded-xl object-cover">
+                            {% else %}
+                            <div class="flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100 text-gray-400">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-gray-900">{{ item.get_item_name }}</p>
+                                <p class="mt-1 text-sm font-medium text-[#d28a69]">&#8369;{{ item.price_at_purchase }}</p>
+                                <div class="mt-3 flex items-center justify-between gap-3">
+                                    <form method="post" action="{% url 'cart:update_cart_item' item.id %}" class="flex items-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" name="quantity" value="{% if item.quantity > 1 %}{{ item.quantity|add:'-1' }}{% else %}1{% endif %}" class="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-xs text-gray-500 transition hover:bg-gray-50">-</button>
+                                        <span class="min-w-[20px] text-center text-sm text-gray-900">{{ item.quantity }}</span>
+                                        <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-xs text-gray-500 transition hover:bg-gray-50">+</button>
+                                    </form>
+                                    <form method="post" action="{% url 'cart:remove_from_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <button type="submit" class="text-[#ff7f73] transition hover:text-[#ef5e50]" aria-label="Remove {{ item.get_item_name }} from cart">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="text-center py-20 text-gray-500">
-                    <div class="text-6xl mb-4"><i class="fas fa-shopping-cart"></i></div>
-                    <p class="font-semibold">Your cart is empty</p>
-                    <p class="text-sm">Add beautiful flowers to get started</p>
+                <div class="flex h-full flex-col items-center justify-center py-20 text-center text-gray-500">
+                    <div class="mb-4 text-5xl text-gray-300"><i class="fas fa-shopping-bag"></i></div>
+                    <p class="font-semibold text-gray-700">Your cart is empty</p>
+                    <p class="mt-2 text-sm">Add beautiful flowers to get started</p>
                 </div>
                 {% endif %}
             </div>
-            <div class="px-6 py-4 border-t">
-                <div class="flex justify-between mb-4">
-                    <span class="text-sm text-gray-600">Total</span>
-                    <span class="text-lg font-bold text-pink-600">₱{{ cart.get_total_price|default:0 }}</span>
+            <div class="border-t border-gray-100 px-5 py-4">
+                <div class="mb-3 flex items-center justify-between text-sm">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="text-3xl font-bold text-[#171717]">&#8369;{{ cart.get_total_price|default:0 }}</span>
                 </div>
-                <a href="{% url 'cart:cart' %}" class="block w-full bg-pink-600 text-white py-3 rounded-lg font-bold text-center hover:bg-pink-700 mb-3">View Cart</a>
-                <a href="{% url 'orders:checkout' %}" class="block w-full border border-gray-200 text-gray-700 py-3 rounded-lg font-bold text-center hover:bg-gray-50">Checkout</a>
+                <a href="{% url 'orders:checkout' %}" class="flex w-full items-center justify-center gap-3 rounded-xl bg-[#302d2d] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#252323]">
+                    <span>Proceed to Checkout</span>
+                    <i class="fas fa-arrow-right text-xs"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -208,8 +232,8 @@
                 <!-- Contact -->
                 <div>
                     <h3 class="text-lg font-bold mb-4">Contact</h3>
-                    <p class="text-gray-400">📞 +63 9123 456 789</p>
-                    <p class="text-gray-400">📧 info@josephflowershop.com</p>
+                    <p class="text-gray-400">ðŸ“ž +63 9123 456 789</p>
+                    <p class="text-gray-400">ðŸ“§ info@josephflowershop.com</p>
                 </div>
                 
                 <!-- Social -->
@@ -242,6 +266,18 @@
     function closeCartDrawer() {
         document.getElementById('cart-drawer').classList.add('hidden');
     }
+
+    function maybeOpenCartDrawerFromUrl() {
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.get('open_cart') !== '1') return;
+
+        openCartDrawer();
+        currentUrl.searchParams.delete('open_cart');
+        window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    }
+
+    document.addEventListener('DOMContentLoaded', maybeOpenCartDrawerFromUrl);
+    document.addEventListener('turbo:load', maybeOpenCartDrawerFromUrl);
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -37,7 +37,7 @@
 
                     <div class="grid sm:grid-cols-2 2xl:grid-cols-3 gap-5">
                         {% for flower in flowers %}
-                        <article class="flower-card rounded-2xl border border-gray-200 bg-white p-4 transition shadow-sm hover:border-orange-300 hover:shadow-md h-full" data-flower-card data-flower-id="{{ flower.id }}" data-flower-name="{{ flower.get_name_display }}" data-flower-price="{{ flower.price|floatformat:2 }}" data-flower-image="{% if flower.image %}{{ flower.image.url }}{% endif %}">
+                        <article class="flower-card min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 transition shadow-sm hover:border-orange-300 hover:shadow-md h-full" data-flower-card data-flower-id="{{ flower.id }}" data-flower-name="{{ flower.get_name_display }}" data-flower-price="{{ flower.price|floatformat:2 }}" data-flower-image="{% if flower.image %}{{ flower.image.url }}{% endif %}">
                             <div class="flex gap-4 h-full">
                                 {% if flower.image %}
                                 <img src="{{ flower.image.url }}" alt="{{ flower.get_name_display }}" class="w-20 h-20 rounded-2xl object-cover shrink-0">
@@ -45,12 +45,12 @@
                                 <div class="w-20 h-20 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-300 shrink-0"><i class="fas fa-seedling text-2xl"></i></div>
                                 {% endif %}
                                 <div class="flex-1 min-w-0 flex flex-col">
-                                    <div class="flex items-start justify-between gap-3 mb-2">
+                                    <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
                                         <h3 class="font-bold text-gray-900 leading-tight pr-2">{{ flower.get_name_display }}</h3>
                                         <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600 whitespace-nowrap shrink-0">&#8369;{{ flower.price }} / stem</span>
                                     </div>
                                     <p class="text-sm text-gray-500 leading-6 min-h-[48px]">{{ flower.description|default:"Fresh stems ready for your bouquet."|truncatewords:8 }}</p>
-                                    <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
+                                    <div class="mt-auto pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
                                         <span class="text-xs font-medium text-gray-500">Select quantity</span>
                                         <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-1 py-1 shrink-0">
                                             <button type="button" class="flower-qty-btn flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-white hover:text-orange-600 transition" data-flower-action="decrease" data-flower-id="{{ flower.id }}" aria-label="Decrease {{ flower.get_name_display }} quantity"><i class="fas fa-minus text-xs"></i></button>
@@ -236,6 +236,7 @@ function initializeBouquetBuilder() {
     const messageStatus = document.getElementById('message-status');
     const stepConfigs = {1:{required:true,element:document.querySelector('[data-step="1"]')},2:{required:true,element:document.querySelector('[data-step="2"]')},3:{required:false,element:document.querySelector('[data-step="3"]')},4:{required:false,element:document.querySelector('[data-step="4"]')}};
     const completedScrollState = {};
+    let lastActiveFlowerId = null;
 
     function getFlowerSelections() {
         return Array.from(document.querySelectorAll('[data-flower-card]')).map((card) => {
@@ -376,7 +377,7 @@ function initializeBouquetBuilder() {
         breakdownExtras.textContent = money(state.extrasSubtotal);
         summaryTotal.textContent = money(total);
         if (state.flowers.length > 0) {
-            const leadFlower = state.flowers[0];
+            const leadFlower = state.flowers.find((flower) => flower.id === lastActiveFlowerId) || state.flowers[0];
             previewTitle.textContent = state.size ? `${state.size.name} bouquet in progress` : `${leadFlower.name} bouquet in progress`;
             previewSubtitle.textContent = state.wrapping ? `${state.totalStems} stems with ${state.wrapping.name.toLowerCase()}` : `${state.totalStems} stems selected`;
             previewImageWrap.innerHTML = leadFlower.image ? `<img src="${leadFlower.image}" alt="${leadFlower.name}" class="h-full w-full object-cover">` : '<i class="fas fa-seedling text-orange-300 text-3xl"></i>';
@@ -384,6 +385,7 @@ function initializeBouquetBuilder() {
             previewTitle.textContent = 'Your bouquet starts here';
             previewSubtitle.textContent = 'Choose flowers, size, and optional extras.';
             previewImageWrap.innerHTML = '<i class="fas fa-seedling text-orange-300 text-3xl"></i>';
+            lastActiveFlowerId = null;
         }
         messageStatus.textContent = state.message ? `${state.message.length}/500 characters` : 'No message added yet';
     }
@@ -409,7 +411,9 @@ function initializeBouquetBuilder() {
     }
     function changeFlowerQuantity(flowerId, delta) {
         const input = document.getElementById(`flower_${flowerId}`);
-        input.value = Math.max(0, Number(input.value || 0) + delta);
+        const nextValue = Math.max(0, Number(input.value || 0) + delta);
+        input.value = nextValue;
+        lastActiveFlowerId = nextValue > 0 ? flowerId : lastActiveFlowerId === flowerId ? null : lastActiveFlowerId;
         refreshBuilder();
     }
 
@@ -450,7 +454,9 @@ function initializeBouquetBuilder() {
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
-                window.location.href = data.cart_url;
+                const nextUrl = new URL(window.location.href);
+                nextUrl.searchParams.set('open_cart', '1');
+                window.location.href = nextUrl.toString();
                 return;
             }
             submitButton.disabled = false;

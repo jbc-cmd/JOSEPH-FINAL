@@ -14,7 +14,27 @@
             <!-- Delivery Information -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-bold mb-6">Delivery Information</h2>
-                
+
+                {% if saved_address %}
+                <div class="rounded-2xl border border-pink-100 bg-pink-50/60 p-5">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-wide text-pink-600">Saved Address</p>
+                            <p class="mt-3 text-lg font-bold text-gray-900">{{ saved_address.recipient_name }}</p>
+                            <p class="mt-1 text-sm text-gray-600">{{ user.email }}</p>
+                            <p class="mt-1 text-sm text-gray-600">{{ saved_address.phone_number }}</p>
+                            <p class="mt-3 text-sm text-gray-700">{{ saved_address.address }}</p>
+                            <p class="text-sm text-gray-700">{{ saved_address.city }} {{ saved_address.postal_code }}</p>
+                            {% if saved_address.notes %}
+                            <p class="mt-3 text-sm text-gray-500">{{ saved_address.notes }}</p>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'accounts:profile' %}" class="inline-flex items-center justify-center rounded-lg border border-pink-200 bg-white px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50">
+                            Update Address
+                        </a>
+                    </div>
+                </div>
+                {% else %}
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Full Name *</label>
@@ -47,6 +67,7 @@
                         <input type="text" name="delivery_postal_code" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="1000">
                     </div>
                 </div>
+                {% endif %}
             </div>
             
             <!-- Delivery Date & Time -->

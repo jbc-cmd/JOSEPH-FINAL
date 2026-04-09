@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.http import JsonResponse
+from django.urls import reverse
 from .models import Order, OrderItem, OrderTracking
 from cart.views import get_or_create_cart
 from cart.models import CartItem
@@ -13,6 +14,13 @@ from django.utils import timezone
 import uuid
 
 
+def _get_checkout_delivery_address(user):
+    """Return the user's default saved delivery address, or the first available one."""
+    if not user.is_authenticated:
+        return None
+    return user.delivery_addresses.filter(is_default=True).first() or user.delivery_addresses.first()
+
+
 def checkout(request):
     """Checkout page with order summary."""
     cart = get_or_create_cart(request)
@@ -20,6 +28,15 @@ def checkout(request):
     if not cart.items.exists():
         messages.error(request, 'Your cart is empty!')
         return redirect('cart:cart')
+
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please sign in before proceeding to checkout.')
+        return redirect(f"{reverse('accounts:login')}?next={request.path}")
+
+    saved_address = _get_checkout_delivery_address(request.user)
+    if not saved_address:
+        messages.error(request, 'Please add or update your delivery address in your profile before checkout.')
+        return redirect('accounts:profile')
     
     delivery_windows = DeliveryTimeWindow.objects.filter(is_available=True)
     
@@ -30,11 +47,9 @@ def checkout(request):
         'subtotal': cart.get_total_price(),
         'delivery_fee': cart.get_delivery_fee(),
         'total': cart.get_grand_total(),
+        'saved_address': saved_address,
     }
-    
-    if request.user.is_authenticated:
-        context['user_addresses'] = request.user.delivery_addresses.all()
-    
+
     return render(request, 'orders/checkout.html', context)
 
 
@@ -45,15 +60,30 @@ def create_order(request):
     
     if not cart.items.exists():
         return JsonResponse({'success': False, 'message': 'Cart is empty'})
+
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Please sign in before proceeding to checkout.',
+            'redirect_url': f"{reverse('accounts:login')}?next={reverse('orders:checkout')}"
+        })
     
     try:
+        saved_address = _get_checkout_delivery_address(request.user)
+        if not saved_address:
+            return JsonResponse({
+                'success': False,
+                'message': 'Please add or update your delivery address in your profile before checkout.',
+                'redirect_url': reverse('accounts:profile')
+            })
+
         # Get form data
-        customer_name = request.POST.get('customer_name')
-        customer_email = request.POST.get('customer_email')
-        customer_phone = request.POST.get('customer_phone')
-        delivery_address = request.POST.get('delivery_address')
-        delivery_city = request.POST.get('delivery_city')
-        delivery_postal_code = request.POST.get('delivery_postal_code', '')
+        customer_name = saved_address.recipient_name
+        customer_email = request.user.email
+        customer_phone = saved_address.phone_number
+        delivery_address = saved_address.address
+        delivery_city = saved_address.city
+        delivery_postal_code = saved_address.postal_code or ''
         delivery_date_str = request.POST.get('delivery_date')
         delivery_time_window_id = request.POST.get('delivery_time_window')
         gift_message = request.POST.get('gift_message', '')

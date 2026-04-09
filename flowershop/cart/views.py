@@ -9,6 +9,13 @@ from custom_bouquet.models import Bouquet
 import uuid
 
 
+def _redirect_to_cart_drawer(request):
+    """Return to the previous page and reopen the cart drawer."""
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/'
+    separator = '&' if '?' in next_url else '?'
+    return redirect(f'{next_url}{separator}open_cart=1')
+
+
 def get_or_create_cart(request):
     """Get or create cart for user or guest."""
     if request.user.is_authenticated:
@@ -105,7 +112,7 @@ def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id)
     cart_item.delete()
     messages.success(request, 'Item removed from cart')
-    return redirect('cart:cart')
+    return _redirect_to_cart_drawer(request)
 
 
 @require_POST
@@ -128,10 +135,10 @@ def update_cart_item(request, item_id):
             'success': True,
             'cart_total': float(cart.get_total_price()),
             'cart_items': cart.get_total_items(),
-            'item_subtotal': float(cart_item.get_subtotal()) if cart_item in CartItem.objects.filter(card=cart) else 0
+            'item_subtotal': float(cart_item.get_subtotal()) if cart_item in CartItem.objects.filter(cart=cart) else 0
         })
     
-    return redirect('cart:cart')
+    return _redirect_to_cart_drawer(request)
 
 
 def clear_cart(request):
