@@ -10,9 +10,21 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: "Playfair Display", serif;
+        }
+    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -27,7 +39,7 @@
                         <div class="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-pink-100 flex items-center justify-center">
                             <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="w-full h-full object-cover">
                         </div>
-                        <span class="text-xl font-bold text-pink-600">Joseph Flowershop</span>
+                        <span class="text-xl font-bold text-pink-600" style="font-family: 'Playfair Display', serif;">Joseph Flowershop</span>
                     </a>
                 </div>
                 
