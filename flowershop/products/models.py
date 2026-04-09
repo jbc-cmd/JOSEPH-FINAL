@@ -1,6 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Avg, Count
 
 
 class Category(models.Model):
@@ -146,6 +148,20 @@ class Product(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def update_review_stats(self):
+        """Refresh cached rating data from approved reviews."""
+        stats = self.reviews.filter(is_approved=True).aggregate(
+            average=Avg('rating'),
+            total=Count('id'),
+        )
+        self.rating = round(float(stats['average'] or 0), 1)
+        self.review_count = stats['total'] or 0
+        self.save(update_fields=['rating', 'review_count', 'updated_at'])
+
+    @property
+    def rating_percentage(self):
+        return max(0, min(100, (float(self.rating or 0) / 5) * 100))
+
 
 class ProductImage(models.Model):
     """Additional images for products."""
@@ -168,12 +184,14 @@ class ProductImage(models.Model):
 class ProductReview(models.Model):
     """Customer reviews for products."""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='product_reviews', null=True, blank=True)
     customer_name = models.CharField(max_length=255)
     customer_email = models.EmailField()
     rating = models.PositiveIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField()
+    photo = models.ImageField(upload_to='review_photos/', blank=True, null=True)
     is_verified_purchase = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -186,3 +204,12 @@ class ProductReview(models.Model):
     
     def __str__(self):
         return f"Review for {self.product.name} by {self.customer_name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.product.update_review_stats()
+
+    def delete(self, *args, **kwargs):
+        product = self.product
+        super().delete(*args, **kwargs)
+        product.update_review_stats()

@@ -87,6 +87,13 @@
 
                 <div class="p-4 sm:p-5">
                     <h3 class="text-lg font-bold text-gray-800 mb-2">{{ product.name }}</h3>
+                    <div class="mb-3 flex items-center gap-2">
+                        <div class="relative text-sm leading-none">
+                            <div class="text-gray-200">★★★★★</div>
+                            <div class="absolute inset-0 overflow-hidden text-yellow-400" style="width: {{ product.rating_percentage }}%;">★★★★★</div>
+                        </div>
+                        <span class="text-xs text-gray-500">{{ product.rating|floatformat:1 }} ({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
+                    </div>
                     <p class="text-gray-600 text-sm mb-4">{{ product.description|truncatewords:8 }}</p>
 
                     <div class="flex items-center justify-between mb-4">

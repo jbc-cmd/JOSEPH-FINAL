@@ -72,12 +72,12 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 @admin.register(ProductReview)
 class ProductReviewAdmin(admin.ModelAdmin):
-    list_display = ['product', 'customer_name', 'rating', 'is_verified_purchase', 'is_approved']
+    list_display = ['product', 'customer_name', 'rating', 'is_verified_purchase', 'is_approved', 'created_at']
     list_filter = ['rating', 'is_verified_purchase', 'is_approved', 'created_at']
     search_fields = ['customer_name', 'customer_email', 'product__name']
     fieldsets = (
         ('Review Information', {
-            'fields': ('product', 'customer_name', 'customer_email', 'rating', 'comment')
+            'fields': ('product', 'user', 'customer_name', 'customer_email', 'rating', 'comment', 'photo')
         }),
         ('Status', {
             'fields': ('is_verified_purchase', 'is_approved')

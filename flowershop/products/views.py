@@ -1,8 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, TemplateView
-from django.db.models import Q, Avg
+from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
@@ -105,13 +106,65 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = self.get_object()
-        context['reviews'] = product.reviews.filter(is_approved=True).order_by('-created_at')[:5]
-        context['average_rating'] = product.reviews.filter(is_approved=True).aggregate(Avg('rating'))['rating__avg'] or 0
+        context['reviews'] = product.reviews.filter(is_approved=True).order_by('-created_at')
+        context['average_rating'] = product.rating
+        context['user_review'] = product.reviews.filter(user=self.request.user).first() if self.request.user.is_authenticated else None
         context['related_products'] = Product.objects.filter(
             category=product.category,
             is_available=True
         ).exclude(id=product.id)[:4]
         return context
+
+
+@login_required(login_url='accounts:login')
+def submit_review(request, slug):
+    """Submit or update a product review."""
+    product = get_object_or_404(Product, slug=slug, is_available=True)
+
+    if request.method != 'POST':
+        return redirect('products:product_detail', slug=slug)
+
+    rating = request.POST.get('rating', '').strip()
+    comment = request.POST.get('comment', '').strip()
+    photo = request.FILES.get('photo')
+
+    if not rating or rating not in {'1', '2', '3', '4', '5'}:
+        messages.error(request, 'Please choose a star rating from 1 to 5.')
+        return redirect('products:product_detail', slug=slug)
+
+    if not comment:
+        messages.error(request, 'Please write a short review before submitting.')
+        return redirect('products:product_detail', slug=slug)
+
+    existing_review = product.reviews.filter(user=request.user).first()
+    has_purchased_product = request.user.orders.filter(items__product=product).exists()
+    review_defaults = {
+        'customer_name': request.user.get_full_name() or request.user.username,
+        'customer_email': request.user.email,
+        'rating': int(rating),
+        'comment': comment,
+        'photo': photo if photo else (existing_review.photo if existing_review else None),
+        'is_verified_purchase': has_purchased_product or (existing_review.is_verified_purchase if existing_review else False),
+        'is_approved': existing_review.is_approved if existing_review else False,
+    }
+
+    if existing_review:
+        for field, value in review_defaults.items():
+            setattr(existing_review, field, value)
+        if photo is None and 'remove_photo' in request.POST:
+            existing_review.photo = None
+        existing_review.is_approved = False
+        existing_review.save()
+        messages.success(request, 'Your review was updated and is awaiting approval.')
+    else:
+        ProductReview.objects.create(
+            product=product,
+            user=request.user,
+            **review_defaults,
+        )
+        messages.success(request, 'Thanks for your review. It is now awaiting approval.')
+
+    return redirect('products:product_detail', slug=slug)
 
 
 def quick_view(request, slug):
