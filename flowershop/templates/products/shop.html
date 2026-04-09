@@ -56,28 +56,32 @@
             <div class="grid md:grid-cols-3 gap-6 mb-8">
                 {% for product in products %}
                 <div class="product-card bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <div class="relative aspect-[4/5] sm:aspect-auto sm:h-64 md:h-72 overflow-hidden bg-gray-50">
                         {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover hover:scale-110 transition">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover hover:scale-110 transition" style="object-position: center 35%;">
                         {% endif %}
+
+                        <form method="post" action="{% url 'cart:add_to_cart' %}" class="absolute left-3 right-3 bottom-3 sm:left-4 sm:right-4 sm:bottom-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="w-full bg-white/95 backdrop-blur text-gray-800 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:bg-white transition text-sm flex items-center justify-center gap-2">
+                                <i class="fas fa-bag-shopping text-sm"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                        </form>
                     </div>
                     
-                    <div class="p-4">
+                    <div class="p-4 sm:p-5">
                         <h3 class="text-lg font-bold text-gray-800 mb-2">{{ product.name }}</h3>
                         <p class="text-gray-600 text-sm mb-4">{{ product.description|truncatewords:8 }}</p>
                         
                         <div class="flex items-center justify-between mb-4">
-                            <span class="text-2xl font-bold text-pink-600">₱{{ product.price }}</span>
+                            <span class="text-2xl font-bold text-pink-600">&#8369;{{ product.price }}</span>
                         </div>
                         
-                        <div class="flex space-x-2">
-                            <form method="post" action="{% url 'cart:add_to_cart' %}" class="flex-1">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="w-full bg-pink-600 text-white py-2 rounded hover:bg-pink-700 text-sm">Add to Cart</button>
-                            </form>
-                            <a href="{% url 'products:product_detail' product.slug %}" class="bg-gray-200 text-gray-700 px-3 py-2 rounded hover:bg-gray-300">View</a>
+                        <div class="flex">
+                            <a href="{% url 'products:product_detail' product.slug %}" class="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-center hover:bg-gray-200">View Details</a>
                         </div>
                     </div>
                 </div>
@@ -92,7 +96,7 @@
             {% if is_paginated %}
             <div class="flex justify-center space-x-2">
                 {% if page_obj.has_previous %}
-                <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">« First</a>
+                <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">Â« First</a>
                 <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 border rounded hover:bg-gray-100">< Previous</a>
                 {% endif %}
                 
@@ -100,7 +104,7 @@
                 
                 {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 border rounded hover:bg-gray-100">Next ></a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 border rounded hover:bg-gray-100">Last »</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 border rounded hover:bg-gray-100">Last Â»</a>
                 {% endif %}
             </div>
             {% endif %}

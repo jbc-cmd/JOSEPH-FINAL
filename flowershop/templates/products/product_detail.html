@@ -17,7 +17,9 @@
             {% if product.images.all %}
             <div class="grid grid-cols-4 gap-2">
                 {% for image in product.images.all %}
+                {% if image.image %}
                 <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75">
+                {% endif %}
                 {% endfor %}
             </div>
             {% endif %}

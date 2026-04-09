@@ -156,7 +156,7 @@ def get_flower_details(request, flower_id):
         'id': flower.id,
         'name': flower.get_name_display(),
         'price': float(flower.price),
-        'image': flower.image.url,
+        'image': flower.image.url if flower.image else '',
         'color': flower.color,
         'description': flower.description,
     })

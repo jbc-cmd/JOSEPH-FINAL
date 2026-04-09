@@ -33,13 +33,9 @@
                 
                 <!-- Links -->
                 <div class="hidden lg:flex flex-wrap items-center gap-5">
-                    <a href="{% url 'products:home' %}" class="text-gray-700 hover:text-pink-600 text-sm">Home</a>
-                    <a href="{% url 'products:shop' %}" class="text-gray-700 hover:text-pink-600 text-sm">Shop</a>
-                    <a href="{% url 'custom_bouquet:builder' %}" class="text-gray-700 hover:text-pink-600 text-sm">Custom Bouquet</a>
-                    <a href="{% url 'products:home' %}#occasions" class="text-gray-700 hover:text-pink-600 text-sm">Occasions</a>
-                    <a href="{% url 'products:about' %}" class="text-gray-700 hover:text-pink-600 text-sm">About</a>
-                    <a href="{% url 'products:contact' %}" class="text-gray-700 hover:text-pink-600 text-sm">Contact</a>
-                    <a href="{% url 'orders:track_order' %}" class="text-gray-700 hover:text-pink-600 text-sm">Track Order</a>
+                    <a href="{% url 'products:shop' %}" class="text-sm transition {% if request.resolver_match.namespace == 'products' and request.resolver_match.url_name == 'shop' %}text-pink-600 font-semibold{% else %}text-gray-700 hover:text-pink-600{% endif %}">Shop</a>
+                    <a href="{% url 'custom_bouquet:builder' %}" class="text-sm transition {% if request.resolver_match.namespace == 'custom_bouquet' and request.resolver_match.url_name == 'builder' %}text-pink-600 font-semibold{% else %}text-gray-700 hover:text-pink-600{% endif %}">Custom Bouquet</a>
+                    <a href="{% url 'orders:track_order' %}" class="text-sm transition {% if request.resolver_match.namespace == 'orders' and request.resolver_match.url_name == 'track_order' %}text-pink-600 font-semibold{% else %}text-gray-700 hover:text-pink-600{% endif %}">Track Order</a>
                 </div>
                 
                 <!-- Right Side -->
@@ -52,13 +48,15 @@
                     <!-- User Icon -->
                     {% if user.is_authenticated %}
                     <div class="relative group">
-                        <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-700">
+                        <button type="button" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-300">
                             <i class="fas fa-user"></i>
                         </button>
-                        <div class="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg">
+                        <div class="absolute right-0 top-full z-50 w-48 pt-2 opacity-0 invisible translate-y-1 transition duration-150 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0">
+                            <div class="overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">
                             <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Profile</a>
                             <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Orders</a>
                             <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">Logout</a>
+                            </div>
                         </div>
                     </div>
                     {% else %}
@@ -97,7 +95,13 @@
                 <div class="space-y-4">
                     {% for item in cart.items.all %}
                     <div class="flex items-start gap-4">
-                        <img src="{{ item.get_item_image.url }}" alt="{{ item.get_item_name }}" class="w-16 h-16 object-cover rounded">
+                        {% if item.get_item_image %}
+                        <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="w-16 h-16 object-cover rounded">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        {% endif %}
                         <div class="flex-1">
                             <p class="font-semibold text-gray-800">{{ item.get_item_name }}</p>
                             <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
@@ -125,18 +129,6 @@
         </div>
     </div>
 
-    <!-- Messages -->
-    {% if messages %}
-    <div class="max-w-7xl mx-auto px-4 mt-4">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} p-4 rounded mb-4">
-            <button class="float-right" onclick="this.parentElement.style.display='none';">&times;</button>
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    
     <!-- Main Content -->
     <main>
         {% block content %}{% endblock %}
@@ -179,7 +171,7 @@
                         <li><a href="{% url 'products:shop' %}" class="hover:text-white">Shop</a></li>
                         <li><a href="{% url 'custom_bouquet:builder' %}" class="hover:text-white">Custom Bouquet</a></li>
                         <li><a href="{% url 'products:about' %}" class="hover:text-white">About Us</a></li>
-                        <li><a href="{% url 'orders:track_order' %}" class="hover:text-white">Track Order</a></li>
+                        <li><a href="{% url 'products:contact' %}" class="hover:text-white">Contact Us</a></li>
                     </ul>
                 </div>
                 
@@ -196,9 +188,6 @@
                     <div class="flex space-x-4">
                         <a href="https://www.facebook.com/share/1BDxmJKthR/" class="text-gray-400 hover:text-white">
                             <i class="fab fa-facebook fa-lg"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white">
-                            <i class="fab fa-instagram fa-lg"></i>
                         </a>
                     </div>
                 </div>

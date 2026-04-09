@@ -69,5 +69,8 @@ class CartItem(models.Model):
         return self.product.name if self.product else self.bouquet.name
     
     def get_item_image(self):
-        """Get the image of the product or bouquet."""
-        return self.product.image if self.product else self.bouquet.image
+        """Get the image URL of the product or bouquet."""
+        image = self.product.image if self.product else self.bouquet.image
+        if image and image.name:
+            return image.url
+        return None

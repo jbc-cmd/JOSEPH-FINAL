@@ -121,7 +121,7 @@ def quick_view(request, slug):
         'id': product.id,
         'name': product.name,
         'price': str(product.price),
-        'image': product.image.url,
+        'image': product.image.url if product.image else '',
         'description': product.description[:200],
         'rating': product.rating,
     })
@@ -135,13 +135,13 @@ def search_products(request):
         Q(description__icontains=query),
         is_available=True
     )[:10]
-    
+
     results = [{
         'id': p.id,
         'name': p.name,
         'slug': p.slug,
-        'image': p.image.url,
+        'image': p.image.url if p.image else '',
         'price': str(p.price),
     } for p in products]
-    
+
     return JsonResponse({'results': results})

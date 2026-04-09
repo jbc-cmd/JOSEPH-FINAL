@@ -2,12 +2,23 @@
 
 {% block title %}Joseph Flowershop - Home{% endblock %}
 
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
+<style>
+    .hero-title-font {
+        font-family: "Cormorant Garamond", serif;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
 <div class="relative h-96 bg-gradient-to-r from-pink-500 to-rose-600 text-white overflow-hidden">
     <div class="absolute inset-0 bg-black opacity-40"></div>
     <div class="relative max-w-7xl mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
-        <h1 class="text-5xl font-bold mb-4">Welcome to Joseph Flowershop</h1>
+        <h1 class="hero-title-font text-6xl md:text-7xl font-bold mb-4">Welcome to Joseph Flowershop</h1>
         <p class="text-2xl mb-8">Fresh Flowers Delivered to Your Doorstep</p>
         <div class="flex space-x-4">
             <a href="{% url 'products:shop' %}" class="bg-white text-pink-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100">Shop Now</a>
@@ -27,9 +38,9 @@
         {% for product in featured_products %}
         <div class="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition">
             <!-- Image Container -->
-            <div class="relative h-64 overflow-hidden bg-gray-200">
+            <div class="relative aspect-[4/5] sm:aspect-auto sm:h-64 md:h-72 overflow-hidden bg-gray-50 flex items-center justify-center">
                 {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover object-center hover:scale-105 transition duration-300" style="object-position: center 35%;">
                 {% else %}
                 <div class="w-full h-full flex items-center justify-center text-gray-400">
                     <i class="fas fa-image fa-3x"></i>
@@ -45,10 +56,21 @@
                 <button class="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:shadow-md transition">
                     <i class="fas fa-heart text-gray-400 hover:text-pink-600"></i>
                 </button>
+
+                <!-- Add to Cart Button -->
+                <form method="post" action="{% url 'cart:add_to_cart' %}" class="absolute left-3 right-3 bottom-3 sm:left-4 sm:right-4 sm:bottom-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="w-full bg-white/95 backdrop-blur text-gray-800 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:bg-white transition text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-bag-shopping text-sm"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                </form>
             </div>
             
             <!-- Content Container -->
-            <div class="p-5">
+            <div class="p-4 sm:p-5 pt-4">
                 <!-- Product Name -->
                 <h3 class="text-base font-bold text-gray-800 mb-1">{{ product.name }}</h3>
                 
@@ -63,26 +85,16 @@
                 
                 <!-- Price -->
                 <div class="mb-3">
-                    <span class="text-lg font-bold text-pink-600">₱{{ product.price }}</span>
+                    <span class="text-lg font-bold text-pink-600">&#8369;{{ product.price }}</span>
                 </div>
                 
                 <!-- Rating -->
                 <div class="flex items-center mb-4">
                     <div class="text-yellow-400 text-sm">
-                        ★★★★★
+                        &#9733;&#9733;&#9733;&#9733;&#9733;
                     </div>
                     <span class="text-xs text-gray-500 ml-2">(0 reviews)</span>
                 </div>
-                
-                <!-- Add to Cart Button -->
-                <form method="post" action="{% url 'cart:add_to_cart' %}" class="w-full">
-                    {% csrf_token %}
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-2 rounded-lg font-semibold hover:shadow-md transition text-sm">
-                        Add to Cart
-                    </button>
-                </form>
             </div>
         </div>
         {% empty %}
@@ -97,37 +109,6 @@
     </div>
 </div>
 
-<!-- Browse by Occasions Section -->
-<div id="occasions" class="max-w-7xl mx-auto px-4 py-16">
-    <div class="text-center mb-2">
-        <span class="text-xs tracking-widest text-gray-600 font-semibold">BROWSE BY</span>
-    </div>
-    <h2 class="text-4xl font-bold text-center mb-12 text-gray-800">Occasions</h2>
-    
-    <div class="grid md:grid-cols-4 gap-6">
-        {% for category in categories %}
-        <a href="{% url 'products:shop' %}?category={{ category.slug }}" class="group relative overflow-hidden rounded-3xl h-64 block shadow-lg hover:shadow-2xl transition duration-300">
-            <!-- Background Image -->
-            <div class="absolute inset-0 bg-gradient-to-br from-pink-300 to-rose-400 group-hover:scale-110 transition duration-500"></div>
-            
-            {% if category.image %}
-            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500">
-            {% else %}
-            <div class="absolute inset-0 bg-gradient-to-br from-pink-300 to-rose-400"></div>
-            {% endif %}
-            
-            <!-- Gradient Overlay at Bottom -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-            
-            <!-- Content at Bottom -->
-            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 class="text-2xl font-bold mb-2">{{ category.name }}</h3>
-                <p class="text-sm font-semibold opacity-90 group-hover:translate-x-2 transition duration-300">Shop Now →</p>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-</div>
 
 <!-- Features Section -->
 <div class="bg-gradient-to-r from-pink-50 to-rose-50 py-16">
