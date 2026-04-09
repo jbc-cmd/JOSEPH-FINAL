@@ -3,63 +3,114 @@
 {% block title %}My Profile - Joseph Flowershop{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <div class="grid md:grid-cols-4 gap-8">
+<div class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
         <!-- Sidebar -->
-        <div class="md:col-span-1">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-xl font-bold mb-4">{{ user.get_full_name|default:user.username }}</h3>
-                <p class="text-gray-600 mb-6">{{ user.email }}</p>
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-2xl shadow-md p-6 lg:sticky lg:top-28 text-center lg:text-left">
+                <div class="mb-6 flex justify-center">
+                    <div class="relative">
+                    {% if profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-pink-100 shadow-sm">
+                    {% else %}
+                    <div class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-pink-50 text-pink-600 border-4 border-pink-100 shadow-sm flex items-center justify-center text-4xl">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                        <button type="button" id="open-avatar-picker" class="absolute bottom-0 right-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-pink-600 text-white shadow-md hover:bg-pink-700 transition">
+                            <i class="fas fa-pencil-alt text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2 break-words leading-tight">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-sm text-gray-600 mb-6 break-words max-w-xs mx-auto lg:mx-0">{{ user.email }}</p>
                 
-                <nav class="space-y-2">
-                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 bg-pink-100 text-pink-600 font-bold rounded">Profile</a>
-                    <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Order History</a>
-                    <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Logout</a>
+                <nav class="space-y-3 text-left">
+                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-3 bg-pink-50 text-pink-600 font-bold rounded-xl">Profile</a>
+                    <a href="{% url 'accounts:order_history' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Order History</a>
+                    <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Logout</a>
                 </nav>
             </div>
         </div>
         
         <!-- Main Content -->
-        <div class="md:col-span-3 space-y-8">
+        <div class="lg:col-span-9 space-y-8">
             <!-- Profile Information -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Profile Information</h2>
+            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                <div class="h-1 w-full bg-pink-600"></div>
+                <div class="p-6 md:p-8">
+                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3">
+                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-pink-50 text-pink-600">
+                        <i class="fas fa-id-card"></i>
+                    </span>
+                    <span>Profile Information</span>
+                </h2>
                 
-                <form method="post" class="space-y-4">
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
                     {% csrf_token %}
+                    <input type="hidden" name="avatar_choice" id="avatar-choice-input">
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-3">Profile Picture</label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            {% if profile.profile_picture %}
+                            <img src="{{ profile.profile_picture.url }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-20 w-20 rounded-full object-cover border border-gray-200">
+                            {% else %}
+                            <div class="profile-avatar-preview h-20 w-20 rounded-full bg-pink-50 text-pink-600 border border-pink-100 flex items-center justify-center text-2xl">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-1">
+                                <div class="flex flex-wrap gap-3">
+                                    <button type="button" id="open-avatar-picker-inline" class="inline-flex items-center gap-2 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-100 transition">
+                                        <i class="fas fa-pencil-alt"></i>
+                                        Change Photo
+                                    </button>
+                                    <label class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
+                                        <i class="fas fa-upload"></i>
+                                        Upload from device
+                                        <input type="file" name="profile_picture" id="profile-picture-input" accept="image/*" class="hidden">
+                                    </label>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Upload a clear square photo for the best result.</p>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-gray-700 font-bold mb-2">First Name</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border rounded px-4 py-2">
+                            <label class="block text-gray-700 font-semibold mb-2">First Name</label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
                         </div>
                         <div>
-                            <label class="block text-gray-700 font-bold mb-2">Last Name</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border rounded px-4 py-2">
+                            <label class="block text-gray-700 font-semibold mb-2">Last Name</label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2">Email</label>
-                        <input type="email" name="email" value="{{ user.email }}" class="w-full border rounded px-4 py-2">
+                        <label class="block text-gray-700 font-semibold mb-2">Email</label>
+                        <input type="email" name="email" value="{{ user.email }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
                     </div>
                     
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2">Phone Number</label>
-                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border rounded px-4 py-2">
+                        <label class="block text-gray-700 font-semibold mb-2">Phone Number</label>
+                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
                     </div>
                     
-                    <button type="submit" class="bg-pink-600 text-white px-6 py-2 rounded font-bold hover:bg-pink-700">
-                        Update Profile
+                    <button type="submit" class="w-full bg-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-pink-700 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-lock text-sm"></i>
+                        <span>Update Profile</span>
                     </button>
                 </form>
+                </div>
             </div>
             
             <!-- Saved Addresses -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold">Saved Delivery Addresses</h2>
-                    <a href="{% url 'accounts:add_address' %}" class="bg-pink-600 text-white px-4 py-2 rounded font-bold hover:bg-pink-700">
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-8">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                    <h2 class="text-3xl font-bold">Saved Delivery Addresses</h2>
+                    <a href="{% url 'accounts:add_address' %}" class="inline-flex items-center justify-center bg-pink-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-pink-700 transition">
                         + Add Address
                     </a>
                 </div>
@@ -67,11 +118,11 @@
                 {% if addresses %}
                 <div class="grid md:grid-cols-2 gap-6">
                     {% for address in addresses %}
-                    <div class="border rounded-lg p-4">
+                    <div class="border border-gray-200 rounded-2xl p-5">
                         <div class="flex justify-between items-start mb-2">
                             <p class="font-bold">{{ address.label }}</p>
                             {% if address.is_default %}
-                            <span class="bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded">Default</span>
+                            <span class="bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded-full">Default</span>
                             {% endif %}
                         </div>
                         <p class="text-gray-700 font-bold">{{ address.recipient_name }}</p>
@@ -93,16 +144,16 @@
             
             <!-- Recent Orders -->
             {% if recent_orders %}
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Recent Orders</h2>
+            <div class="bg-white rounded-2xl shadow-md p-6 md:p-8">
+                <h2 class="text-3xl font-bold mb-6">Recent Orders</h2>
                 
                 <div class="space-y-4">
                     {% for order in recent_orders %}
-                    <div class="border rounded-lg p-4 flex justify-between items-center">
+                    <div class="border border-gray-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
                             <p class="font-bold">{{ order.order_number }}</p>
-                            <p class="text-gray-600 text-sm">{{ order.created_at|date:"M d, Y" }} - ₱{{ order.total_amount }}</p>
-                            <span class="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded">{{ order.get_status_display }}</span>
+                            <p class="text-gray-600 text-sm">{{ order.created_at|date:"M d, Y" }} - &#8369;{{ order.total_amount }}</p>
+                            <span class="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{ order.get_status_display }}</span>
                         </div>
                         <a href="{% url 'orders:order_detail' order.id %}" class="text-pink-600 font-bold hover:text-pink-700">View</a>
                     </div>
@@ -115,4 +166,116 @@
         </div>
     </div>
 </div>
+
+<div id="avatar-picker-modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" data-close-avatar-picker></div>
+    <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl p-6 md:p-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-2xl font-bold">Choose Profile Picture</h3>
+                <p class="text-sm text-gray-500 mt-1">Upload your own photo or pick one of the ready-made avatars.</p>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-gray-600" data-close-avatar-picker>
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+            <button type="button" id="modal-upload-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-pink-300 hover:bg-pink-50 transition">
+                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-100 text-pink-600 mb-3">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <p class="font-bold text-gray-900">Upload from device</p>
+                <p class="text-sm text-gray-500 mt-1">Pick a photo from your local storage.</p>
+            </button>
+            <div class="rounded-xl border border-gray-200 p-5">
+                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-100 text-pink-600 mb-3">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <p class="font-bold text-gray-900">Template avatars</p>
+                <p class="text-sm text-gray-500 mt-1">Choose one of the preset profile icons below.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmOWExYzQiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI5MiIgcj0iNDYiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjAgMjAwYzE0LTM2IDQ2LTU4IDYwLTU4czQ2IDIyIDYwIDU4IiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmOWExYzQiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI5MiIgcj0iNDYiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjAgMjAwYzE0LTM2IDQ2LTU4IDYwLTU4czQ2IDIyIDYwIDU4IiBmaWxsPSIjZmZmZmZmIi8+PC9zdmc+" alt="Avatar template 1" class="h-24 w-24 mx-auto rounded-full object-cover">
+            </button>
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmZmQ2YTYiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI4OCIgcj0iNDQiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjggMjAwYzE0LTMxIDQwLTUwIDUyLTUwczM4IDE5IDUyIDUwIiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTg0IDc2YzEwLTIwIDI2LTMwIDM2LTMwczI2IDEwIDM2IDMwIiBmaWxsPSIjZmY5NWIxIi8+PC9zdmc+">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmZmQ2YTYiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI4OCIgcj0iNDQiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjggMjAwYzE0LTMxIDQwLTUwIDUyLTUwczM4IDE5IDUyIDUwIiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTg0IDc2YzEwLTIwIDI2LTMwIDM2LTMwczI2IDEwIDM2IDMwIiBmaWxsPSIjZmY5NWIxIi8+PC9zdmc+" alt="Avatar template 2" class="h-24 w-24 mx-auto rounded-full object-cover">
+            </button>
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmZmI4Y2EiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI4OCIgcj0iNDQiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjYgMjAwYzE2LTMzIDQ0LTUyIDU0LTUyczM4IDE5IDU0IDUyIiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTc2IDgyYzE0LTI0IDM2LTM2IDQ0LTM2czMwIDEyIDQ0IDM2IiBmaWxsPSIjZmY4YTk1Ii8+PC9zdmc+">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNmZmI4Y2EiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI4OCIgcj0iNDQiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjYgMjAwYzE2LTMzIDQ0LTUyIDU0LTUyczM4IDE5IDU0IDUyIiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTc2IDgyYzE0LTI0IDM2LTM2IDQ0LTM2czMwIDEyIDQ0IDM2IiBmaWxsPSIjZmY4YTk1Ii8+PC9zdmc+" alt="Avatar template 3" class="h-24 w-24 mx-auto rounded-full object-cover">
+            </button>
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNkOGI0ZmYiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI5MCIgcj0iNDUiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjQgMjAwYzE0LTM0IDQ0LTU0IDU2LTU0czQyIDIwIDU2IDU0IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTgwIDc4YzE2LTIwIDMwLTI4IDQwLTI4czI0IDggNDAgMjgiIGZpbGw9IiNiZmE2ZmYiLz48L3N2Zz4=">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNDAiIGhlaWdodD0iMjQwIiB2aWV3Qm94PSIwIDAgMjQwIDI0MCI+PHJlY3Qgd2lkdGg9IjI0MCIgaGVpZ2h0PSIyNDAiIHJ4PSIxMjAiIGZpbGw9IiNkOGI0ZmYiLz48Y2lyY2xlIGN4PSIxMjAiIGN5PSI5MCIgcj0iNDUiIGZpbGw9IiNmZmZmZmYiLz48cGF0aCBkPSJNNjQgMjAwYzE0LTM0IDQ0LTU0IDU2LTU0czQyIDIwIDU2IDU0IiBmaWxsPSIjZmZmZmZmIi8+PHBhdGggZD0iTTgwIDc4YzE2LTIwIDMwLTI4IDQwLTI4czI0IDggNDAgMjgiIGZpbGw9IiNiZmE2ZmYiLz48L3N2Zz4=" alt="Avatar template 4" class="h-24 w-24 mx-auto rounded-full object-cover">
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const avatarModal = document.getElementById('avatar-picker-modal');
+    const avatarChoiceInput = document.getElementById('avatar-choice-input');
+    const profilePictureInput = document.getElementById('profile-picture-input');
+
+    function openAvatarPicker() {
+        avatarModal.classList.remove('hidden');
+        avatarModal.classList.add('flex');
+    }
+
+    function closeAvatarPicker() {
+        avatarModal.classList.add('hidden');
+        avatarModal.classList.remove('flex');
+    }
+
+    function updateAvatarPreviews(src) {
+        document.querySelectorAll('.profile-avatar-preview').forEach((preview) => {
+            if (preview.tagName === 'IMG') {
+                preview.src = src;
+            } else {
+                const replacement = document.createElement('img');
+                replacement.src = src;
+                replacement.alt = 'Profile preview';
+                replacement.className = preview.className + ' object-cover';
+                preview.replaceWith(replacement);
+            }
+        });
+    }
+
+    document.getElementById('open-avatar-picker').addEventListener('click', openAvatarPicker);
+    document.getElementById('open-avatar-picker-inline').addEventListener('click', openAvatarPicker);
+    document.getElementById('modal-upload-trigger').addEventListener('click', () => {
+        closeAvatarPicker();
+        profilePictureInput.click();
+    });
+
+    document.querySelectorAll('[data-close-avatar-picker]').forEach((button) => {
+        button.addEventListener('click', closeAvatarPicker);
+    });
+
+    document.querySelectorAll('.avatar-template-option').forEach((button) => {
+        button.addEventListener('click', () => {
+            const avatarData = button.dataset.avatar;
+            avatarChoiceInput.value = avatarData;
+            profilePictureInput.value = '';
+            updateAvatarPreviews(avatarData);
+            closeAvatarPicker();
+        });
+    });
+
+    profilePictureInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        avatarChoiceInput.value = '';
+        const reader = new FileReader();
+        reader.onload = (loadEvent) => {
+            updateAvatarPreviews(loadEvent.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
+</script>
 {% endblock %}

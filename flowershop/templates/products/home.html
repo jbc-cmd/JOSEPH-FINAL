@@ -4,11 +4,10 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="relative h-96 bg-gradient-to-r from-pink-500 to-rose-600 text-white overflow-hidden">
-    <div class="absolute inset-0 bg-black opacity-40"></div>
+<div class="relative h-96 overflow-hidden" style="background-color: var(--site-background);">
     <div class="relative max-w-7xl mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
-        <h1 class="text-5xl md:text-6xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">Welcome to Joseph Flowershop</h1>
-        <p class="text-2xl mb-8" style="font-family: 'Source Serif 4', serif;">Fresh Flowers Delivered to Your Doorstep</p>
+        <h1 class="text-5xl md:text-6xl font-bold mb-4 text-gray-900" style="font-family: 'Playfair Display', serif;">Welcome to Joseph Flowershop</h1>
+        <p class="text-2xl mb-8 text-gray-700">Fresh Flowers Delivered to Your Doorstep</p>
         <div class="flex flex-col sm:flex-row gap-4">
             <a href="{% url 'products:shop' %}" class="inline-flex items-center justify-center gap-3 rounded-full bg-neutral-900 px-7 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-neutral-800">
                 <span>Shop Collection</span>

@@ -7,6 +7,10 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import * as Turbo from "https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.12/+esm";
+        window.Turbo = Turbo;
+    </script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,20 +21,30 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
+        :root {
+            --site-background: #f6ede4;
+        }
+
         body {
             font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--site-background);
         }
 
         h1, h2, h3, h4, h5, h6 {
             font-family: "Playfair Display", serif;
         }
+
+        .turbo-progress-bar {
+            background: #db2777;
+            height: 3px;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50">
+<body>
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-white shadow-md">
+    <nav class="sticky top-0 z-50 shadow-md" style="background-color: var(--site-background);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
@@ -60,8 +74,12 @@
                     <!-- User Icon -->
                     {% if user.is_authenticated %}
                     <div class="relative group">
-                        <button type="button" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-300">
+                        <button type="button" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-700 overflow-hidden focus:outline-none focus:ring-2 focus:ring-pink-300">
+                            {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover">
+                            {% else %}
                             <i class="fas fa-user"></i>
+                            {% endif %}
                         </button>
                         <div class="absolute right-0 top-full z-50 w-48 pt-2 opacity-0 invisible translate-y-1 transition duration-150 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0">
                             <div class="overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">

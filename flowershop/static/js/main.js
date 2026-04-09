@@ -1,10 +1,20 @@
 /* Main JavaScript */
 
-document.addEventListener('DOMContentLoaded', function() {
+function initializeApp() {
     // Search functionality
     const searchInput = document.getElementById('search-input');
-    if (searchInput) {
+    if (searchInput && !searchInput.dataset.searchBound) {
+        searchInput.dataset.searchBound = 'true';
         searchInput.addEventListener('keyup', debounce(handleSearch, 300));
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener('turbo:load', initializeApp);
+document.addEventListener('turbo:before-cache', function() {
+    const cartDrawer = document.getElementById('cart-drawer');
+    if (cartDrawer) {
+        cartDrawer.classList.add('hidden');
     }
 });
 

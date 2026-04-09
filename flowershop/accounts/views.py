@@ -1,3 +1,7 @@
+import base64
+import uuid
+
+from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -97,6 +101,8 @@ def profile(request):
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
         phone_number = request.POST.get('phone_number')
+        profile_picture = request.FILES.get('profile_picture')
+        avatar_choice = request.POST.get('avatar_choice', '').strip()
         
         request.user.first_name = first_name
         request.user.last_name = last_name
@@ -104,6 +110,20 @@ def profile(request):
         request.user.save()
         
         user_profile.phone_number = phone_number
+        if profile_picture:
+            user_profile.profile_picture = profile_picture
+        elif avatar_choice.startswith('data:image/'):
+            try:
+                header, encoded = avatar_choice.split(',', 1)
+                extension = header.split('/')[1].split(';')[0]
+                user_profile.profile_picture.save(
+                    f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
+                    ContentFile(base64.b64decode(encoded)),
+                    save=False,
+                )
+            except (ValueError, IndexError, base64.binascii.Error):
+                messages.error(request, 'Selected avatar could not be applied.')
+                return redirect('accounts:profile')
         user_profile.save()
         
         messages.success(request, 'Profile updated successfully!')
