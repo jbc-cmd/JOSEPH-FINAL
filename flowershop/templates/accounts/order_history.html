@@ -3,47 +3,45 @@
 {% block title %}Order History - Joseph Flowershop{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-8">Order History</h1>
-    
-    {% if orders %}
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <table class="w-full">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-6 py-3 text-left">Order Number</th>
-                    <th class="px-6 py-3 text-left">Date</th>
-                    <th class="px-6 py-3 text-left">Recipient</th>
-                    <th class="px-6 py-3 text-center">Total</th>
-                    <th class="px-6 py-3 text-center">Status</th>
-                    <th class="px-6 py-3 text-center">Action</th>
-                </tr>
-            </thead>
-            <tbody>
+<div class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.12),_transparent_30%),linear-gradient(180deg,_rgba(246,237,228,0.72)_0%,_rgba(255,255,255,0.98)_100%)]">
+    <div class="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        <div class="flex flex-col gap-4 rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:flex-row sm:items-end sm:justify-between sm:p-8">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.24em] text-pink-600">Order History</p>
+                <h1 class="mt-3 text-4xl font-bold tracking-tight text-gray-900">Your flower orders</h1>
+                <p class="mt-3 max-w-2xl text-sm leading-6 text-gray-600">Review past orders, delivery progress, and gifting details in one place.</p>
+            </div>
+            <a href="{% url 'orders:track_order' %}" class="inline-flex items-center gap-2 self-start rounded-full border border-pink-200 bg-pink-50 px-5 py-3 text-sm font-semibold text-pink-700 transition hover:border-pink-300 hover:bg-pink-100">
+                <i class="fas fa-location-dot"></i>
+                Track another order
+            </a>
+        </div>
+
+        <div class="mt-8">
+            {% if orders %}
+            <div class="space-y-4">
                 {% for order in orders %}
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="px-6 py-4 font-bold text-pink-600">{{ order.order_number }}</td>
-                    <td class="px-6 py-4">{{ order.created_at|date:"M d, Y" }}</td>
-                    <td class="px-6 py-4">{{ order.customer_name }}</td>
-                    <td class="px-6 py-4 text-center">₱{{ order.total_amount }}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm">{{ order.get_status_display }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <a href="{% url 'orders:order_detail' order.id %}" class="text-pink-600 font-bold hover:text-pink-700">View</a>
-                    </td>
-                </tr>
+                    {% include 'orders/partials/order_card.html' with order=order %}
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
+            {% else %}
+            <div class="rounded-[32px] border border-dashed border-pink-200 bg-[#fcf7f8] px-6 py-14 text-center shadow-[0_18px_40px_rgba(204,160,177,0.12)]">
+                <span class="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-pink-500 ring-1 ring-pink-100">
+                    <i class="fas fa-bag-shopping text-2xl"></i>
+                </span>
+                <h2 class="mt-6 text-2xl font-semibold text-gray-900">No orders yet</h2>
+                <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">Once you send your first bouquet, it will show up here with tracking updates and a full order summary.</p>
+                <a href="{% url 'products:shop' %}" class="mt-6 inline-flex items-center gap-2 rounded-full bg-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-700">
+                    <i class="fas fa-spa"></i>
+                    Shop Flowers
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-8">
+            {% include 'orders/partials/support_card.html' %}
+        </div>
     </div>
-    {% else %}
-    <div class="text-center py-12">
-        <p class="text-gray-600 text-xl mb-4">You haven't placed any orders yet</p>
-        <a href="{% url 'products:shop' %}" class="inline-block bg-pink-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-pink-700">
-            Start Shopping
-        </a>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

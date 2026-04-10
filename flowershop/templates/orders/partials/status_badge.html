@@ -1,0 +1,31 @@
+{% if status == 'DELIVERED' %}
+<span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+    {{ label|default:"Delivered" }}
+</span>
+{% elif status == 'OUT_FOR_DELIVERY' %}
+<span class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+    <span class="h-2 w-2 rounded-full bg-sky-500"></span>
+    {{ label|default:"Out for Delivery" }}
+</span>
+{% elif status == 'PREPARING' %}
+<span class="inline-flex items-center gap-2 rounded-full border border-fuchsia-200 bg-fuchsia-50 px-3 py-1 text-xs font-semibold text-fuchsia-700">
+    <span class="h-2 w-2 rounded-full bg-fuchsia-500"></span>
+    {{ label|default:"Preparing Bouquet" }}
+</span>
+{% elif status == 'PROCESSING' %}
+<span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+    <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+    {{ label|default:"Processing" }}
+</span>
+{% elif status == 'CANCELLED' %}
+<span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
+    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+    {{ label|default:"Cancelled" }}
+</span>
+{% else %}
+<span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+    <span class="h-2 w-2 rounded-full bg-gray-400"></span>
+    {{ label|default:"Pending" }}
+</span>
+{% endif %}

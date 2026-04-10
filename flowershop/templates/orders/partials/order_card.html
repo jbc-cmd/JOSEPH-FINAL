@@ -1,0 +1,27 @@
+<a href="{% url 'orders:order_detail' order.id %}" class="group block rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_45px_rgba(225,183,199,0.18)] transition duration-200 hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-[0_24px_55px_rgba(219,39,119,0.14)] active:translate-y-0">
+    <div class="flex items-start gap-4">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+            <i class="fas fa-gift text-sm"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="min-w-0">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <p class="truncate text-base font-semibold tracking-[0.01em] text-gray-900">{{ order.order_number }}</p>
+                        {% include 'orders/partials/status_badge.html' with status=order.status label=order.get_status_display %}
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600">{{ order.created_at|date:'M d, Y' }} at {{ order.created_at|date:'g:i A' }}</p>
+                </div>
+                <div class="flex items-center justify-between gap-4 sm:justify-end">
+                    <div class="text-left sm:text-right">
+                        <p class="text-lg font-semibold text-gray-900">&#8369;{{ order.total_amount|floatformat:2 }}</p>
+                        <p class="text-sm text-gray-500">{{ order.items.count }} item{{ order.items.count|pluralize }}</p>
+                    </div>
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-400 ring-1 ring-gray-100 transition group-hover:bg-pink-50 group-hover:text-pink-500 group-hover:ring-pink-100">
+                        <i class="fas fa-chevron-right text-sm"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</a>

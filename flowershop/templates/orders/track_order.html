@@ -3,140 +3,172 @@
 {% block title %}Track Your Order - Joseph Flowershop{% endblock %}
 
 {% block content %}
-<div class="min-h-screen" style="background: linear-gradient(135deg, rgba(246, 237, 228, 0.5) 0%, rgba(255, 105, 180, 0.05) 100%);">
-    <div class="max-w-4xl mx-auto px-4 py-12">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-pink-100 mb-6">
-                <i class="fas fa-box text-4xl text-pink-600"></i>
+<div class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(244,114,182,0.12),_transparent_34%),linear-gradient(180deg,_rgba(246,237,228,0.75)_0%,_rgba(255,255,255,0.96)_100%)]">
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+        <section class="mx-auto max-w-3xl text-center">
+            <span class="inline-flex h-20 w-20 items-center justify-center rounded-[28px] bg-pink-100/90 text-pink-600 shadow-[0_16px_40px_rgba(244,114,182,0.16)] ring-1 ring-white/70">
+                <i class="fas fa-gift text-3xl"></i>
+            </span>
+            <h1 class="mt-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Track Your Order</h1>
+            <p class="mt-4 text-base leading-7 text-gray-600 sm:text-lg">A soft, simple way to follow every flower delivery from confirmation to doorstep.</p>
+        </section>
+
+        <section class="mt-10 rounded-[32px] border border-white/70 bg-white/85 p-4 shadow-[0_24px_60px_rgba(204,160,177,0.18)] backdrop-blur sm:p-6">
+            <div class="mx-auto flex max-w-3xl flex-col gap-3">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <button id="track-by-number-tab" class="tab-button active flex items-center justify-center gap-3 rounded-full px-6 py-4 text-sm font-semibold" data-tab="track-by-number" data-title="Track Order" data-description="Enter your order details to check delivery status">
+                        <i class="fas fa-location-dot"></i>
+                        Track Order
+                    </button>
+                    {% if user.is_authenticated %}
+                    <button id="recent-orders-tab" class="tab-button flex items-center justify-center gap-3 rounded-full px-6 py-4 text-sm font-semibold" data-tab="recent-orders" data-title="Order History" data-description="View your recent flower orders">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        Order History
+                    </button>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}?next={% url 'orders:track_order' %}" class="tab-button flex items-center justify-center gap-3 rounded-full px-6 py-4 text-sm font-semibold">
+                        <i class="fas fa-user"></i>
+                        Sign In for Order History
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="rounded-[24px] bg-[#fcf7f8] px-5 py-4 text-left ring-1 ring-pink-100/70">
+                    <p id="tab-helper-title" class="text-sm font-semibold uppercase tracking-[0.22em] text-pink-600">Track Order</p>
+                    <p id="tab-helper-description" class="mt-2 text-sm leading-6 text-gray-600">Enter your order details to check delivery status</p>
+                </div>
             </div>
-            <h1 class="text-5xl font-bold mb-3" style="font-family: 'Playfair Display', serif;">Track Your Order</h1>
-            <p class="text-gray-600 text-lg">Stay updated on your flower delivery status</p>
-        </div>
+        </section>
 
-        <!-- Tabs -->
-        <div class="flex gap-2 mb-8 justify-center flex-wrap">
-            <button id="track-by-number-tab" class="tab-button px-6 py-3 rounded-full font-semibold transition active" data-tab="track-by-number">
-                <i class="fas fa-barcode mr-2"></i>Track by Order Number
-            </button>
+        <div class="mt-8 space-y-8">
+            <section id="track-by-number" class="tab-content">
+                <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,0.9fr)]">
+                    <div class="rounded-[32px] border border-white/70 bg-white p-6 shadow-[0_22px_55px_rgba(204,160,177,0.18)] sm:p-8">
+                        <div class="mb-8 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl font-semibold text-gray-900">Check delivery status</h2>
+                                <p class="mt-2 text-sm leading-6 text-gray-600">Enter the order number from your confirmation email and the same email address used at checkout.</p>
+                            </div>
+                            <span class="hidden h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100 sm:inline-flex">
+                                <i class="fas fa-magnifying-glass"></i>
+                            </span>
+                        </div>
+
+                        <form method="post" id="track-form" class="space-y-6" data-default-email="{{ user.email|default:'' }}" novalidate>
+                            {% csrf_token %}
+
+                            <div>
+                                <label for="order_number" class="mb-3 block text-sm font-semibold text-gray-900">Order Number</label>
+                                <div class="relative">
+                                    <input type="text" name="order_number" id="order_number" required value="{{ entered_order_number }}" placeholder="e.g. ORD-123456" class="track-input w-full rounded-[22px] border border-gray-200 bg-white px-5 py-4 pr-14 text-base text-gray-900 placeholder:text-gray-400 focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                                    <span class="pointer-events-none absolute inset-y-0 right-5 flex items-center text-pink-400">
+                                        <i class="fas fa-barcode"></i>
+                                    </span>
+                                </div>
+                                <p class="mt-3 text-sm text-gray-600">Check the top of your confirmation email. You can also paste text like “Order ORD-20260409-XXXX”.</p>
+                                <p id="order-number-error" class="mt-2 hidden text-sm font-medium text-rose-600">Please enter a valid order number.</p>
+                            </div>
+
+                            <div>
+                                <label for="email" class="mb-3 block text-sm font-semibold text-gray-900">Email Address</label>
+                                <div class="relative">
+                                    <input type="email" name="email" id="email" required value="{{ entered_email }}" placeholder="your@email.com" class="track-input w-full rounded-[22px] border border-gray-200 bg-white px-5 py-4 pr-14 text-base text-gray-900 placeholder:text-gray-400 focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                                    <span class="pointer-events-none absolute inset-y-0 right-5 flex items-center text-pink-400">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                </div>
+                                <p class="mt-3 text-sm text-gray-600">Use the same email used when placing the order.</p>
+                                <p id="email-error" class="mt-2 hidden text-sm font-medium text-rose-600">Please enter a valid email address.</p>
+                            </div>
+
+                            <button type="submit" id="track-btn" class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-6 py-4 text-base font-semibold text-white shadow-[0_18px_38px_rgba(219,39,119,0.28)] transition hover:-translate-y-0.5 hover:from-pink-700 hover:to-rose-600 hover:shadow-[0_22px_44px_rgba(219,39,119,0.32)] focus:outline-none focus:ring-4 focus:ring-pink-200 active:translate-y-0">
+                                <i class="fas fa-location-crosshairs"></i>
+                                Track My Order
+                            </button>
+                        </form>
+
+                        {% if messages %}
+                        <div class="mt-6 space-y-3">
+                            {% for message in messages %}
+                            <div class="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-circle-exclamation mt-0.5 text-rose-500"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="rounded-[28px] border border-pink-100 bg-white/95 p-6 shadow-[0_20px_50px_rgba(225,183,199,0.14)]">
+                            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+                                <i class="fas fa-envelope-open-text"></i>
+                            </div>
+                            <h3 class="mt-4 text-xl font-semibold text-gray-900">Can’t find your order number?</h3>
+                            <p class="mt-2 text-sm leading-6 text-gray-600">Look for your order confirmation email right after checkout. The order number appears near the top and usually starts with <span class="font-semibold text-gray-800">ORD-</span>.</p>
+                        </div>
+
+                        <div class="rounded-[28px] border border-pink-100 bg-white/95 p-6 shadow-[0_20px_50px_rgba(225,183,199,0.14)]">
+                            <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <h3 class="mt-4 text-xl font-semibold text-gray-900">Need help?</h3>
+                            <p class="mt-2 text-sm leading-6 text-gray-600">Our team can help with delivery updates, order number lookups, and special occasion requests.</p>
+                            <div class="mt-5 space-y-3 text-sm text-gray-700">
+                                <a href="tel:+639123456789" class="flex items-center gap-3 rounded-2xl border border-gray-100 px-4 py-3 transition hover:border-pink-200 hover:bg-pink-50">
+                                    <i class="fas fa-phone text-pink-500"></i>
+                                    +63 9123 456 789
+                                </a>
+                                <a href="mailto:support@josephflowershop.com" class="flex items-center gap-3 rounded-2xl border border-gray-100 px-4 py-3 transition hover:border-pink-200 hover:bg-pink-50">
+                                    <i class="fas fa-envelope text-pink-500"></i>
+                                    support@josephflowershop.com
+                                </a>
+                                <a href="https://wa.me/639123456789" class="flex items-center gap-3 rounded-2xl border border-gray-100 px-4 py-3 transition hover:border-green-200 hover:bg-green-50">
+                                    <i class="fab fa-whatsapp text-green-500"></i>
+                                    Chat on WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {% if user.is_authenticated %}
-            <button id="recent-orders-tab" class="tab-button px-6 py-3 rounded-full font-semibold transition" data-tab="recent-orders">
-                <i class="fas fa-history mr-2"></i>My Recent Orders
-            </button>
-            {% endif %}
-        </div>
-
-        <!-- Tab Content -->
-        <div class="space-y-8">
-            <!-- Track by Order Number -->
-            <div id="track-by-number" class="tab-content">
-                <div class="bg-white rounded-3xl shadow-lg p-8 border border-pink-100">
-                    <form method="post" id="track-form" class="space-y-6">
-                        {% csrf_token %}
-
+            <section id="recent-orders" class="tab-content hidden">
+                <div class="rounded-[32px] border border-white/70 bg-white/85 p-6 shadow-[0_22px_55px_rgba(204,160,177,0.18)] sm:p-8">
+                    <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                            <label class="block text-gray-800 font-semibold mb-3">Order Number *</label>
-                            <div class="relative">
-                                <input type="text" name="order_number" id="order_number" required
-                                       placeholder="e.g., ORD-20240316-ABCD1234"
-                                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                                       autocomplete="off">
-                                <i class="fas fa-barcode absolute right-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-2 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-pink-500"></i>
-                                Find it in your confirmation email
-                            </p>
+                            <h2 class="text-2xl font-semibold text-gray-900">Your recent flower orders</h2>
+                            <p class="mt-2 text-sm leading-6 text-gray-600">Review recent orders, track their progress, or open a full order summary.</p>
                         </div>
+                        <a href="{% url 'accounts:order_history' %}" class="inline-flex items-center gap-2 self-start rounded-full border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-700 transition hover:border-pink-300 hover:bg-pink-100">
+                            View full history
+                            <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
 
-                        <div>
-                            <label class="block text-gray-800 font-semibold mb-3">Email Address *</label>
-                            <div class="relative">
-                                <input type="email" name="email" id="email" required
-                                       placeholder="your@email.com"
-                                       class="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                                       autocomplete="email">
-                                <i class="fas fa-envelope absolute right-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-2">Must match the email used for ordering</p>
-                        </div>
-
-                        <button type="submit" id="track-btn" class="w-full bg-gradient-to-r from-pink-600 to-pink-500 text-white py-4 rounded-2xl font-bold hover:from-pink-700 hover:to-pink-600 transition shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-lg">
-                            <i class="fas fa-search"></i> Track Order
-                        </button>
-                    </form>
-
-                    <!-- Error Message -->
-                    {% if messages %}
-                    <div class="mt-6">
-                        {% for message in messages %}
-                        <div class="p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-red-700 flex items-start gap-3">
-                            <i class="fas fa-exclamation-circle mt-1"></i>
-                            <span>{{ message }}</span>
-                        </div>
+                    {% if user.orders.all %}
+                    <div class="space-y-4">
+                        {% for order in user.orders.all %}
+                            {% include 'orders/partials/order_card.html' with order=order %}
                         {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="rounded-[28px] border border-dashed border-pink-200 bg-[#fcf7f8] px-6 py-12 text-center">
+                        <span class="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-pink-500 shadow-sm ring-1 ring-pink-100">
+                            <i class="fas fa-seedling text-2xl"></i>
+                        </span>
+                        <h3 class="mt-5 text-2xl font-semibold text-gray-900">No flower orders yet</h3>
+                        <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">When you place your first bouquet order, it will appear here with live delivery status and a full order summary.</p>
+                        <a href="{% url 'products:shop' %}" class="mt-6 inline-flex items-center gap-2 rounded-full bg-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-700">
+                            <i class="fas fa-bag-shopping"></i>
+                            Shop Flowers
+                        </a>
                     </div>
                     {% endif %}
                 </div>
-
-                <!-- Help Section -->
-                <div class="grid md:grid-cols-2 gap-6 mt-8">
-                    <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-pink-200 transition">
-                        <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-                            <i class="fas fa-envelope text-pink-600"></i>
-                        </div>
-                        <h3 class="font-bold text-gray-900 mb-2">Check Your Email</h3>
-                        <p class="text-sm text-gray-600">Look for the order confirmation email we sent right after you placed your order. Your order number is at the top.</p>
-                    </div>
-                    <div class="bg-white rounded-2xl p-6 border border-gray-100 hover:border-pink-200 transition">
-                        <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-                            <i class="fas fa-phone text-pink-600"></i>
-                        </div>
-                        <h3 class="font-bold text-gray-900 mb-2">Contact Support</h3>
-                        <p class="text-sm text-gray-600">Can't find your order? Our team is here to help. Call us at <a href="tel:+639123456789" class="text-pink-600 font-bold hover:text-pink-700">+63 9123 456 789</a></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Orders (if logged in) -->
-            {% if user.is_authenticated %}
-            <div id="recent-orders" class="tab-content hidden">
-                {% if user.orders.all %}
-                <div class="space-y-4">
-                    {% for order in user.orders.all %}
-                    <a href="{% url 'orders:order_detail' order.id %}" class="block bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-pink-300 hover:shadow-lg transition">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="font-bold text-gray-900">{{ order.order_number }}</span>
-                                    <span class="px-3 py-1 rounded-full text-xs font-bold" style="background-color: {{ order.get_status_badge_color }}20; color: {{ order.get_status_badge_color }};">
-                                        {{ order.get_status_display }}
-                                    </span>
-                                </div>
-                                <p class="text-sm text-gray-600">{{ order.created_at|date:'M d, Y - H:i' }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-pink-600">₱{{ order.get_total }}</p>
-                                <p class="text-sm text-gray-600">{{ order.items.count }} item{{ order.items.count|pluralize }}</p>
-                            </div>
-                            <div class="md:ml-auto">
-                                <i class="fas fa-chevron-right text-gray-400"></i>
-                            </div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="bg-white rounded-2xl p-12 text-center border border-gray-100">
-                    <div class="text-6xl text-gray-200 mb-4"><i class="fas fa-shopping-bag"></i></div>
-                    <h3 class="text-xl font-bold text-gray-700 mb-2">No Orders Yet</h3>
-                    <p class="text-gray-600 mb-6">You haven't placed any orders yet. Ready to send some beautiful flowers?</p>
-                    <a href="{% url 'products:shop' %}" class="inline-block bg-pink-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-pink-700 transition">
-                        <i class="fas fa-flower mr-2"></i>Start Shopping
-                    </a>
-                </div>
-                {% endif %}
-            </div>
+            </section>
             {% endif %}
         </div>
     </div>
@@ -144,59 +176,146 @@
 
 <style>
     .tab-button {
-        background: white;
-        color: #6B7280;
-        border: 2px solid #E5E7EB;
+        border: 1px solid rgba(229, 231, 235, 0.95);
+        background: rgba(255, 255, 255, 0.92);
+        color: #4b5563;
+        box-shadow: 0 12px 30px rgba(17, 24, 39, 0.03);
+        transition: all 0.2s ease;
     }
 
     .tab-button.active {
-        background: linear-gradient(135deg, #EC4899, #DB2777);
-        color: white;
-        border-color: #EC4899;
+        background: linear-gradient(135deg, #ec4899, #db2777);
+        border-color: #ec4899;
+        color: #ffffff;
+        box-shadow: 0 18px 40px rgba(219, 39, 119, 0.24);
     }
 
-    .tab-button:hover {
-        border-color: #EC4899;
+    .tab-button:hover,
+    .tab-button:focus-visible {
+        border-color: #f472b6;
+        color: #111827;
+        outline: none;
+        transform: translateY(-1px);
+    }
+
+    .tab-button.active:hover,
+    .tab-button.active:focus-visible {
+        color: #ffffff;
     }
 
     .tab-content.hidden {
         display: none;
     }
+
+    .track-input.is-invalid {
+        border-color: #fb7185;
+        background: #fff1f2;
+        box-shadow: 0 0 0 4px rgba(251, 113, 133, 0.12);
+    }
 </style>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tab switching functionality
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
+    function initializeTrackOrderPage() {
+        const pageRoot = document.getElementById('track-by-number-tab');
+        if (!pageRoot || pageRoot.dataset.initialized === 'true') {
+            return;
+        }
+        pageRoot.dataset.initialized = 'true';
 
-        tabButtons.forEach(button => {
+        const tabButtons = document.querySelectorAll('.tab-button[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const helperTitle = document.getElementById('tab-helper-title');
+        const helperDescription = document.getElementById('tab-helper-description');
+
+        const updateTabHelper = (button) => {
+            if (!helperTitle || !helperDescription) return;
+            helperTitle.textContent = button.dataset.title || '';
+            helperDescription.textContent = button.dataset.description || '';
+        };
+
+        tabButtons.forEach((button) => {
             button.addEventListener('click', function() {
                 const tabName = this.getAttribute('data-tab');
+                const targetTab = document.getElementById(tabName);
+                if (!targetTab) return;
 
-                // Remove active class from all buttons and hide all tabs
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.add('hidden'));
+                tabButtons.forEach((btn) => btn.classList.remove('active'));
+                tabContents.forEach((content) => content.classList.add('hidden'));
 
-                // Add active class to clicked button and show corresponding tab
                 this.classList.add('active');
-                document.getElementById(tabName).classList.remove('hidden');
+                targetTab.classList.remove('hidden');
+                updateTabHelper(this);
             });
         });
 
-        // Form validation
-        const trackForm = document.getElementById('track-form');
-        if (trackForm) {
-            trackForm.addEventListener('submit', function(e) {
-                const orderNumber = document.getElementById('order_number').value.trim();
-                const email = document.getElementById('email').value.trim();
-
-                if (!orderNumber || !email) {
-                    e.preventDefault();
-                    alert('Please fill in all fields');
-                }
-            });
+        const activeButton = document.querySelector('.tab-button.active[data-tab]');
+        if (activeButton) {
+            updateTabHelper(activeButton);
         }
-    });
+
+        const trackForm = document.getElementById('track-form');
+        if (!trackForm) return;
+
+        const orderNumberInput = document.getElementById('order_number');
+        const emailInput = document.getElementById('email');
+        const trackButton = document.getElementById('track-btn');
+        const orderNumberError = document.getElementById('order-number-error');
+        const emailError = document.getElementById('email-error');
+
+        const normalizeOrderNumber = (value) => {
+            const upperValue = value.trim().toUpperCase();
+            const matchedOrderNumber = upperValue.match(/ORD-\d{6,}-[A-Z0-9]+|ORD-\d+/);
+            if (matchedOrderNumber) {
+                return matchedOrderNumber[0];
+            }
+            return upperValue.replace(/\s+/g, '');
+        };
+
+        const validateOrderNumber = () => {
+            orderNumberInput.value = normalizeOrderNumber(orderNumberInput.value);
+            const isValid = orderNumberInput.value.length > 0;
+            orderNumberInput.classList.toggle('is-invalid', !isValid);
+            orderNumberError.classList.toggle('hidden', isValid);
+            return isValid;
+        };
+
+        const validateEmail = () => {
+            emailInput.value = emailInput.value.trim();
+            const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value);
+            emailInput.classList.toggle('is-invalid', !isValid);
+            emailError.classList.toggle('hidden', isValid);
+            return isValid;
+        };
+
+        if (orderNumberInput.value) {
+            orderNumberInput.value = normalizeOrderNumber(orderNumberInput.value);
+        }
+
+        if (!emailInput.value && trackForm.dataset.defaultEmail) {
+            emailInput.value = trackForm.dataset.defaultEmail;
+        }
+
+        orderNumberInput.addEventListener('blur', validateOrderNumber);
+        emailInput.addEventListener('blur', validateEmail);
+
+        trackForm.addEventListener('submit', function(e) {
+            const isOrderValid = validateOrderNumber();
+            const isEmailValid = validateEmail();
+
+            if (!isOrderValid || !isEmailValid) {
+                e.preventDefault();
+                return;
+            }
+
+            trackButton.disabled = true;
+            trackButton.classList.add('opacity-70', 'cursor-not-allowed');
+            trackButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Tracking your order...';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeTrackOrderPage);
+    document.addEventListener('turbo:load', initializeTrackOrderPage);
 </script>
 {% endblock %}

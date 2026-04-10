@@ -14,6 +14,19 @@ from .models import UserProfile, DeliveryAddress
 from orders.models import Order
 
 
+def _avatar_extension_from_header(header):
+    mime_type = header.split(':', 1)[1].split(';', 1)[0].strip().lower()
+    extension_map = {
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/svg+xml': 'svg',
+    }
+    return extension_map.get(mime_type)
+
+
 def register(request):
     """User registration."""
     if request.method == 'POST':
@@ -149,7 +162,9 @@ def profile(request):
         elif avatar_choice.startswith('data:image/'):
             try:
                 header, encoded = avatar_choice.split(',', 1)
-                extension = header.split('/')[1].split(';')[0]
+                extension = _avatar_extension_from_header(header)
+                if not extension:
+                    raise ValueError('Unsupported avatar image type.')
                 user_profile.profile_picture.save(
                     f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
                     ContentFile(base64.b64decode(encoded)),

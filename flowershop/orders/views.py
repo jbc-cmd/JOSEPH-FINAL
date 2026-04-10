@@ -14,6 +14,123 @@ from delivery.models import DeliveryTimeWindow, Delivery
 from payments.models import Payment
 from django.utils import timezone
 import uuid
+import re
+
+ORDER_TIMELINE = [
+    ('PENDING', 'Order Placed', 'Your order has been received and queued for our team.', 'fa-receipt'),
+    ('PROCESSING', 'Processing', 'We are confirming your order details and delivery schedule.', 'fa-credit-card'),
+    ('PREPARING', 'Preparing Bouquet', 'Your flowers are currently being arranged by our florist.', 'fa-spa'),
+    ('OUT_FOR_DELIVERY', 'Out for Delivery', 'Your bouquet is on the way to the delivery address.', 'fa-truck'),
+    ('DELIVERED', 'Delivered', 'Your flowers have arrived at their destination.', 'fa-heart'),
+]
+
+
+def _normalize_order_number(raw_value):
+    if not raw_value:
+        return ''
+
+    normalized = raw_value.strip().upper()
+    match = re.search(r'ORD-\d{8}-[A-Z0-9]+', normalized)
+    if match:
+        return match.group(0)
+
+    return normalized.replace(' ', '')
+
+
+def _status_theme(status):
+    themes = {
+        'PENDING': {
+            'accent': 'pink',
+            'icon': 'fa-receipt',
+            'title': 'Order received',
+            'description': 'We have your flower order and will start reviewing it shortly.',
+            'panel': 'border-pink-100 bg-gradient-to-br from-pink-50 via-white to-rose-50',
+        },
+        'PROCESSING': {
+            'accent': 'amber',
+            'icon': 'fa-seedling',
+            'title': 'Processing your order',
+            'description': 'We are confirming your payment, recipient details, and delivery schedule.',
+            'panel': 'border-amber-100 bg-gradient-to-br from-amber-50 via-white to-rose-50',
+        },
+        'PREPARING': {
+            'accent': 'fuchsia',
+            'icon': 'fa-spa',
+            'title': 'Preparing your bouquet',
+            'description': 'Your flowers are currently being arranged by our florist.',
+            'panel': 'border-fuchsia-100 bg-gradient-to-br from-fuchsia-50 via-white to-pink-50',
+        },
+        'OUT_FOR_DELIVERY': {
+            'accent': 'sky',
+            'icon': 'fa-truck-fast',
+            'title': 'Out for delivery',
+            'description': 'Your flowers are on the way and will arrive during the scheduled delivery window.',
+            'panel': 'border-sky-100 bg-gradient-to-br from-sky-50 via-white to-pink-50',
+        },
+        'DELIVERED': {
+            'accent': 'emerald',
+            'icon': 'fa-circle-check',
+            'title': 'Delivered successfully',
+            'description': 'Your bouquet has been delivered. We hope it made someone smile.',
+            'panel': 'border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-pink-50',
+        },
+        'CANCELLED': {
+            'accent': 'rose',
+            'icon': 'fa-ban',
+            'title': 'Order cancelled',
+            'description': 'This order is no longer active. Please contact support if you need help.',
+            'panel': 'border-rose-100 bg-gradient-to-br from-rose-50 via-white to-pink-50',
+        },
+    }
+    return themes.get(status, themes['PENDING'])
+
+
+def _build_timeline(order):
+    status_order = [step[0] for step in ORDER_TIMELINE]
+    current_index = status_order.index(order.status) if order.status in status_order else 0
+    timeline = []
+
+    for index, (code, title, description, icon) in enumerate(ORDER_TIMELINE):
+        if order.status == 'CANCELLED':
+            state = 'completed' if code == 'PENDING' else 'upcoming'
+        elif order.status == 'DELIVERED':
+            state = 'current' if code == 'DELIVERED' else 'completed'
+        elif index < current_index:
+            state = 'completed'
+        elif index == current_index:
+            state = 'current'
+        else:
+            state = 'upcoming'
+
+        timeline.append({
+            'code': code,
+            'title': title,
+            'description': description,
+            'icon': icon,
+            'state': state,
+            'is_last': index == len(ORDER_TIMELINE) - 1,
+        })
+
+    return timeline
+
+
+def _format_delivery_window(time_window):
+    if not time_window:
+        return 'Delivery window to be confirmed'
+    return f"{time_window.start_time.strftime('%I:%M %p').lstrip('0')} - {time_window.end_time.strftime('%I:%M %p').lstrip('0')}"
+
+
+def _estimated_arrival_text(order):
+    if not order.delivery_time_window:
+        return 'Delivery timing will be confirmed soon.'
+
+    window_text = _format_delivery_window(order.delivery_time_window)
+    today = timezone.localdate()
+    if order.status == 'DELIVERED':
+        return f"Delivered on {order.delivery_date.strftime('%B %d, %Y')}."
+    if order.delivery_date == today:
+        return f"Arriving today between {window_text}."
+    return f"Scheduled for {order.delivery_date.strftime('%B %d, %Y')} between {window_text}."
 
 
 def _get_checkout_delivery_address(user):
@@ -283,29 +400,44 @@ def order_confirmation(request, order_id):
 
 def track_order(request):
     """Order tracking page."""
+    entered_order_number = ''
+    entered_email = request.user.email if request.user.is_authenticated else ''
+
     if request.method == 'POST':
-        order_number = request.POST.get('order_number')
-        email = request.POST.get('email')
+        order_number = _normalize_order_number(request.POST.get('order_number'))
+        email = request.POST.get('email', '').strip()
+        entered_order_number = order_number
+        entered_email = email
         
         try:
             order = Order.objects.get(order_number=order_number, customer_email=email)
             return redirect('orders:order_detail', order_id=order.id)
         except Order.DoesNotExist:
             messages.error(request, 'Order not found. Please check your order number and email.')
-    
-    return render(request, 'orders/track_order.html')
+
+    context = {
+        'entered_order_number': entered_order_number,
+        'entered_email': entered_email,
+    }
+    return render(request, 'orders/track_order.html', context)
 
 
 def order_detail(request, order_id):
     """Order detail and tracking page."""
     order = get_object_or_404(Order, id=order_id)
+    payment = getattr(order, 'payment', None)
+    theme = _status_theme(order.status)
     
     context = {
         'order': order,
         'items': order.items.all(),
-        'payment': order.payment,
+        'payment': payment,
         'delivery': order.delivery,
         'status_color': order.get_status_badge_color(),
+        'status_summary': theme,
+        'timeline_steps': _build_timeline(order),
+        'estimated_arrival': _estimated_arrival_text(order),
+        'delivery_window_text': _format_delivery_window(order.delivery_time_window),
     }
     return render(request, 'orders/order_detail.html', context)
 
