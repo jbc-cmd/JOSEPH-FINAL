@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Address - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <div class="h-1 w-full bg-pink-600"></div>
+        <div class="p-6 md:p-8">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Delivery Address</h1>
+                    <p class="text-sm text-gray-500 mt-1">Update your saved delivery details.</p>
+                </div>
+                <a href="{% url 'accounts:profile' %}" class="text-sm font-semibold text-pink-600 hover:text-pink-700 sm:pt-2">Back to Profile</a>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="grid md:grid-cols-2 gap-4 md:gap-5">
+                    <div>
+                        <label for="{{ form.label.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Label</label>
+                        {{ form.label }}
+                    </div>
+                    <div>
+                        <label for="{{ form.recipient_name.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Recipient Name</label>
+                        {{ form.recipient_name }}
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 md:gap-5">
+                    <div>
+                        <label for="{{ form.phone_number.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Phone Number</label>
+                        {{ form.phone_number }}
+                    </div>
+                    <div>
+                        <label for="{{ form.city.id_for_label }}" class="block text-gray-700 font-semibold mb-2">City</label>
+                        {{ form.city }}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.address.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Address</label>
+                    {{ form.address }}
+                </div>
+
+                <div class="grid md:grid-cols-[minmax(0,1fr)_220px] gap-4 md:gap-5 items-end">
+                    <div>
+                        <label for="{{ form.postal_code.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Postal Code</label>
+                        {{ form.postal_code }}
+                    </div>
+                    <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 md:mb-px">
+                        <label class="inline-flex items-center gap-3 text-gray-700 font-semibold leading-none">
+                            {{ form.is_default }}
+                            <span>Set as default address</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.notes.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Delivery Notes</label>
+                    {{ form.notes }}
+                </div>
+
+                {% if form.errors %}
+                <div class="rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-700">
+                    {{ form.errors }}
+                </div>
+                {% endif %}
+
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button type="submit" class="inline-flex min-w-[150px] items-center justify-center bg-pink-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-pink-700 transition">
+                        Update Address
+                    </button>
+                    <a href="{% url 'accounts:profile' %}" class="inline-flex min-w-[110px] items-center justify-center border border-gray-200 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="text"],
+    input[type="tel"],
+    textarea {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        line-height: 1.4;
+        background-color: #fff;
+        min-height: 56px;
+        box-sizing: border-box;
+    }
+
+    textarea {
+        height: 56px;
+        resize: none;
+        overflow-y: hidden;
+        display: block;
+        line-height: 1.25;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        vertical-align: middle;
+    }
+
+    #id_address {
+        min-height: 56px;
+    }
+
+    input[type="checkbox"] {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+        accent-color: #db2777;
+    }
+
+    input:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #f9a8d4;
+        box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function autoResizeTextarea(textarea) {
+        textarea.style.height = '56px';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    document.querySelectorAll('textarea').forEach((textarea) => {
+        autoResizeTextarea(textarea);
+        textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+    });
+</script>
+{% endblock %}

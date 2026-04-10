@@ -238,6 +238,6 @@ class DeliveryAddressDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return DeliveryAddress.objects.filter(user=self.request.user)
     
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Address deleted successfully!')
-        return super().delete(request, *args, **kwargs)
+    def form_valid(self, form):
+        messages.success(self.request, 'Address deleted successfully!')
+        return super().form_valid(form)

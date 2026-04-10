@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Address - Joseph Flowershop{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+        <div class="h-1 w-full bg-red-500"></div>
+        <div class="p-6 md:p-8">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Delete Delivery Address</h1>
+                <p class="text-sm text-gray-500 mt-1">Please confirm that you want to remove this saved address.</p>
+            </div>
+
+            <div class="rounded-2xl border border-red-100 bg-red-50 p-5 space-y-2">
+                <p class="font-bold text-gray-900">{{ object.label }}</p>
+                <p class="text-gray-700">{{ object.recipient_name }}</p>
+                <p class="text-gray-600 text-sm">{{ object.address }}</p>
+                <p class="text-gray-600 text-sm">{{ object.city }}{% if object.postal_code %}, {{ object.postal_code }}{% endif %}</p>
+                <p class="text-gray-600 text-sm">{{ object.phone_number }}</p>
+                {% if object.notes %}
+                <p class="text-gray-600 text-sm">Notes: {{ object.notes }}</p>
+                {% endif %}
+            </div>
+
+            <p class="text-sm text-gray-600 mt-6">This action cannot be undone.</p>
+
+            <form method="post" class="flex flex-col sm:flex-row gap-3 pt-6">
+                {% csrf_token %}
+                <button type="submit" class="inline-flex min-w-[160px] items-center justify-center bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition">
+                    Delete Address
+                </button>
+                <a href="{% url 'accounts:profile' %}" class="inline-flex min-w-[110px] items-center justify-center border border-gray-200 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
