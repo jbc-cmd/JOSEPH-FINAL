@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from .models import Order, OrderItem, OrderTracking
 from cart.views import get_or_create_cart
 from cart.models import CartItem, Cart
@@ -326,7 +328,7 @@ def create_order(request):
 
         # Get form data
         customer_name = saved_address.recipient_name
-        customer_email = request.user.email
+        customer_email = request.POST.get('customer_email', '').strip() or request.user.email
         customer_phone = saved_address.phone_number
         delivery_address = saved_address.address
         delivery_city = saved_address.city
@@ -336,6 +338,11 @@ def create_order(request):
         gift_message = request.POST.get('gift_message', '')
         anonymous_sender = request.POST.get('anonymous_sender') == 'on'
         special_instructions = request.POST.get('special_instructions', '')
+
+        try:
+            validate_email(customer_email)
+        except ValidationError:
+            return error_response('Please enter a valid receipt email address.')
 
         # Parse delivery date
         from datetime import datetime
@@ -558,6 +565,27 @@ def cancel_order(request, order_id):
         messages.error(request, 'The direct cancellation window has ended. Please submit a cancellation request instead.')
 
     return redirect('orders:order_detail', order_id=order.id)
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def delete_order(request, order_id):
+    """Allow customers to delete cancelled or delivered orders from history."""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if not order.can_customer_delete():
+        messages.error(request, 'Only cancelled or delivered orders can be removed from your history.')
+        return redirect('accounts:order_history')
+
+    delivery = order.delivery
+    order_number = order.order_number
+    order.delete()
+
+    if delivery:
+        delivery.delete()
+
+    messages.success(request, f'Order {order_number} was removed from your history.')
+    return redirect('accounts:order_history')
 
 
 @login_required(login_url='accounts:login')

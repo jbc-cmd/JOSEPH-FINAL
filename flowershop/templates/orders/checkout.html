@@ -21,7 +21,6 @@
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-wide text-pink-600">Saved Address</p>
                             <p class="mt-3 text-lg font-bold text-gray-900">{{ saved_address.recipient_name }}</p>
-                            <p class="mt-1 text-sm text-gray-600">{{ user.email }}</p>
                             <p class="mt-1 text-sm text-gray-600">{{ saved_address.phone_number }}</p>
                             <p class="mt-3 text-sm text-gray-700">{{ saved_address.address }}</p>
                             <p class="text-sm text-gray-700">{{ saved_address.city }} {{ saved_address.postal_code }}</p>
@@ -32,6 +31,11 @@
                         <a href="{% url 'accounts:profile' %}" class="inline-flex items-center justify-center rounded-lg border border-pink-200 bg-white px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50">
                             Update Address
                         </a>
+                    </div>
+                    <div class="mt-5">
+                        <label class="block text-gray-700 font-bold mb-2">Receipt Email *</label>
+                        <input type="email" name="customer_email" required value="{{ user.email }}" class="w-full border border-gray-300 rounded px-4 py-2 bg-white" placeholder="you@example.com">
+                        <p class="mt-2 text-xs text-gray-500">Order confirmation and receipt will be sent to this email address.</p>
                     </div>
                 </div>
                 {% else %}
@@ -49,7 +53,7 @@
                 <div class="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">Phone Number *</label>
-                        <input type="tel" name="customer_phone" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="+63 9123 456 789">
+                        <input type="tel" name="customer_phone" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="09124169887">
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2">City *</label>
@@ -221,7 +225,8 @@ function initializeCheckoutForm() {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(async response => {

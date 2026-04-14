@@ -175,6 +175,9 @@ class Order(models.Model):
             and not self.is_cancellation_window_open()
             and self.cancellation_requested_at is None
         )
+
+    def can_customer_delete(self):
+        return self.status in ['CANCELLED', 'DELIVERED']
     
     def mark_as_delivered(self):
         """Mark order as delivered."""
