@@ -5,6 +5,8 @@ from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 from django.urls import reverse
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from .models import Order, OrderItem, OrderTracking
 from cart.views import get_or_create_cart
 from cart.models import CartItem, Cart
@@ -23,6 +25,57 @@ ORDER_TIMELINE = [
     ('OUT_FOR_DELIVERY', 'Out for Delivery', 'Your bouquet is on the way to the delivery address.', 'fa-truck'),
     ('DELIVERED', 'Delivered', 'Your flowers have arrived at their destination.', 'fa-heart'),
 ]
+
+
+def _send_order_receipt_email(order):
+    """Send a simple order receipt email to the customer."""
+    subject = f'Order Confirmation - {order.order_number}'
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '') or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
+    recipient_list = [order.customer_email]
+
+    item_lines = []
+    for item in order.items.all():
+        item_lines.append(f"- {item.get_item_name()} x{item.quantity}: PHP {float(item.subtotal):.2f}")
+
+    text_body = (
+        f"Thank you for your order, {order.customer_name}.\n\n"
+        f"Your order number is {order.order_number}.\n"
+        f"Delivery date: {order.delivery_date}\n"
+        f"Delivery window: {_format_delivery_window(order.delivery_time_window)}\n\n"
+        f"Items:\n" + "\n".join(item_lines) + "\n\n"
+        f"Subtotal: PHP {float(order.subtotal):.2f}\n"
+        f"Delivery fee: PHP {float(order.delivery_fee):.2f}\n"
+        f"Total: PHP {float(order.total_amount):.2f}\n\n"
+        "You can use your order number and email address to track your order.\n"
+        "Thank you for choosing Joseph Flowershop."
+    )
+
+    html_body = f"""
+    <div style="font-family: Arial, Helvetica, sans-serif; color: #1f2937; line-height: 1.6;">
+        <h2 style="margin-bottom: 8px;">Order Confirmation</h2>
+        <p>Thank you for your order, <strong>{order.customer_name}</strong>.</p>
+        <p>Your order number is <strong>{order.order_number}</strong>.</p>
+        <p>
+            <strong>Delivery date:</strong> {order.delivery_date}<br>
+            <strong>Delivery window:</strong> {_format_delivery_window(order.delivery_time_window)}
+        </p>
+        <h3 style="margin-top: 24px; margin-bottom: 8px;">Items</h3>
+        <ul>
+            {''.join(f'<li>{item.get_item_name()} x{item.quantity}: PHP {float(item.subtotal):.2f}</li>' for item in order.items.all())}
+        </ul>
+        <p>
+            <strong>Subtotal:</strong> PHP {float(order.subtotal):.2f}<br>
+            <strong>Delivery fee:</strong> PHP {float(order.delivery_fee):.2f}<br>
+            <strong>Total:</strong> PHP {float(order.total_amount):.2f}
+        </p>
+        <p>You can use your order number and email address to track your order.</p>
+        <p>Thank you for choosing Joseph Flowershop.</p>
+    </div>
+    """
+
+    message = EmailMultiAlternatives(subject, text_body, from_email, recipient_list)
+    message.attach_alternative(html_body, 'text/html')
+    message.send(fail_silently=False)
 
 
 def _normalize_order_number(raw_value):
@@ -223,6 +276,19 @@ def checkout(request):
 @require_POST
 def create_order(request):
     """Create order from checkout."""
+    expects_json = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    def error_response(message, redirect_url=None):
+        if expects_json:
+            payload = {'success': False, 'message': message}
+            if redirect_url:
+                payload['redirect_url'] = redirect_url
+            return JsonResponse(payload)
+        if redirect_url:
+            return redirect(redirect_url)
+        messages.error(request, message)
+        return redirect('orders:checkout')
+
     direct_purchase = request.session.get('direct_purchase')
 
     if direct_purchase:
@@ -234,31 +300,29 @@ def create_order(request):
             bouquet = get_object_or_404(Bouquet, id=direct_purchase['bouquet_id'])
             subtotal = float(bouquet.total_price) * direct_purchase['quantity']
         else:
-            return JsonResponse({'success': False, 'message': 'Invalid purchase type'})
+            return error_response('Invalid purchase type')
     else:
         # Regular cart checkout
         cart = get_or_create_cart(request)
 
         if not cart.items.exists():
-            return JsonResponse({'success': False, 'message': 'Cart is empty'})
+            return error_response('Cart is empty', reverse('cart:cart'))
 
         subtotal = cart.get_total_price()
 
     if not request.user.is_authenticated:
-        return JsonResponse({
-            'success': False,
-            'message': 'Please sign in before proceeding to checkout.',
-            'redirect_url': f"{reverse('accounts:login')}?next={reverse('orders:checkout')}"
-        })
+        return error_response(
+            'Please sign in before proceeding to checkout.',
+            f"{reverse('accounts:login')}?next={reverse('orders:checkout')}"
+        )
 
     try:
         saved_address = _get_checkout_delivery_address(request.user)
         if not saved_address:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please add or update your delivery address in your profile before checkout.',
-                'redirect_url': reverse('accounts:profile')
-            })
+            return error_response(
+                'Please add or update your delivery address in your profile before checkout.',
+                reverse('accounts:profile')
+            )
 
         # Get form data
         customer_name = saved_address.recipient_name
@@ -366,6 +430,12 @@ def create_order(request):
             status='PENDING'
         )
 
+        try:
+            _send_order_receipt_email(order)
+        except Exception:
+            # Receipt email should not block a successful order placement.
+            pass
+
         # Clear appropriate cart/session
         if direct_purchase:
             # Clear direct purchase from session
@@ -377,14 +447,18 @@ def create_order(request):
         # Store order in session for confirmation page
         request.session['order_id'] = order.id
 
-        return JsonResponse({
-            'success': True,
-            'order_number': order.order_number,
-            'redirect_url': f'/orders/{order.id}/confirmation/'
-        })
+        redirect_url = reverse('orders:order_confirmation', kwargs={'order_id': order.id})
+        if expects_json:
+            return JsonResponse({
+                'success': True,
+                'order_number': order.order_number,
+                'redirect_url': redirect_url
+            })
+        messages.success(request, f'Order {order.order_number} placed successfully.')
+        return redirect(redirect_url)
 
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)})
+        return error_response(str(e))
 
 
 def order_confirmation(request, order_id):

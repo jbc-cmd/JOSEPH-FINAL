@@ -25,7 +25,7 @@
             <h1 class="text-3xl font-bold text-center mb-2" style="font-family: 'Playfair Display', serif;">Create Your Account</h1>
             <p class="text-center text-gray-600 mb-8">Join us and start sending beautiful flowers!</p>
 
-            <form method="post" class="space-y-4" id="register-form" novalidate>
+            <form method="post" class="space-y-4" id="register-form" novalidate data-turbo="false">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next_url }}">
 
@@ -138,6 +138,7 @@
         padding: 0;
     }
 </style>
+{% block extra_js %}
 <script>
     function initializeRegisterForm() {
         const form = document.getElementById('register-form');
@@ -251,7 +252,15 @@
         });
     }
 
+    function refreshCachedAuthPage(event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    }
+
+    window.addEventListener('pageshow', refreshCachedAuthPage);
     document.addEventListener('DOMContentLoaded', initializeRegisterForm);
     document.addEventListener('turbo:load', initializeRegisterForm);
 </script>
+{% endblock %}
 {% endblock %}

@@ -205,7 +205,11 @@ class OrderItem(models.Model):
         return self.product.name if self.product else self.bouquet.name
     
     def get_item_image(self):
-        return self.product.image if self.product else self.bouquet.image
+        if self.product:
+            return self.product.image.url if self.product.image and self.product.image.name else None
+        if self.bouquet:
+            return self.bouquet.get_image_url()
+        return None
 
 
 class OrderTracking(models.Model):

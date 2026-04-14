@@ -273,7 +273,7 @@
                         <div class="rounded-[24px] border border-gray-100 bg-[#fcfcfc] p-4">
                             <div class="flex items-start gap-4">
                                 {% if item.get_item_image %}
-                                <img src="{{ item.get_item_image.url }}" alt="{{ item.get_item_name }}" class="h-20 w-20 rounded-2xl object-cover ring-1 ring-gray-100">
+                                <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="h-20 w-20 rounded-2xl object-cover ring-1 ring-gray-100">
                                 {% else %}
                                 <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 ring-1 ring-gray-100">
                                     <i class="fas fa-image"></i>

@@ -1,6 +1,7 @@
 from django.db import models
 from products.models import Flower
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.templatetags.static import static
 
 
 class BouquetSize(models.Model):
@@ -102,6 +103,8 @@ class Bouquet(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     size = models.ForeignKey(BouquetSize, on_delete=models.PROTECT)
+    is_custom_size = models.BooleanField(default=False)
+    custom_flower_count = models.PositiveIntegerField(null=True, blank=True)
     wrapping = models.ForeignKey(WrappingStyle, on_delete=models.PROTECT)
     ribbon_color = models.ForeignKey(RibbonColor, on_delete=models.PROTECT)
     personal_message = models.TextField(blank=True, max_length=500)
@@ -119,6 +122,18 @@ class Bouquet(models.Model):
     
     def __str__(self):
         return self.name
+
+    def size_label(self):
+        """Return the display label for the selected size."""
+        if self.is_custom_size and self.custom_flower_count:
+            return f"Custom ({self.custom_flower_count} stems)"
+        return self.size.get_size_display()
+
+    def get_image_url(self):
+        """Return the bouquet image URL or the shared custom bouquet fallback."""
+        if self.image and self.image.name:
+            return self.image.url
+        return static('images/custom-bouquet.png')
     
     def get_flower_count(self):
         """Get total number of flowers in this bouquet."""

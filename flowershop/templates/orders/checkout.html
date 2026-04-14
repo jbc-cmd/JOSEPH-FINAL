@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8">Checkout</h1>
     
-    <form method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8">
+    <form method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8" data-turbo="false">
         {% csrf_token %}
         
         <!-- Checkout Form -->
@@ -137,6 +137,7 @@
         <!-- Order Summary Sidebar -->
         <div class="bg-white rounded-lg shadow-md p-6 h-fit">
             <h2 class="text-2xl font-bold mb-6">Order Summary</h2>
+            <div id="checkout-status" class="hidden mb-4 rounded-lg border px-4 py-3 text-sm"></div>
             
             <div class="space-y-4 mb-6 border-b pb-6 max-h-64 overflow-y-auto">
                 {% for item in items %}
@@ -178,16 +179,41 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initializeCheckoutForm() {
     const form = document.querySelector('form');
+    if (!form || form.dataset.checkoutBound === 'true') {
+        return;
+    }
+    form.dataset.checkoutBound = 'true';
     const submitButton = form.querySelector('button[type="submit"]');
+    const statusBox = document.getElementById('checkout-status');
+
+    function setStatus(message, tone) {
+        statusBox.textContent = message;
+        statusBox.classList.remove('hidden', 'border-red-200', 'bg-red-50', 'text-red-700', 'border-green-200', 'bg-green-50', 'text-green-700', 'border-blue-200', 'bg-blue-50', 'text-blue-700');
+        if (tone === 'error') {
+            statusBox.classList.add('border-red-200', 'bg-red-50', 'text-red-700');
+            return;
+        }
+        if (tone === 'success') {
+            statusBox.classList.add('border-green-200', 'bg-green-50', 'text-green-700');
+            return;
+        }
+        statusBox.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-700');
+    }
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
+        if (!form.reportValidity()) {
+            setStatus('Please complete the required checkout fields before placing your order.', 'error');
+            return;
+        }
+
         // Disable button and show loading state
         submitButton.disabled = true;
         submitButton.textContent = 'Processing...';
+        setStatus('Placing your order now. Please wait...', 'info');
 
         const formData = new FormData(this);
 
@@ -198,24 +224,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRFToken': formData.get('csrfmiddlewaretoken')
             }
         })
-        .then(response => response.json())
+        .then(async response => {
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(text || 'Unexpected server response.');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Redirect to confirmation page
+                setStatus('Your order has been placed. Redirecting to confirmation...', 'success');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Error: ' + data.message);
+                setStatus(data.message || 'We could not place your order. Please try again.', 'error');
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
                 submitButton.disabled = false;
                 submitButton.textContent = 'Place Order';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            setStatus('An error occurred while placing your order. Please try again.', 'error');
             submitButton.disabled = false;
             submitButton.textContent = 'Place Order';
         });
     });
-});
+}
+
+document.addEventListener('DOMContentLoaded', initializeCheckoutForm);
+document.addEventListener('turbo:load', initializeCheckoutForm);
 </script>
 {% endblock %}

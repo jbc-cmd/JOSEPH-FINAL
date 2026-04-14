@@ -78,7 +78,7 @@ class BouquetExtraInline(admin.TabularInline):
 
 @admin.register(Bouquet)
 class BouquetAdmin(admin.ModelAdmin):
-    list_display = ['name', 'size', 'base_price', 'total_price', 'created_at']
+    list_display = ['name', 'selected_size_display', 'custom_flower_count', 'base_price', 'total_price', 'created_at']
     list_filter = ['size', 'created_at']
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'updated_at', 'base_price', 'total_price']
@@ -88,7 +88,7 @@ class BouquetAdmin(admin.ModelAdmin):
             'fields': ('name', 'description', 'image')
         }),
         ('Components', {
-            'fields': ('size', 'wrapping', 'ribbon_color')
+            'fields': ('size', 'is_custom_size', 'custom_flower_count', 'wrapping', 'ribbon_color')
         }),
         ('Message', {
             'fields': ('personal_message',),
@@ -102,6 +102,10 @@ class BouquetAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+
+    def selected_size_display(self, obj):
+        return obj.size_label()
+    selected_size_display.short_description = 'Size'
 
 
 @admin.register(BouquetItem)

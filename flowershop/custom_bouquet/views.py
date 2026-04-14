@@ -10,6 +10,41 @@ import json
 import uuid
 
 
+def _resolve_selected_size(size_id, total_stems, custom_stem_count=None):
+    """Resolve and validate the selected bouquet size."""
+    if custom_stem_count is not None:
+        if custom_stem_count < 1:
+            raise ValueError('Custom size must be at least 1 flower.')
+        if total_stems != custom_stem_count:
+            raise ValueError(f'Your custom size expects {custom_stem_count} flowers, but you selected {total_stems}.')
+
+        matching_size = BouquetSize.objects.filter(
+            flower_count_min__lte=custom_stem_count,
+            flower_count_max__gte=custom_stem_count,
+        ).order_by('flower_count_min').first()
+
+        if matching_size:
+            return matching_size, True, custom_stem_count
+
+        fallback_size = BouquetSize.objects.order_by('-flower_count_max', '-flower_count_min').first()
+        if not fallback_size:
+            raise ValueError('No bouquet sizes are configured yet.')
+
+        return fallback_size, True, custom_stem_count
+
+    if not size_id:
+        raise ValueError('Please select a bouquet size.')
+
+    size = BouquetSize.objects.get(id=size_id)
+    if total_stems < size.flower_count_min or total_stems > size.flower_count_max:
+        raise ValueError(
+            f'{size.get_size_display()} requires {size.flower_count_min}-{size.flower_count_max} flowers, '
+            f'but you selected {total_stems}.'
+        )
+
+    return size, False, None
+
+
 def bouquet_builder(request):
     """Main bouquet builder page."""
     sizes = BouquetSize.objects.all()
@@ -34,6 +69,7 @@ def get_bouquet_pricing(request):
     """Calculate bouquet pricing (AJAX)."""
     try:
         size_id = request.GET.get('size_id')
+        custom_stem_count_raw = request.GET.get('custom_stem_count')
         wrapping_id = request.GET.get('wrapping_id')
         ribbon_id = request.GET.get('ribbon_id')
         flower_ids = [flower_id for flower_id in request.GET.getlist('flower_ids') if flower_id]
@@ -41,17 +77,18 @@ def get_bouquet_pricing(request):
         extra_ids = [extra_id for extra_id in request.GET.getlist('extra_ids') if extra_id]
         extra_quantities = request.GET.getlist('extra_quantities')
 
-        size = BouquetSize.objects.get(id=size_id)
         wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
         ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
 
         flowers_price = 0
+        total_stems = 0
         flower_breakdown = []
         for index, flower_id in enumerate(flower_ids):
             flower = Flower.objects.get(id=flower_id)
             quantity = int(flower_quantities[index]) if index < len(flower_quantities) else 1
             subtotal = float(flower.price) * quantity
             flowers_price += subtotal
+            total_stems += quantity
             flower_breakdown.append({
                 'id': flower.id,
                 'name': flower.get_name_display(),
@@ -72,12 +109,16 @@ def get_bouquet_pricing(request):
                 'quantity': quantity,
                 'subtotal': subtotal,
             })
+
+        custom_stem_count = int(custom_stem_count_raw) if custom_stem_count_raw not in (None, '') else None
+        size, is_custom_size, resolved_custom_count = _resolve_selected_size(size_id, total_stems, custom_stem_count)
         
-        total = float(size.base_price) + float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
+        total = float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
         
         return JsonResponse({
             'success': True,
-            'size_price': float(size.base_price),
+            'size_price': 0,
+            'size_name': f'Custom ({resolved_custom_count} stems)' if is_custom_size and resolved_custom_count else size.get_size_display(),
             'wrapping_price': float(wrapping.price),
             'ribbon_price': float(ribbon.price),
             'flowers_price': flowers_price,
@@ -98,14 +139,14 @@ def save_custom_bouquet(request):
         
         name = data.get('name', f'Custom Bouquet {uuid.uuid4().hex[:4].upper()}')
         size_id = data.get('size_id')
+        custom_stem_count_raw = data.get('custom_stem_count')
         wrapping_id = data.get('wrapping_id')
         ribbon_id = data.get('ribbon_id')
         flowers_data = data.get('flowers', [])  # List of {'flower_id': ..., 'quantity': ...}
         extras_data = data.get('extras', [])
         personal_message = data.get('personal_message', '')
+        florist_instructions = data.get('florist_instructions', '')
         
-        # Create bouquet
-        size = BouquetSize.objects.get(id=size_id)
         wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
         ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
 
@@ -115,14 +156,25 @@ def save_custom_bouquet(request):
         # Calculate total price
         flowers_price = 0
         extras_price = 0
+        total_stems = 0
+
+        for flower_data in flowers_data:
+            quantity = int(flower_data.get('quantity', 1))
+            total_stems += quantity
+
+        custom_stem_count = int(custom_stem_count_raw) if custom_stem_count_raw not in (None, '') else None
+        size, is_custom_size, resolved_custom_count = _resolve_selected_size(size_id, total_stems, custom_stem_count)
         
         bouquet = Bouquet.objects.create(
             name=name,
+            description=florist_instructions,
             size=size,
+            is_custom_size=is_custom_size,
+            custom_flower_count=resolved_custom_count,
             wrapping=wrapping,
             ribbon_color=ribbon,
             personal_message=personal_message,
-            base_price=size.base_price,
+            base_price=0,
             total_price=0,  # Will be calculated below
         )
         
@@ -152,7 +204,7 @@ def save_custom_bouquet(request):
             extras_price += float(extra.price) * quantity
         
         # Calculate final total
-        total = float(size.base_price) + float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
+        total = float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
         bouquet.total_price = total
         bouquet.save()
         

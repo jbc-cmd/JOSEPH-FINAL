@@ -17,7 +17,7 @@
                 <div class="rounded-3xl border border-orange-100 bg-white/85 p-4 shadow-sm">
                     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="1"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-orange-500">Step 1</span><p class="font-bold text-gray-900 mt-1">Choose flowers</p><p class="text-xs text-gray-500 mt-1">Pick stems to start your bouquet.</p></button>
-                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="2"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 2</span><p class="font-bold text-gray-900 mt-1">Select size</p><p class="text-xs text-gray-500 mt-1">Add your bouquet size surcharge.</p></button>
+                        <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="2"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 2</span><p class="font-bold text-gray-900 mt-1">Select size</p><p class="text-xs text-gray-500 mt-1">Choose the stem range that fits your bouquet.</p></button>
                         <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="3"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 3</span><p class="font-bold text-gray-900 mt-1">Choose wrapping</p><p class="text-xs text-gray-500 mt-1">Switch the finishing wrap anytime.</p></button>
                         <button type="button" class="builder-step-nav rounded-2xl border border-orange-100 px-4 py-3 text-left transition" data-step-nav="4"><span class="step-nav-status text-xs font-semibold uppercase tracking-wide text-gray-400">Step 4</span><p class="font-bold text-gray-900 mt-1">Extras and message</p><p class="text-xs text-gray-500 mt-1">Optional add-ons for a personal touch.</p></button>
                     </div>
@@ -70,21 +70,49 @@
                         <div class="builder-step-badge flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 font-bold">2</div>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap"><h2 class="text-2xl font-bold text-gray-900">Select size</h2><span class="builder-step-complete hidden inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700"><i class="fas fa-check-circle"></i>Completed</span></div>
-                            <p class="text-gray-600 mt-2">Final price = selected stems + size + wrapping + extras. Pick the bouquet size that matches your arrangement.</p>
+                            <p class="text-gray-600 mt-2">Choose the bouquet size that matches your arrangement. Final price = selected stems + wrapping + extras.</p>
                         </div>
                     </div>
                     <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
                         {% for size in sizes %}
                         <label class="block">
                             <input type="radio" name="size" value="{{ size.id }}" class="size-input sr-only">
-                            <div class="size-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-size-card data-size-id="{{ size.id }}" data-size-name="{{ size.get_size_display }}" data-size-price="{{ size.base_price|floatformat:2 }}" data-size-min="{{ size.flower_count_min }}" data-size-max="{{ size.flower_count_max }}">
+                            <div class="size-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-size-card data-size-id="{{ size.id }}" data-size-name="{{ size.get_size_display }}" data-size-price="0" data-size-min="{{ size.flower_count_min }}" data-size-max="{{ size.flower_count_max }}">
                                 <div class="flex items-start justify-between gap-3"><div><p class="font-bold text-lg text-gray-900">{{ size.get_size_display }}</p><p class="text-sm text-gray-500 mt-1">{{ size.flower_count_min }}-{{ size.flower_count_max }} stems</p></div><span class="hidden size-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span></div>
                                 <p class="text-sm text-gray-500 mt-4">{{ size.description|default:"Balanced bouquet size for your chosen stems." }}</p>
-                                <p class="text-xl font-bold text-orange-600 mt-5">+&#8369;{{ size.base_price }}</p>
+                                <p class="text-sm font-semibold text-orange-600 mt-5">Stem guide only</p>
                             </div>
                         </label>
                         {% endfor %}
+                        <label class="block">
+                            <input type="radio" name="size" value="custom" class="size-input sr-only">
+                            <div class="size-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-size-card data-size-id="custom" data-size-name="Custom size" data-size-price="0" data-size-min="1" data-size-max="">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="font-bold text-lg text-gray-900">Custom size</p>
+                                        <p class="text-sm text-gray-500 mt-1">Choose your exact stem count</p>
+                                    </div>
+                                    <span class="hidden size-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-4">Perfect for customers who already know exactly how many flowers they want in the bouquet.</p>
+                                <p class="text-sm font-semibold text-orange-600 mt-5">Set your own quantity</p>
+                            </div>
+                        </label>
                     </div>
+                    <div id="custom-size-controls" class="hidden mt-5 rounded-2xl border border-orange-200 bg-orange-50/70 p-4">
+                        <label for="custom-stem-count" class="block text-sm font-semibold text-gray-900 mb-3">Exact number of flowers</label>
+                        <div class="inline-flex items-center gap-3 rounded-xl border border-orange-200 bg-white px-4 py-3 shadow-sm">
+                            <button type="button" id="custom-stem-decrease" class="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-500 transition hover:bg-gray-50 hover:text-orange-600" aria-label="Decrease custom flower count">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <input id="custom-stem-count" type="number" min="1" inputmode="numeric" class="w-12 border-0 bg-transparent p-0 text-center text-base font-semibold text-gray-900 focus:outline-none focus:ring-0" placeholder="0">
+                            <button type="button" id="custom-stem-increase" class="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-sm text-gray-500 transition hover:bg-gray-50 hover:text-orange-600" aria-label="Increase custom flower count">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="mt-3 text-xs leading-5 text-gray-500">Your selected flower quantities must match this exact number before the bouquet can be added to cart.</p>
+                    </div>
+                    <p id="size-validation-message" class="mt-4 text-sm text-gray-500">Select a bouquet size that matches your total stem count.</p>
                 </section>
                 <section id="builder-step-3" class="builder-step-card rounded-3xl border border-orange-100 bg-white/90 p-6 md:p-8 shadow-sm scroll-mt-28" data-step="3">
                     <div class="flex items-start gap-4 mb-6">
@@ -100,7 +128,21 @@
                             <input type="radio" name="wrapping" value="{{ style.id }}" class="wrapping-input sr-only" {% if forloop.first %}checked{% endif %}>
                             <div class="wrapping-card rounded-2xl border-2 border-gray-200 bg-white p-5 h-full cursor-pointer transition hover:border-orange-300 hover:shadow-sm" data-wrapping-card data-wrapping-id="{{ style.id }}" data-wrapping-name="{{ style.get_style_display }}" data-wrapping-price="{{ style.price|floatformat:2 }}">
                                 <div class="flex items-start justify-between gap-3 mb-4">
-                                    <div class="h-14 w-14 rounded-2xl border border-white/70 shadow-inner {% if style.style == 'KRAFT' %}bg-[#d8b38a]{% elif style.style == 'CELLOPHANE' %}bg-gradient-to-br from-white to-slate-100{% elif style.style == 'FABRIC' %}bg-[#f6c8d8]{% elif style.style == 'BURLAP' %}bg-[#c8a57a]{% elif style.style == 'SATIN' %}bg-[#eadcf6]{% else %}bg-orange-100{% endif %}"></div>
+                                    <div class="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-white/70 shadow-inner {% if style.style == 'KRAFT' %}bg-[#d8b38a]{% elif style.style == 'CELLOPHANE' %}bg-gradient-to-br from-white to-slate-100{% elif style.style == 'FABRIC' %}bg-[#f6c8d8]{% elif style.style == 'BURLAP' %}bg-[#c8a57a]{% elif style.style == 'SATIN' %}bg-[#eadcf6]{% else %}bg-orange-100{% endif %}">
+                                        {% if style.style == 'KRAFT' %}
+                                        <i class="fas fa-scroll text-[#8a5a2b] text-lg"></i>
+                                        {% elif style.style == 'CELLOPHANE' %}
+                                        <i class="fas fa-gem text-slate-300 text-lg"></i>
+                                        {% elif style.style == 'FABRIC' %}
+                                        <i class="fas fa-shirt text-pink-500 text-lg"></i>
+                                        {% elif style.style == 'BURLAP' %}
+                                        <i class="fas fa-wheat-awn text-[#8b6a3d] text-lg"></i>
+                                        {% elif style.style == 'SATIN' %}
+                                        <i class="fas fa-ribbon text-purple-300 text-lg"></i>
+                                        {% else %}
+                                        <i class="fas fa-gift text-orange-400 text-lg"></i>
+                                        {% endif %}
+                                    </div>
                                     <span class="hidden wrapping-selected-badge rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">Selected</span>
                                 </div>
                                 <p class="font-bold text-gray-900">{{ style.get_style_display }}</p>
@@ -144,6 +186,12 @@
                         <textarea id="bouquet-message" rows="4" maxlength="500" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add a heartfelt note for the recipient (optional)"></textarea>
                         <div class="mt-2 flex items-center justify-between gap-3"><p class="text-xs text-gray-500">Leave a sweet note to include with your bouquet.</p><p id="message-status" class="text-xs font-medium text-gray-400">No message added yet</p></div>
                     </div>
+
+                    <div class="rounded-2xl border border-gray-200 bg-white p-5 mt-4">
+                        <label for="florist-instructions" class="block text-sm font-semibold text-gray-700 mb-2">Florist instructions</label>
+                        <textarea id="florist-instructions" rows="4" maxlength="500" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add bouquet detail requests for the florist, like arrangement style, emphasis, or presentation preferences (optional)"></textarea>
+                        <div class="mt-2 flex items-center justify-between gap-3"><p class="text-xs text-gray-500">Use this for bouquet-making requests, not the recipient card message.</p><p id="florist-instructions-status" class="text-xs font-medium text-gray-400">No florist instructions added yet</p></div>
+                    </div>
                 </section>
             </div>
 
@@ -170,7 +218,7 @@
                                 <div id="summary-flowers" class="space-y-2"><p class="text-sm text-gray-500">Choose your flowers to start building your bouquet</p></div>
                             </div>
                             <div class="grid gap-3">
-                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Size</p><p id="summary-size-name" class="text-sm text-gray-500">Select a bouquet size</p></div><span id="summary-size-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div><p class="text-sm font-semibold text-gray-900">Size</p><p id="summary-size-name" class="text-sm text-gray-500">Select a bouquet size</p></div></div>
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Wrapping</p><p id="summary-wrapping-name" class="text-sm text-gray-500">Classic wrap preselected</p></div><span id="summary-wrapping-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Extras</p><p id="summary-extras-status" class="text-sm text-gray-500">No extras selected</p></div><span id="summary-extras-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Message</p><p id="summary-message-status" class="text-sm text-gray-500">No message added yet</p></div><span id="summary-message-badge" class="text-xs font-semibold text-gray-400">Optional</span></div></div>
@@ -179,11 +227,11 @@
                                 <p class="text-sm font-semibold text-gray-900 mb-3">Pricing breakdown</p>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex items-center justify-between text-gray-600"><span>Flowers subtotal</span><span id="breakdown-flowers">&#8369;0</span></div>
-                                    <div class="flex items-center justify-between text-gray-600"><span>Size surcharge</span><span id="breakdown-size">&#8369;0</span></div>
+                                    <div class="flex items-center justify-between text-gray-600"><span>Size adjustment</span><span id="breakdown-size">&#8369;0</span></div>
                                     <div class="flex items-center justify-between text-gray-600"><span>Wrapping surcharge</span><span id="breakdown-wrapping">&#8369;0</span></div>
                                     <div class="flex items-center justify-between text-gray-600"><span>Extras subtotal</span><span id="breakdown-extras">&#8369;0</span></div>
                                 </div>
-                                <div class="mt-4 border-t border-orange-100 pt-4 flex items-end justify-between gap-3"><div><p class="text-sm text-gray-500">Estimated total</p><p id="summary-total" class="text-3xl font-bold text-orange-600">&#8369;0</p></div><p class="text-xs text-right text-gray-500 max-w-[170px]">Final price = selected stems + size + wrapping + extras</p></div>
+                                <div class="mt-4 border-t border-orange-100 pt-4 flex items-end justify-between gap-3"><div><p class="text-sm text-gray-500">Estimated total</p><p id="summary-total" class="text-3xl font-bold text-orange-600">&#8369;0</p></div><p class="text-xs text-right text-gray-500 max-w-[170px]">Final price = selected stems + wrapping + extras</p></div>
                             </div>
                         </div>
                     </div>
@@ -218,13 +266,14 @@ function initializeBouquetBuilder() {
     const summaryStems = document.getElementById('summary-stems');
     const summaryItemCount = document.getElementById('summary-item-count');
     const summarySizeName = document.getElementById('summary-size-name');
-    const summarySizePrice = document.getElementById('summary-size-price');
     const summaryWrappingName = document.getElementById('summary-wrapping-name');
     const summaryWrappingPrice = document.getElementById('summary-wrapping-price');
     const summaryExtrasStatus = document.getElementById('summary-extras-status');
     const summaryExtrasPrice = document.getElementById('summary-extras-price');
     const summaryMessageStatus = document.getElementById('summary-message-status');
     const summaryMessageBadge = document.getElementById('summary-message-badge');
+    const floristInstructionsField = document.getElementById('florist-instructions');
+    const floristInstructionsStatus = document.getElementById('florist-instructions-status');
     const breakdownFlowers = document.getElementById('breakdown-flowers');
     const breakdownSize = document.getElementById('breakdown-size');
     const breakdownWrapping = document.getElementById('breakdown-wrapping');
@@ -234,6 +283,11 @@ function initializeBouquetBuilder() {
     const previewTitle = document.getElementById('preview-title');
     const previewSubtitle = document.getElementById('preview-subtitle');
     const messageStatus = document.getElementById('message-status');
+    const customSizeControls = document.getElementById('custom-size-controls');
+    const customStemCountInput = document.getElementById('custom-stem-count');
+    const customStemDecrease = document.getElementById('custom-stem-decrease');
+    const customStemIncrease = document.getElementById('custom-stem-increase');
+    const sizeValidationMessage = document.getElementById('size-validation-message');
     const stepConfigs = {1:{required:true,element:document.querySelector('[data-step="1"]')},2:{required:true,element:document.querySelector('[data-step="2"]')},3:{required:false,element:document.querySelector('[data-step="3"]')},4:{required:false,element:document.querySelector('[data-step="4"]')}};
     const completedScrollState = {};
     let lastActiveFlowerId = null;
@@ -249,7 +303,17 @@ function initializeBouquetBuilder() {
         const checked = document.querySelector('.size-input:checked');
         if (!checked) return null;
         const card = checked.closest('label').querySelector('[data-size-card]');
-        return {id:card.dataset.sizeId,name:card.dataset.sizeName,price:Number(card.dataset.sizePrice),min:Number(card.dataset.sizeMin),max:Number(card.dataset.sizeMax)};
+        const isCustom = card.dataset.sizeId === 'custom';
+        const customStemTarget = isCustom ? Number(customStemCountInput.value || 0) : null;
+        return {
+            id: isCustom ? '' : card.dataset.sizeId,
+            name: card.dataset.sizeName,
+            price: Number(card.dataset.sizePrice),
+            min: Number(card.dataset.sizeMin),
+            max: isCustom ? null : Number(card.dataset.sizeMax),
+            isCustom,
+            customStemTarget
+        };
     }
     function getSelectedWrapping() {
         const checked = document.querySelector('.wrapping-input:checked');
@@ -270,9 +334,40 @@ function initializeBouquetBuilder() {
         const extras = getSelectedExtras();
         const message = messageField.value.trim();
         const totalStems = flowers.reduce((sum, flower) => sum + flower.quantity, 0);
-        return {flowers,size,wrapping,extras,message,totalStems,flowersSubtotal:flowers.reduce((sum, flower) => sum + flower.subtotal, 0),extrasSubtotal:extras.reduce((sum, extra) => sum + extra.subtotal, 0),wrappingPrice:wrapping ? wrapping.price : 0,sizePrice:size ? size.price : 0};
+        const floristInstructions = floristInstructionsField.value.trim();
+        return {flowers,size,wrapping,extras,message,floristInstructions,totalStems,flowersSubtotal:flowers.reduce((sum, flower) => sum + flower.subtotal, 0),extrasSubtotal:extras.reduce((sum, extra) => sum + extra.subtotal, 0),wrappingPrice:wrapping ? wrapping.price : 0,sizePrice:size ? size.price : 0};
+    }
+    function getSizeValidation(state) {
+        if (!state.size) {
+            return { valid: false, tone: 'neutral', message: 'Select a bouquet size that matches your total stem count.' };
+        }
+        if (state.totalStems === 0) {
+            return { valid: false, tone: 'neutral', message: 'Choose your flowers first so we can validate the bouquet size.' };
+        }
+        if (state.size.isCustom) {
+            if (!state.size.customStemTarget) {
+                return { valid: false, tone: 'warning', message: 'Enter the exact number of flowers you want for your custom size.' };
+            }
+            if (state.totalStems !== state.size.customStemTarget) {
+                return {
+                    valid: false,
+                    tone: 'warning',
+                    message: `Custom size is set to ${state.size.customStemTarget} stems, but you selected ${state.totalStems}.`
+                };
+            }
+            return { valid: true, tone: 'success', message: `Custom size confirmed for ${state.size.customStemTarget} stems.` };
+        }
+        if (state.totalStems < state.size.min || state.totalStems > state.size.max) {
+            return {
+                valid: false,
+                tone: 'warning',
+                message: `${state.size.name} allows ${state.size.min}-${state.size.max} stems. You currently have ${state.totalStems}.`
+            };
+        }
+        return { valid: true, tone: 'success', message: `${state.size.name} matches your ${state.totalStems}-stem bouquet.` };
     }
     function updateVisualSelections() {
+        const state = getState();
         document.querySelectorAll('[data-flower-card]').forEach((card) => {
             const qty = Number(card.querySelector('.flower-qty').value || 0);
             card.classList.toggle('border-orange-300', qty > 0);
@@ -287,6 +382,9 @@ function initializeBouquetBuilder() {
             card.classList.toggle('scale-[1.02]', selected);
             card.querySelector('.size-selected-badge').classList.toggle('hidden', !selected);
         });
+        const customSelected = Boolean(state.size && state.size.isCustom);
+        customSizeControls.classList.toggle('hidden', !customSelected);
+        customStemCountInput.disabled = !customSelected;
         document.querySelectorAll('[data-wrapping-card]').forEach((card) => {
             const selected = card.closest('label').querySelector('.wrapping-input').checked;
             card.classList.toggle('border-orange-400', selected);
@@ -302,8 +400,8 @@ function initializeBouquetBuilder() {
             card.querySelector('.extra-selected-badge').classList.toggle('hidden', !selected);
         });
     }
-    function updateSteps(state) {
-        const completed = {1: state.totalStems > 0,2: Boolean(state.size),3: Boolean(state.wrapping),4: state.extras.length > 0 || state.message.length > 0};
+    function updateSteps(state, sizeValidation) {
+        const completed = {1: state.totalStems > 0,2: sizeValidation.valid,3: Boolean(state.wrapping),4: state.extras.length > 0 || state.message.length > 0};
         let activeStep = 1;
         if (completed[1] && !completed[2]) activeStep = 2;
         else if (completed[1] && completed[2] && !completed[3]) activeStep = 3;
@@ -348,7 +446,7 @@ function initializeBouquetBuilder() {
         });
     }
 
-    function updateSummary(state) {
+    function updateSummary(state, sizeValidation) {
         const totalItems = state.totalStems + state.extras.length;
         const total = state.flowersSubtotal + state.sizePrice + state.wrappingPrice + state.extrasSubtotal;
         flowerCountLabel.textContent = state.totalStems > 0 ? `${state.totalStems} stem${state.totalStems === 1 ? '' : 's'} selected` : 'Choose your flowers to start building your bouquet';
@@ -362,8 +460,7 @@ function initializeBouquetBuilder() {
             summaryContent.classList.remove('hidden');
         }
         summaryFlowers.innerHTML = state.flowers.length === 0 ? '<p class="text-sm text-gray-500">Choose your flowers to start building your bouquet</p>' : state.flowers.map((flower) => `<div class="flex items-center justify-between gap-3 text-sm"><span class="text-gray-700">${flower.name} x${flower.quantity}</span><span class="font-semibold text-gray-900">${money(flower.subtotal)}</span></div>`).join('');
-        summarySizeName.textContent = state.size ? `${state.size.name} (${state.size.min}-${state.size.max} stems)` : 'Select a bouquet size';
-        summarySizePrice.textContent = money(state.sizePrice);
+        summarySizeName.textContent = state.size ? (state.size.isCustom ? (state.size.customStemTarget ? `Custom (${state.size.customStemTarget} stems)` : 'Custom size') : `${state.size.name} (${state.size.min}-${state.size.max} stems)`) : 'Select a bouquet size';
         summaryWrappingName.textContent = state.wrapping ? state.wrapping.name : 'No wrapping selected';
         summaryWrappingPrice.textContent = money(state.wrappingPrice);
         summaryExtrasStatus.textContent = state.extras.length ? state.extras.map((extra) => `${extra.name} x${extra.quantity}`).join(', ') : 'No extras selected';
@@ -371,14 +468,17 @@ function initializeBouquetBuilder() {
         summaryMessageStatus.textContent = state.message ? `"${state.message.length > 42 ? `${state.message.slice(0, 42)}...` : state.message}"` : 'No message added yet';
         summaryMessageBadge.textContent = state.message ? 'Added' : 'Optional';
         summaryMessageBadge.className = state.message ? 'text-xs font-semibold text-green-600' : 'text-xs font-semibold text-gray-400';
+        floristInstructionsStatus.textContent = state.floristInstructions ? `${state.floristInstructions.length}/500 characters` : 'No florist instructions added yet';
         breakdownFlowers.textContent = money(state.flowersSubtotal);
         breakdownSize.textContent = money(state.sizePrice);
         breakdownWrapping.textContent = money(state.wrappingPrice);
         breakdownExtras.textContent = money(state.extrasSubtotal);
         summaryTotal.textContent = money(total);
+        sizeValidationMessage.textContent = sizeValidation.message;
+        sizeValidationMessage.className = sizeValidation.valid ? 'mt-4 text-sm font-semibold text-green-600' : sizeValidation.tone === 'warning' ? 'mt-4 text-sm font-semibold text-orange-600' : 'mt-4 text-sm text-gray-500';
         if (state.flowers.length > 0) {
             const leadFlower = state.flowers.find((flower) => flower.id === lastActiveFlowerId) || state.flowers[0];
-            previewTitle.textContent = state.size ? `${state.size.name} bouquet in progress` : `${leadFlower.name} bouquet in progress`;
+            previewTitle.textContent = state.size ? `${state.size.isCustom ? 'Custom size' : state.size.name} bouquet in progress` : `${leadFlower.name} bouquet in progress`;
             previewSubtitle.textContent = state.wrapping ? `${state.totalStems} stems with ${state.wrapping.name.toLowerCase()}` : `${state.totalStems} stems selected`;
             previewImageWrap.innerHTML = leadFlower.image ? `<img src="${leadFlower.image}" alt="${leadFlower.name}" class="h-full w-full object-cover">` : '<i class="fas fa-seedling text-orange-300 text-3xl"></i>';
         } else {
@@ -390,8 +490,8 @@ function initializeBouquetBuilder() {
         messageStatus.textContent = state.message ? `${state.message.length}/500 characters` : 'No message added yet';
     }
 
-    function updateSubmitState(state) {
-        const isValid = state.totalStems > 0 && Boolean(state.size);
+    function updateSubmitState(state, sizeValidation) {
+        const isValid = state.totalStems > 0 && sizeValidation.valid;
         submitButton.disabled = !isValid;
         submitButton.classList.toggle('bg-pink-600', isValid);
         submitButton.classList.toggle('hover:bg-pink-700', isValid);
@@ -399,15 +499,16 @@ function initializeBouquetBuilder() {
         submitButton.classList.toggle('bg-gray-300', !isValid);
         submitButton.classList.toggle('cursor-not-allowed', !isValid);
         submitLabel.textContent = isValid ? 'Add Custom Bouquet to Cart' : 'Select flowers and size to continue';
-        submitHelp.textContent = isValid ? 'Your bouquet is ready. You can still adjust wrapping, extras, or your message before adding it to cart.' : 'Choose at least one flower and one bouquet size before continuing.';
+        submitHelp.textContent = isValid ? 'Your bouquet is ready. You can still adjust wrapping, extras, or your message before adding it to cart.' : sizeValidation.message;
     }
 
     function refreshBuilder() {
         const state = getState();
+        const sizeValidation = getSizeValidation(state);
         updateVisualSelections();
-        updateSteps(state);
-        updateSummary(state);
-        updateSubmitState(state);
+        updateSteps(state, sizeValidation);
+        updateSummary(state, sizeValidation);
+        updateSubmitState(state, sizeValidation);
     }
     function changeFlowerQuantity(flowerId, delta) {
         const input = document.getElementById(`flower_${flowerId}`);
@@ -421,7 +522,19 @@ function initializeBouquetBuilder() {
         button.addEventListener('click', () => changeFlowerQuantity(button.dataset.flowerId, button.dataset.flowerAction === 'increase' ? 1 : -1));
     });
     document.querySelectorAll('.size-input, .wrapping-input, .extra-input').forEach((input) => input.addEventListener('change', refreshBuilder));
+    customStemCountInput.addEventListener('input', refreshBuilder);
+    customStemDecrease.addEventListener('click', () => {
+        const currentValue = Number(customStemCountInput.value || 0);
+        customStemCountInput.value = Math.max(1, currentValue - 1);
+        refreshBuilder();
+    });
+    customStemIncrease.addEventListener('click', () => {
+        const currentValue = Number(customStemCountInput.value || 0);
+        customStemCountInput.value = Math.max(1, currentValue + 1);
+        refreshBuilder();
+    });
     messageField.addEventListener('input', refreshBuilder);
+    floristInstructionsField.addEventListener('input', refreshBuilder);
     document.querySelectorAll('[data-step-nav]').forEach((button) => button.addEventListener('click', () => {
         const section = document.getElementById(`builder-step-${button.dataset.stepNav}`);
         if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -429,19 +542,22 @@ function initializeBouquetBuilder() {
 
     submitButton.addEventListener('click', () => {
         const state = getState();
+        const sizeValidation = getSizeValidation(state);
         const wrapping = state.wrapping || getSelectedWrapping();
         const ribbonId = '{{ default_ribbon.id|default:"" }}';
-        if (state.totalStems === 0 || !state.size) {
+        if (state.totalStems === 0 || !state.size || !sizeValidation.valid) {
             refreshBuilder();
             return;
         }
         const bouquetData = {
             size_id: state.size.id,
+            custom_stem_count: state.size.isCustom ? state.size.customStemTarget : '',
             wrapping_id: wrapping ? wrapping.id : '',
             ribbon_id: ribbonId,
             flowers: state.flowers.map((flower) => ({ flower_id: flower.id, quantity: flower.quantity })),
             extras: state.extras.map((extra) => ({ extra_id: extra.id, quantity: extra.quantity })),
-            personal_message: state.message
+            personal_message: state.message,
+            florist_instructions: state.floristInstructions
         };
         submitButton.disabled = true;
         submitButton.classList.add('cursor-wait');
@@ -478,4 +594,16 @@ function initializeBouquetBuilder() {
 document.addEventListener('DOMContentLoaded', initializeBouquetBuilder);
 document.addEventListener('turbo:load', initializeBouquetBuilder);
 </script>
+<style>
+    #custom-stem-count::-webkit-outer-spin-button,
+    #custom-stem-count::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    #custom-stem-count {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+</style>
 {% endblock %}

@@ -53,7 +53,7 @@
                 {% for item in items %}
                 <div class="flex justify-between items-center border-b pb-4">
                     <div class="flex items-center space-x-4">
-                        <img src="{{ item.get_item_image.url }}" alt="" class="w-16 h-16 object-cover rounded">
+                        <img src="{{ item.get_item_image }}" alt="" class="w-16 h-16 object-cover rounded">
                         <div>
                             <p class="font-bold">{{ item.get_item_name }}</p>
                             <p class="text-gray-600">Qty: {{ item.quantity }}</p>

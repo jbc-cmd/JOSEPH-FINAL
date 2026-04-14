@@ -25,7 +25,7 @@
             <h1 class="text-3xl font-bold text-center mb-2" style="font-family: 'Playfair Display', serif;">Login to Your Account</h1>
             <p class="text-center text-gray-600 mb-8">Welcome back! Please enter your details.</p>
 
-            <form method="post" class="space-y-5">
+            <form method="post" class="space-y-5" data-turbo="false">
                 {% csrf_token %}
 
                 <div>
@@ -83,4 +83,15 @@
         padding: 0;
     }
 </style>
+{% block extra_js %}
+<script>
+    function refreshCachedAuthPage(event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    }
+
+    window.addEventListener('pageshow', refreshCachedAuthPage);
+</script>
+{% endblock %}
 {% endblock %}
