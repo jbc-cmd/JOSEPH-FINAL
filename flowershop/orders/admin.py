@@ -14,7 +14,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['order_number', 'customer_name', 'status', 'payment_status', 'total_amount', 'delivery_date', 'created_at']
     list_filter = ['status', 'payment_status', 'delivery_date', 'created_at']
     search_fields = ['order_number', 'customer_name', 'customer_email', 'customer_phone']
-    readonly_fields = ['order_number', 'created_at', 'updated_at', 'delivery_completed_at']
+    readonly_fields = ['order_number', 'created_at', 'updated_at', 'delivery_completed_at', 'cancelled_at', 'cancellation_requested_at']
     inlines = [OrderItemInline]
     date_hierarchy = 'delivery_date'
     
@@ -30,6 +30,10 @@ class OrderAdmin(admin.ModelAdmin):
         }),
         ('Special Requests', {
             'fields': ('gift_message', 'anonymous_sender', 'special_instructions'),
+            'classes': ('collapse',)
+        }),
+        ('Cancellation', {
+            'fields': ('cancelled_at', 'cancellation_requested_at', 'cancellation_request_reason'),
             'classes': ('collapse',)
         }),
         ('Pricing', {

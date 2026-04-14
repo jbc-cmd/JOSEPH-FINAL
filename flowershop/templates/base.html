@@ -50,7 +50,7 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 shadow-md" style="background-color: var(--site-background);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -294,6 +294,21 @@
         window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
     }
 
+    function syncAuthStateAndRefreshCsrf() {
+        const renderedAuthState = '{{ user.is_authenticated|yesno:"true,false" }}';
+        const storageKey = 'joseph_flowershop_auth_state';
+        const previousAuthState = sessionStorage.getItem(storageKey);
+
+        if (previousAuthState !== null && previousAuthState !== renderedAuthState) {
+            sessionStorage.setItem(storageKey, renderedAuthState);
+            window.location.reload();
+            return;
+        }
+
+        sessionStorage.setItem(storageKey, renderedAuthState);
+    }
+
+    syncAuthStateAndRefreshCsrf();
     document.addEventListener('DOMContentLoaded', maybeOpenCartDrawerFromUrl);
     document.addEventListener('turbo:load', maybeOpenCartDrawerFromUrl);
     </script>

@@ -4,6 +4,7 @@ from products.models import Product
 from custom_bouquet.models import Bouquet
 from delivery.models import Delivery
 import uuid
+from datetime import timedelta
 from django.utils import timezone
 
 
@@ -92,6 +93,9 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     delivery_completed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_requested_at = models.DateTimeField(null=True, blank=True)
+    cancellation_request_reason = models.TextField(blank=True)
     
     class Meta:
         db_table = 'order'
@@ -116,6 +120,30 @@ class Order(models.Model):
             unique_id = str(uuid.uuid4().hex[:8]).upper()
             self.order_number = f"ORD-{timestamp}-{unique_id}"
         super().save(*args, **kwargs)
+
+        payment = getattr(self, 'payment', None)
+        if not payment:
+            return
+
+        payment_status_map = {
+            'PENDING': 'PENDING',
+            'COMPLETED': 'COMPLETED',
+            'FAILED': 'FAILED',
+            'REFUNDED': 'REFUNDED',
+        }
+        next_payment_status = payment_status_map.get(self.payment_status, 'PENDING')
+
+        payment_updates = {}
+        if payment.status != next_payment_status:
+            payment_updates['status'] = next_payment_status
+
+        if next_payment_status == 'COMPLETED' and payment.paid_at is None:
+            payment_updates['paid_at'] = timezone.now()
+
+        if payment_updates:
+            payment.__class__.objects.filter(pk=payment.pk).update(**payment_updates)
+            for field, value in payment_updates.items():
+                setattr(payment, field, value)
     
     def get_status_badge_color(self):
         """Get color for status badge in templates."""
@@ -128,6 +156,25 @@ class Order(models.Model):
             'CANCELLED': 'danger',
         }
         return color_map.get(self.status, 'secondary')
+
+    def get_cancel_deadline(self):
+        return self.created_at + timedelta(hours=5)
+
+    def is_cancellation_window_open(self):
+        return timezone.now() <= self.get_cancel_deadline()
+
+    def can_customer_cancel_now(self):
+        return (
+            self.status not in ['CANCELLED', 'DELIVERED']
+            and self.is_cancellation_window_open()
+        )
+
+    def can_customer_request_cancellation(self):
+        return (
+            self.status not in ['CANCELLED', 'DELIVERED']
+            and not self.is_cancellation_window_open()
+            and self.cancellation_requested_at is None
+        )
     
     def mark_as_delivered(self):
         """Mark order as delivered."""

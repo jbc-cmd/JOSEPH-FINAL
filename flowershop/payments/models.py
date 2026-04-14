@@ -45,6 +45,38 @@ class Payment(models.Model):
         verbose_name_plural = 'Payments'
         ordering = ['-created_at']
     
+    def save(self, *args, **kwargs):
+        previous_status = None
+        if self.pk:
+            previous_status = Payment.objects.filter(pk=self.pk).values_list('status', flat=True).first()
+
+        super().save(*args, **kwargs)
+
+        order_payment_status_map = {
+            'PENDING': 'PENDING',
+            'COMPLETED': 'COMPLETED',
+            'FAILED': 'FAILED',
+            'CANCELLED': 'FAILED',
+            'REFUNDED': 'REFUNDED',
+        }
+        next_payment_status = order_payment_status_map.get(self.status, 'PENDING')
+
+        updates = {}
+        if self.order.payment_status != next_payment_status:
+            updates['payment_status'] = next_payment_status
+
+        # Once payment is confirmed, move the customer-facing order flow forward.
+        if self.status == 'COMPLETED' and self.order.status == 'PENDING':
+            updates['status'] = 'PROCESSING'
+
+        if previous_status == self.status and not updates:
+            return
+
+        if updates:
+            Order.objects.filter(pk=self.order_id).update(**updates)
+            for field, value in updates.items():
+                setattr(self.order, field, value)
+
     def __str__(self):
         return f"Payment for Order {self.order.order_number}"
 

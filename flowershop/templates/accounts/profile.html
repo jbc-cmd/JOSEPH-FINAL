@@ -217,75 +217,99 @@
 
 {% block extra_js %}
 <script>
-    const avatarModal = document.getElementById('avatar-picker-modal');
-    const avatarChoiceInput = document.getElementById('avatar-choice-input');
-    const profilePictureInput = document.getElementById('profile-picture-input');
-    const profileForm = document.getElementById('profile-form');
-    let avatarSaveInProgress = false;
+    function initializeAvatarPicker() {
+        const avatarModal = document.getElementById('avatar-picker-modal');
+        const avatarChoiceInput = document.getElementById('avatar-choice-input');
+        const profilePictureInput = document.getElementById('profile-picture-input');
+        const profileForm = document.getElementById('profile-form');
+        const openAvatarPickerButton = document.getElementById('open-avatar-picker');
+        const openAvatarPickerInlineButton = document.getElementById('open-avatar-picker-inline');
+        const modalUploadTrigger = document.getElementById('modal-upload-trigger');
 
-    function openAvatarPicker() {
-        avatarModal.classList.remove('hidden');
-        avatarModal.classList.add('flex');
-    }
+        if (!avatarModal || !avatarChoiceInput || !profilePictureInput || !profileForm) {
+            return;
+        }
 
-    function closeAvatarPicker() {
-        avatarModal.classList.add('hidden');
-        avatarModal.classList.remove('flex');
-    }
+        if (profileForm.dataset.avatarPickerReady === 'true') {
+            return;
+        }
+        profileForm.dataset.avatarPickerReady = 'true';
 
-    function updateAvatarPreviews(src) {
-        document.querySelectorAll('.profile-avatar-preview').forEach((preview) => {
-            if (preview.tagName === 'IMG') {
-                preview.src = src;
-            } else {
-                const replacement = document.createElement('img');
-                replacement.src = src;
-                replacement.alt = 'Profile preview';
-                replacement.className = preview.className + ' object-cover';
-                preview.replaceWith(replacement);
-            }
+        let avatarSaveInProgress = false;
+
+        function openAvatarPicker() {
+            avatarModal.classList.remove('hidden');
+            avatarModal.classList.add('flex');
+        }
+
+        function closeAvatarPicker() {
+            avatarModal.classList.add('hidden');
+            avatarModal.classList.remove('flex');
+        }
+
+        function updateAvatarPreviews(src) {
+            document.querySelectorAll('.profile-avatar-preview').forEach((preview) => {
+                if (preview.tagName === 'IMG') {
+                    preview.src = src;
+                } else {
+                    const replacement = document.createElement('img');
+                    replacement.src = src;
+                    replacement.alt = 'Profile preview';
+                    replacement.className = preview.className + ' object-cover';
+                    preview.replaceWith(replacement);
+                }
+            });
+        }
+
+        function submitAvatarChange() {
+            if (avatarSaveInProgress) return;
+            avatarSaveInProgress = true;
+            profileForm.requestSubmit();
+        }
+
+        if (openAvatarPickerButton) {
+            openAvatarPickerButton.addEventListener('click', openAvatarPicker);
+        }
+        if (openAvatarPickerInlineButton) {
+            openAvatarPickerInlineButton.addEventListener('click', openAvatarPicker);
+        }
+        if (modalUploadTrigger) {
+            modalUploadTrigger.addEventListener('click', () => {
+                closeAvatarPicker();
+                profilePictureInput.click();
+            });
+        }
+
+        document.querySelectorAll('[data-close-avatar-picker]').forEach((button) => {
+            button.addEventListener('click', closeAvatarPicker);
+        });
+
+        document.querySelectorAll('.avatar-template-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                const avatarData = button.dataset.avatar;
+                avatarChoiceInput.value = avatarData;
+                profilePictureInput.value = '';
+                updateAvatarPreviews(avatarData);
+                closeAvatarPicker();
+                submitAvatarChange();
+            });
+        });
+
+        profilePictureInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            avatarChoiceInput.value = '';
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                updateAvatarPreviews(loadEvent.target.result);
+                submitAvatarChange();
+            };
+            reader.readAsDataURL(file);
         });
     }
 
-    function submitAvatarChange() {
-        if (avatarSaveInProgress) return;
-        avatarSaveInProgress = true;
-        profileForm.submit();
-    }
-
-    document.getElementById('open-avatar-picker').addEventListener('click', openAvatarPicker);
-    document.getElementById('open-avatar-picker-inline').addEventListener('click', openAvatarPicker);
-    document.getElementById('modal-upload-trigger').addEventListener('click', () => {
-        closeAvatarPicker();
-        profilePictureInput.click();
-    });
-
-    document.querySelectorAll('[data-close-avatar-picker]').forEach((button) => {
-        button.addEventListener('click', closeAvatarPicker);
-    });
-
-    document.querySelectorAll('.avatar-template-option').forEach((button) => {
-        button.addEventListener('click', () => {
-            const avatarData = button.dataset.avatar;
-            avatarChoiceInput.value = avatarData;
-            profilePictureInput.value = '';
-            updateAvatarPreviews(avatarData);
-            closeAvatarPicker();
-            submitAvatarChange();
-        });
-    });
-
-    profilePictureInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        avatarChoiceInput.value = '';
-        const reader = new FileReader();
-        reader.onload = (loadEvent) => {
-            updateAvatarPreviews(loadEvent.target.result);
-            submitAvatarChange();
-        };
-        reader.readAsDataURL(file);
-    });
+    document.addEventListener('DOMContentLoaded', initializeAvatarPicker);
+    document.addEventListener('turbo:load', initializeAvatarPicker);
 </script>
 {% endblock %}

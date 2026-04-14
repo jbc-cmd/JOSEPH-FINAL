@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service - Joseph Flowershop{% endblock %}
+{% block body_class %}hide-nav{% endblock %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 py-16">
+    <div class="bg-white rounded-3xl shadow-sm border border-pink-100 p-8 md:p-12">
+        <button type="button" onclick="history.back()" class="mb-6 inline-flex items-center gap-2 rounded-full border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50 md:hidden">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </button>
+        <p class="text-sm font-semibold tracking-[0.3em] text-pink-500 uppercase mb-4">Terms</p>
+        <h1 class="text-4xl font-bold text-gray-900 mb-6">Terms of Service</h1>
+        <p class="text-gray-600 leading-7 mb-8">
+            By using Joseph Flowershop, you agree to place orders responsibly, provide accurate delivery details, and follow all applicable laws while using the site.
+        </p>
+
+        <div class="space-y-8 text-gray-700 leading-7">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Orders and Payments</h2>
+                <p>
+                    Orders are subject to product availability and confirmation. Prices, delivery fees, and payment options shown at checkout apply to your purchase.
+                </p>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Delivery</h2>
+                <p>
+                    Please provide complete and accurate recipient information. Delivery times are estimates and may vary due to weather, traffic, holidays, or recipient availability.
+                </p>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Returns and Support</h2>
+                <p>
+                    If there is an issue with your order, contact the shop as soon as possible so the team can review the concern and help with a fair resolution.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

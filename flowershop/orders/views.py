@@ -50,7 +50,7 @@ def _status_theme(status):
             'accent': 'amber',
             'icon': 'fa-seedling',
             'title': 'Processing your order',
-            'description': 'We are confirming your payment, recipient details, and delivery schedule.',
+            'description': 'We are confirming your recipient details and delivery schedule, and preparing your order for the florist.',
             'panel': 'border-amber-100 bg-gradient-to-br from-amber-50 via-white to-rose-50',
         },
         'PREPARING': {
@@ -131,6 +131,12 @@ def _estimated_arrival_text(order):
     if order.delivery_date == today:
         return f"Arriving today between {window_text}."
     return f"Scheduled for {order.delivery_date.strftime('%B %d, %Y')} between {window_text}."
+
+
+def _can_manage_order(request, order):
+    if request.user.is_authenticated and order.user == request.user:
+        return True
+    return request.session.get('order_id') == order.id
 
 
 def _get_checkout_delivery_address(user):
@@ -427,6 +433,7 @@ def order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     payment = getattr(order, 'payment', None)
     theme = _status_theme(order.status)
+    cancel_deadline = order.get_cancel_deadline()
     
     context = {
         'order': order,
@@ -438,8 +445,45 @@ def order_detail(request, order_id):
         'timeline_steps': _build_timeline(order),
         'estimated_arrival': _estimated_arrival_text(order),
         'delivery_window_text': _format_delivery_window(order.delivery_time_window),
+        'cancel_deadline': cancel_deadline,
+        'can_cancel_order': order.can_customer_cancel_now() and _can_manage_order(request, order),
+        'can_request_cancellation': order.can_customer_request_cancellation() and _can_manage_order(request, order),
     }
     return render(request, 'orders/order_detail.html', context)
+
+
+@require_POST
+def cancel_order(request, order_id):
+    """Allow customers to cancel within 5 hours or request cancellation afterwards."""
+    order = get_object_or_404(Order, id=order_id)
+
+    if not _can_manage_order(request, order):
+        messages.error(request, 'You do not have permission to manage this order.')
+        return redirect('products:home')
+
+    action = request.POST.get('action')
+    reason = request.POST.get('cancellation_reason', '').strip()
+
+    if action == 'cancel' and order.can_customer_cancel_now():
+        order.status = 'CANCELLED'
+        order.cancelled_at = timezone.now()
+        order.cancellation_requested_at = None
+        order.cancellation_request_reason = ''
+        order.save(update_fields=['status', 'cancelled_at', 'cancellation_requested_at', 'cancellation_request_reason', 'updated_at'])
+        messages.success(request, 'Your order has been cancelled successfully.')
+    elif action == 'request_cancel' and order.can_customer_request_cancellation():
+        order.cancellation_requested_at = timezone.now()
+        order.cancellation_request_reason = reason
+        order.save(update_fields=['cancellation_requested_at', 'cancellation_request_reason', 'updated_at'])
+        messages.success(request, 'Your cancellation request has been sent. Our team will review it shortly.')
+    elif order.status in ['CANCELLED', 'DELIVERED']:
+        messages.error(request, 'This order can no longer be cancelled.')
+    elif order.cancellation_requested_at:
+        messages.error(request, 'A cancellation request has already been submitted for this order.')
+    else:
+        messages.error(request, 'The direct cancellation window has ended. Please submit a cancellation request instead.')
+
+    return redirect('orders:order_detail', order_id=order.id)
 
 
 @login_required(login_url='accounts:login')

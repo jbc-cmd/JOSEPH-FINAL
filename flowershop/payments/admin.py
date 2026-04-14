@@ -30,15 +30,22 @@ class PaymentAdmin(admin.ModelAdmin):
     
     def mark_as_completed(self, request, queryset):
         from django.utils import timezone
-        queryset.update(status='COMPLETED', paid_at=timezone.now())
+        for payment in queryset:
+            payment.status = 'COMPLETED'
+            payment.paid_at = timezone.now()
+            payment.save(update_fields=['status', 'paid_at', 'updated_at'])
     mark_as_completed.short_description = "Mark selected payments as Completed"
     
     def mark_as_failed(self, request, queryset):
-        queryset.update(status='FAILED')
+        for payment in queryset:
+            payment.status = 'FAILED'
+            payment.save(update_fields=['status', 'updated_at'])
     mark_as_failed.short_description = "Mark selected payments as Failed"
     
     def mark_as_refunded(self, request, queryset):
-        queryset.update(status='REFUNDED')
+        for payment in queryset:
+            payment.status = 'REFUNDED'
+            payment.save(update_fields=['status', 'updated_at'])
     mark_as_refunded.short_description = "Mark selected payments as Refunded"
 
 

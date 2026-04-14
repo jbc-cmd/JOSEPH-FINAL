@@ -4,18 +4,16 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="relative h-96 bg-gradient-to-r from-orange-100 to-orange-50 text-gray-800 overflow-hidden">
+<div class="relative h-96 overflow-hidden" style="background-color: var(--site-background);">
     <div class="relative max-w-7xl mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
-        <h1 class="text-5xl font-bold mb-4">
-            <span class="playfair-display">Welcome to</span> <span class="playfair-display-italic">Joseph Flowershop</span>
-        </h1>
+        <h1 class="text-5xl md:text-6xl font-bold mb-4 text-gray-900" style="font-family: 'Playfair Display', serif;">Welcome to Joseph Flowershop</h1>
         <p class="text-2xl mb-8 text-gray-700">Fresh Flowers Delivered to Your Doorstep</p>
-        <div class="flex flex-col sm:flex-row gap-6 justify-center">
-            <a href="{% url 'products:shop' %}" data-ajax="true" class="nav-link inline-flex items-center gap-2 bg-gray-800 text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-900 transition">
-                Shop Collection
-                <i class="fas fa-arrow-right"></i>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <a href="{% url 'products:shop' %}" class="inline-flex items-center justify-center gap-3 rounded-full bg-neutral-900 px-7 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-neutral-800">
+                <span>Shop Collection</span>
+                <i class="fas fa-arrow-right text-sm"></i>
             </a>
-            <a href="{% url 'custom_bouquet:builder' %}" data-ajax="true" class="nav-link inline-flex items-center justify-center border-2 px-8 py-3 rounded-full font-semibold transition" style="border-color: #d4a574; color: #d4a574; background-color: transparent;" onmouseover="this.style.backgroundColor='rgba(212, 165, 116, 0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+            <a href="{% url 'custom_bouquet:builder' %}" class="inline-flex items-center justify-center rounded-full border border-rose-300 bg-white/95 px-7 py-4 text-base font-medium text-rose-400 transition hover:bg-white hover:text-rose-500">
                 Build Your Bouquet
             </a>
         </div>
@@ -27,47 +25,48 @@
     <div class="text-center mb-2">
         <span class="text-xs tracking-widest text-gray-600 font-semibold">CURATED FOR YOU</span>
     </div>
-    <h2 class="text-4xl font-bold text-center mb-12 text-gray-800 playfair-display">Best Sellers</h2>
+    <h2 class="text-4xl font-bold text-center mb-12 text-gray-800">Best Sellers</h2>
     
     <div class="grid md:grid-cols-4 gap-8">
         {% for product in featured_products %}
-        <div class="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition h-full flex flex-col">
+        <div class="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition">
             <!-- Image Container -->
-            <div class="relative overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0" style="aspect-ratio: 1 / 1;">
+            <div class="relative aspect-[4/5] sm:aspect-auto sm:h-64 md:h-72 overflow-hidden bg-gray-50 flex items-center justify-center">
                 {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover hover:scale-105 transition duration-300 group">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover object-center hover:scale-105 transition duration-300" style="object-position: center 35%;">
                 {% else %}
                 <div class="w-full h-full flex items-center justify-center text-gray-400">
                     <i class="fas fa-image fa-3x"></i>
                 </div>
                 {% endif %}
-
+                
                 <!-- Featured Badge -->
                 {% if product.is_featured %}
                 <span class="absolute top-3 left-3 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Featured</span>
                 {% endif %}
-
+                
                 <!-- Wishlist Button -->
                 <button class="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:shadow-md transition">
                     <i class="fas fa-heart text-gray-400 hover:text-pink-600"></i>
                 </button>
+
+                <!-- Add to Cart Button -->
+                <form method="post" action="{% url 'cart:add_to_cart' %}" class="absolute left-3 right-3 bottom-3 sm:left-4 sm:right-4 sm:bottom-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="w-full bg-white/95 backdrop-blur text-gray-800 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:bg-white transition text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-bag-shopping text-sm"></i>
+                        <span>Add to Cart</span>
+                    </button>
+                </form>
             </div>
-
-            <!-- Add to Cart Button -->
-            <form method="post" action="{% url 'cart:add_to_cart' %}" class="flex-shrink-0 px-4 py-3" onsubmit="addToCartAjax(event)">
-                {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3 rounded-lg font-semibold hover:shadow-md transition shadow-md flex items-center justify-center gap-2">
-                    <i class="fas fa-shopping-bag"></i>Add to Cart
-                </button>
-            </form>
-
+            
             <!-- Content Container -->
-            <div class="p-5 flex flex-col flex-1">
+            <div class="p-4 sm:p-5 pt-4">
                 <!-- Product Name -->
                 <h3 class="text-base font-bold text-gray-800 mb-1">{{ product.name }}</h3>
-
+                
                 <!-- Category -->
                 <p class="text-xs text-gray-500 mb-3">
                     {% if product.category %}
@@ -76,18 +75,19 @@
                         Bouquet
                     {% endif %}
                 </p>
-
+                
                 <!-- Price -->
                 <div class="mb-3">
-                    <span class="text-lg font-bold text-pink-600">₱{{ product.price }}</span>
+                    <span class="text-lg font-bold text-pink-600">&#8369;{{ product.price }}</span>
                 </div>
-
+                
                 <!-- Rating -->
-                <div class="flex items-center">
-                    <div class="text-yellow-400 text-sm">
-                        ★★★★★
+                <div class="flex items-center mb-4">
+                    <div class="relative text-sm leading-none">
+                        <div class="text-gray-200">★★★★★</div>
+                        <div class="absolute inset-0 overflow-hidden text-yellow-400" style="width: {{ product.rating_percentage }}%;">★★★★★</div>
                     </div>
-                    <span class="text-xs text-gray-500 ml-2">({{ product.review_count }} reviews)</span>
+                    <span class="text-xs text-gray-500 ml-2">{{ product.rating|floatformat:1 }} ({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
                 </div>
             </div>
         </div>
@@ -103,10 +103,11 @@
     </div>
 </div>
 
+
 <!-- Features Section -->
 <div class="bg-gradient-to-r from-pink-50 to-rose-50 py-16">
     <div class="max-w-7xl mx-auto px-4">
-        <h2 class="text-4xl font-bold text-center mb-12 playfair-display">Why Choose Joseph Flowershop?</h2>
+        <h2 class="text-4xl font-bold text-center mb-12">Why Choose Joseph Flowershop?</h2>
         
         <div class="grid md:grid-cols-3 gap-8">
             <div class="text-center">

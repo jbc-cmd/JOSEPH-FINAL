@@ -52,6 +52,16 @@ class ContactView(TemplateView):
         return self.get(request, *args, **kwargs)
 
 
+class TermsView(TemplateView):
+    """Terms of service page."""
+    template_name = 'products/terms.html'
+
+
+class PrivacyView(TemplateView):
+    """Privacy policy page."""
+    template_name = 'products/privacy.html'
+
+
 class ShopView(ListView):
     """Shop page with all products and filtering."""
     model = Product

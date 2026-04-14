@@ -2,11 +2,15 @@
 {% load static %}
 
 {% block title %}Register - Joseph Flowershop{% endblock %}
+{% block body_class %}hide-nav{% endblock %}
 
 {% block content %}
-<body class="hide-nav">
 <div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: linear-gradient(135deg, rgba(246, 237, 228, 0.8) 0%, rgba(255, 105, 180, 0.1) 100%);">
     <div class="w-full max-w-md">
+        <button type="button" onclick="history.back()" class="mb-6 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/80 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50 md:hidden">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </button>
         <!-- Logo -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center gap-3 mb-6 justify-center">
@@ -21,68 +25,84 @@
             <h1 class="text-3xl font-bold text-center mb-2" style="font-family: 'Playfair Display', serif;">Create Your Account</h1>
             <p class="text-center text-gray-600 mb-8">Join us and start sending beautiful flowers!</p>
 
-            <form method="post" class="space-y-4">
+            <form method="post" class="space-y-4" id="register-form" novalidate>
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next_url }}">
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-gray-800 font-semibold mb-2">First Name</label>
-                        <input type="text" name="first_name"
+                        <input type="text" name="first_name" value="{{ form_data.first_name|default:'' }}"
+                               minlength="2" maxlength="50" autocomplete="given-name"
                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                                placeholder="John">
+                        <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="first_name">{{ register_errors.first_name }}</p>
                     </div>
                     <div>
                         <label class="block text-gray-800 font-semibold mb-2">Last Name</label>
-                        <input type="text" name="last_name"
+                        <input type="text" name="last_name" value="{{ form_data.last_name|default:'' }}"
+                               minlength="2" maxlength="50" autocomplete="family-name"
                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                                placeholder="Doe">
+                        <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="last_name">{{ register_errors.last_name }}</p>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Username</label>
-                    <input type="text" name="username" required
+                    <input type="text" name="username" required value="{{ form_data.username|default:'' }}"
+                           minlength="4" maxlength="30" autocomplete="username" spellcheck="false"
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                            placeholder="Your username">
+                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="username">{{ register_errors.username }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Email</label>
-                    <input type="email" name="email" required
+                    <input type="email" name="email" required value="{{ form_data.email|default:'' }}"
+                           maxlength="254" autocomplete="email"
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                            placeholder="your@email.com">
+                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="email">{{ register_errors.email }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Phone Number</label>
-                    <input type="tel" name="phone_number"
+                    <input type="tel" name="phone_number" required value="{{ form_data.phone_number|default:'' }}"
+                           minlength="10" maxlength="20" autocomplete="tel"
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                            placeholder="+63 9123 456 789">
+                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="phone_number">{{ register_errors.phone_number }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Password</label>
                     <input type="password" name="password1" required
+                           minlength="8" autocomplete="new-password"
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                            placeholder="Create a strong password">
-                    <p class="text-xs text-gray-600 mt-1">At least 8 characters, mix of letters and numbers</p>
+                    <p class="text-xs text-gray-600 mt-1">At least 8 characters with uppercase, lowercase, number, and special character</p>
+                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="password1">{{ register_errors.password1 }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Confirm Password</label>
                     <input type="password" name="password2" required
+                           autocomplete="new-password"
                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
                            placeholder="Confirm your password">
+                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="password2">{{ register_errors.password2 }}</p>
                 </div>
 
                 <div class="flex items-start gap-2 pt-2">
-                    <input type="checkbox" id="agree" required class="w-4 h-4 mt-1 cursor-pointer">
+                    <input type="checkbox" id="agree" name="agree" required {% if form_data.agree %}checked{% endif %} class="w-4 h-4 mt-1 cursor-pointer">
                     <label for="agree" class="text-sm text-gray-700 cursor-pointer">
-                        I agree to the <a href="#" class="text-pink-600 hover:text-pink-700 font-semibold">Terms of Service</a> and <a href="#" class="text-pink-600 hover:text-pink-700 font-semibold">Privacy Policy</a>
+                        I agree to the <a href="{% url 'products:terms' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Terms of Service</a> and <a href="{% url 'products:privacy' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Privacy Policy</a>
                     </label>
                 </div>
+                <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="agree">{{ register_errors.agree }}</p>
 
-                <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-pink-500 text-white py-3 rounded-2xl font-bold hover:from-pink-700 hover:to-pink-600 transition shadow-lg hover:shadow-xl mt-6">
+                <button type="submit" class="w-full bg-gradient-to-r from-pink-600 to-pink-500 text-white py-3 rounded-2xl font-bold hover:from-pink-700 hover:to-pink-600 transition shadow-lg hover:shadow-xl mt-6 disabled:opacity-70 disabled:cursor-not-allowed" data-submit-button>
                     Create Account
                 </button>
             </form>
@@ -107,7 +127,7 @@
 
         <!-- Help Footer -->
         <div class="text-center mt-8 text-gray-600 text-sm">
-            <p>Need help? <a href="{% url 'products:contact' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Contact us</a></p>
+            <p>Need help? <a href="mailto:support@josephflowershop.com" class="text-pink-600 hover:text-pink-700 font-semibold">Contact us</a></p>
         </div>
     </div>
 </div>
@@ -118,4 +138,120 @@
         padding: 0;
     }
 </style>
+<script>
+    function initializeRegisterForm() {
+        const form = document.getElementById('register-form');
+        if (!form || form.dataset.validationReady === 'true') {
+            return;
+        }
+        form.dataset.validationReady = 'true';
+
+        const submitButton = form.querySelector('[data-submit-button]');
+        const namePattern = /^[A-Za-z]+(?:[ -][A-Za-z]+)*$/;
+        const usernamePattern = /^[A-Za-z0-9_.]{4,30}$/;
+        const phonePattern = /^\+?\d{10,15}$/;
+
+        function setFieldError(fieldName, message) {
+            const errorEl = form.querySelector(`[data-error-for="${fieldName}"]`);
+            if (errorEl) {
+                errorEl.textContent = message || '';
+            }
+        }
+
+        function validateField(field) {
+            const value = field.value.trim();
+
+            if (field.name === 'first_name' || field.name === 'last_name') {
+                if (!value) return 'This field is required.';
+                if (value.length < 2 || value.length > 50) return 'Must be between 2 and 50 characters.';
+                if (!namePattern.test(value)) return 'Use letters, spaces, and hyphens only.';
+            }
+
+            if (field.name === 'username') {
+                if (!value) return 'Username is required.';
+                if (!usernamePattern.test(value) || value.startsWith('.') || value.endsWith('.') || value.includes('..')) {
+                    return 'Use 4-30 letters, numbers, underscores, or dots only.';
+                }
+            }
+
+            if (field.name === 'email') {
+                if (!value) return 'Email is required.';
+                if (!field.checkValidity()) return 'Enter a valid email address.';
+            }
+
+            if (field.name === 'phone_number') {
+                const normalizedPhone = value.replace(/[\s\-()]/g, '');
+                if (!normalizedPhone) return 'Phone number is required.';
+                if (!phonePattern.test(normalizedPhone)) return 'Enter a valid phone number using 10 to 15 digits.';
+            }
+
+            if (field.name === 'password1') {
+                if (!field.value) return 'Password is required.';
+                if (field.value.length < 8) return 'Password must be at least 8 characters.';
+                if (!/[A-Z]/.test(field.value)) return 'Add at least one uppercase letter.';
+                if (!/[a-z]/.test(field.value)) return 'Add at least one lowercase letter.';
+                if (!/\d/.test(field.value)) return 'Add at least one number.';
+                if (!/[^A-Za-z0-9]/.test(field.value)) return 'Add at least one special character.';
+            }
+
+            if (field.name === 'password2') {
+                const password1 = form.querySelector('[name="password1"]').value;
+                if (!field.value) return 'Please confirm your password.';
+                if (field.value !== password1) return 'Passwords do not match.';
+            }
+
+            if (field.name === 'agree' && !field.checked) {
+                return 'You must agree before creating an account.';
+            }
+
+            return '';
+        }
+
+        form.querySelectorAll('input').forEach((field) => {
+            field.addEventListener('input', () => {
+                if (field.name === 'agree') {
+                    setFieldError(field.name, validateField(field));
+                    return;
+                }
+                setFieldError(field.name, validateField(field));
+                if (field.name === 'password1') {
+                    const confirmField = form.querySelector('[name="password2"]');
+                    setFieldError('password2', validateField(confirmField));
+                }
+            });
+            field.addEventListener('blur', () => setFieldError(field.name, validateField(field)));
+            if (field.name === 'agree') {
+                field.addEventListener('change', () => setFieldError(field.name, validateField(field)));
+            }
+        });
+
+        form.addEventListener('submit', (event) => {
+            let hasErrors = false;
+            form.querySelectorAll('input').forEach((field) => {
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                if (error) {
+                    hasErrors = true;
+                }
+            });
+
+            if (hasErrors) {
+                event.preventDefault();
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Create Account';
+                }
+                return;
+            }
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Creating Account...';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeRegisterForm);
+    document.addEventListener('turbo:load', initializeRegisterForm);
+</script>
 {% endblock %}

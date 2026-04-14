@@ -2,11 +2,15 @@
 {% load static %}
 
 {% block title %}Login - Joseph Flowershop{% endblock %}
+{% block body_class %}hide-nav{% endblock %}
 
 {% block content %}
-<body class="hide-nav">
 <div class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(135deg, rgba(246, 237, 228, 0.8) 0%, rgba(255, 105, 180, 0.1) 100%);">
     <div class="w-full max-w-md">
+        <button type="button" onclick="history.back()" class="mb-6 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/80 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50 md:hidden">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </button>
         <!-- Logo -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center gap-3 mb-6 justify-center">
@@ -68,7 +72,7 @@
 
         <!-- Help Footer -->
         <div class="text-center mt-8 text-gray-600 text-sm">
-            <p>Need help? <a href="{% url 'products:contact' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Contact us</a></p>
+            <p>Need help? <a href="mailto:support@josephflowershop.com" class="text-pink-600 hover:text-pink-700 font-semibold">Contact us</a></p>
         </div>
     </div>
 </div>
