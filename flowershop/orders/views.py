@@ -19,6 +19,10 @@ from payments.models import Payment
 from django.utils import timezone
 import uuid
 import re
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 ORDER_TIMELINE = [
     ('PENDING', 'Order Placed', 'Your order has been received and queued for our team.', 'fa-receipt'),
@@ -441,7 +445,7 @@ def create_order(request):
             _send_order_receipt_email(order)
         except Exception:
             # Receipt email should not block a successful order placement.
-            pass
+            logger.exception('Failed to send order receipt email for order %s', order.order_number)
 
         # Clear appropriate cart/session
         if direct_purchase:
