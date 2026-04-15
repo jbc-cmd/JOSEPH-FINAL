@@ -7,9 +7,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from products import views as product_views
+from .views import health_check
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
+    path('health/', health_check, name='health_check'),
     path('accounts/', include('accounts.urls')),
     path('products/', include('products.urls')),
     path('cart/', include('cart.urls')),
