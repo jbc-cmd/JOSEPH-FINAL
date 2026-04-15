@@ -441,12 +441,6 @@ def create_order(request):
             status='PENDING'
         )
 
-        try:
-            _send_order_receipt_email(order)
-        except Exception:
-            # Receipt email should not block a successful order placement.
-            logger.exception('Failed to send order receipt email for order %s', order.order_number)
-
         # Clear appropriate cart/session
         if direct_purchase:
             # Clear direct purchase from session
