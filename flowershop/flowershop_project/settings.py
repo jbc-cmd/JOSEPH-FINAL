@@ -2,6 +2,7 @@
 Django settings for flowershop_project project.
 """
 
+import os
 from pathlib import Path
 import dj_database_url
 from decouple import config
@@ -68,6 +69,27 @@ INSTALLED_APPS = [
     'delivery.apps.DeliveryConfig',
     'configurations.apps.ConfigurationsConfig',
 ]
+
+CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
+CLOUDINARY_CLOUD_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = config('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = config('CLOUDINARY_API_SECRET', default='')
+CLOUDINARY_ENABLED = bool(CLOUDINARY_URL or (CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET))
+
+if CLOUDINARY_ENABLED:
+    import cloudinary
+
+    INSTALLED_APPS.append('cloudinary')
+    if CLOUDINARY_URL:
+        os.environ.setdefault('CLOUDINARY_URL', CLOUDINARY_URL)
+        cloudinary.config(secure=True)
+    else:
+        cloudinary.config(
+            cloud_name=CLOUDINARY_CLOUD_NAME,
+            api_key=CLOUDINARY_API_KEY,
+            api_secret=CLOUDINARY_API_SECRET,
+            secure=True,
+        )
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -162,6 +184,11 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
+
+if CLOUDINARY_ENABLED:
+    STORAGES['default'] = {
+        'BACKEND': 'flowershop_project.storage.CloudinaryMediaStorage',
+    }
 
 # Media files (User uploaded)
 MEDIA_URL = '/media/'
