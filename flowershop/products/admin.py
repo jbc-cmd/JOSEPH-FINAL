@@ -79,6 +79,7 @@ class ProductReviewAdmin(admin.ModelAdmin):
     list_display = ['product', 'customer_name', 'rating', 'is_verified_purchase', 'is_approved', 'created_at']
     list_filter = ['rating', 'is_verified_purchase', 'is_approved', 'created_at']
     search_fields = ['customer_name', 'customer_email', 'product__name']
+    actions = ['approve_reviews', 'unapprove_reviews']
     fieldsets = (
         ('Review Information', {
             'fields': ('product', 'user', 'customer_name', 'customer_email', 'rating', 'comment', 'photo')
@@ -88,3 +89,26 @@ class ProductReviewAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ['created_at']
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        obj.product.update_review_stats()
+
+    def delete_model(self, request, obj):
+        product = obj.product
+        super().delete_model(request, obj)
+        product.update_review_stats()
+
+    @admin.action(description='Approve selected reviews')
+    def approve_reviews(self, request, queryset):
+        affected_products = set(queryset.values_list('product_id', flat=True))
+        queryset.update(is_approved=True)
+        for product_id in affected_products:
+            Product.objects.get(pk=product_id).update_review_stats()
+
+    @admin.action(description='Mark selected reviews as unapproved')
+    def unapprove_reviews(self, request, queryset):
+        affected_products = set(queryset.values_list('product_id', flat=True))
+        queryset.update(is_approved=False)
+        for product_id in affected_products:
+            Product.objects.get(pk=product_id).update_review_stats()

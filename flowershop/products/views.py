@@ -165,6 +165,7 @@ def submit_review(request, slug):
             existing_review.photo = None
         existing_review.is_approved = False
         existing_review.save()
+        product.update_review_stats()
         messages.success(request, 'Your review was updated and is awaiting approval.')
     else:
         ProductReview.objects.create(
@@ -172,6 +173,7 @@ def submit_review(request, slug):
             user=request.user,
             **review_defaults,
         )
+        product.update_review_stats()
         messages.success(request, 'Thanks for your review. It is now awaiting approval.')
 
     return redirect('products:product_detail', slug=slug)
