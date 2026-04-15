@@ -28,7 +28,7 @@ class Order(models.Model):
     
     # Order identification
     order_number = models.CharField(
-        max_length=20,
+        max_length=32,
         unique=True,
         editable=False,
         db_index=True
@@ -218,7 +218,7 @@ class OrderItem(models.Model):
 class OrderTracking(models.Model):
     """Detailed tracking information for orders."""
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='tracking')
-    track_by_order_number = models.CharField(max_length=20, unique=True)
+    track_by_order_number = models.CharField(max_length=32, unique=True)
     track_by_email = models.EmailField()
     
     class Meta:
