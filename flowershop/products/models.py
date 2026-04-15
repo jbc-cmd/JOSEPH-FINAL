@@ -70,7 +70,7 @@ class Flower(models.Model):
     name = models.CharField(max_length=100, choices=FLOWER_TYPES, unique=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    image = models.ImageField(upload_to='flowers/')
+    image = models.ImageField(upload_to='flowers/', blank=True, null=True)
     stock_quantity = models.PositiveIntegerField(default=0)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     availability_status = models.CharField(max_length=20, choices=AVAILABILITY_STATUS, default='IN_STOCK')
@@ -124,7 +124,7 @@ class Product(models.Model):
     product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE, default='BOUQUET')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
     gallery_images = models.JSONField(default=list, blank=True)  # List of image paths
     stock_quantity = models.PositiveIntegerField(default=0)
     size = models.CharField(max_length=20, choices=SIZE_CHOICES, default='MEDIUM')

@@ -5,7 +5,7 @@ services:
     rootDir: flowershop
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: python manage.py migrate && gunicorn flowershop_project.wsgi:application
+    startCommand: python manage.py migrate && python manage.py init_data && gunicorn flowershop_project.wsgi:application
     healthCheckPath: /health/
     autoDeployTrigger: commit
     envVars:
