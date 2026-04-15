@@ -5,7 +5,6 @@ services:
     rootDir: flowershop
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate
     startCommand: gunicorn flowershop_project.wsgi:application
     healthCheckPath: /health/
     autoDeployTrigger: commit
@@ -52,10 +51,6 @@ services:
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
-    disk:
-      name: media
-      mountPath: /var/data
-      sizeGB: 1
 
 databases:
   - name: joseph-flowershop-db
