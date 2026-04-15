@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8">Checkout</h1>
     
-    <form method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8" data-turbo="false">
+    <form id="checkout-form" method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8" data-turbo="false">
         {% csrf_token %}
         
         <!-- Checkout Form -->
@@ -184,7 +184,7 @@
 
 <script>
 function initializeCheckoutForm() {
-    const form = document.querySelector('form');
+    const form = document.getElementById('checkout-form');
     if (!form || form.dataset.checkoutBound === 'true') {
         return;
     }
