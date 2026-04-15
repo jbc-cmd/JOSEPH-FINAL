@@ -145,12 +145,13 @@ class Command(BaseCommand):
                     'is_available': True,
                     'stock_quantity': 50,
                     'size': product_data['size'],
-                    'rating': 5.0,
-                    'review_count': 12
                 }
             )
         self.stdout.write(self.style.SUCCESS('✓ Products created'))
         
+        for product in Product.objects.all():
+            product.update_review_stats()
+
         sizes_data = [
             {'size': 'SMALL', 'min': 5, 'max': 10, 'price': 500.00},
             {'size': 'MEDIUM', 'min': 11, 'max': 20, 'price': 1000.00},
