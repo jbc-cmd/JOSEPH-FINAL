@@ -80,7 +80,7 @@
                                 <p id="email-error" class="mt-2 hidden text-sm font-medium text-rose-600">Please enter a valid email address.</p>
                             </div>
 
-                            <button type="submit" id="track-btn" class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 px-6 py-4 text-base font-semibold text-white shadow-[0_18px_38px_rgba(219,39,119,0.28)] transition hover:-translate-y-0.5 hover:from-pink-700 hover:to-rose-600 hover:shadow-[0_22px_44px_rgba(219,39,119,0.32)] focus:outline-none focus:ring-4 focus:ring-pink-200 active:translate-y-0">
+                            <button type="submit" id="track-btn" class="rose-pill-button rose-pill-button--full text-base">
                                 <i class="fas fa-location-crosshairs"></i>
                                 Track My Order
                             </button>
@@ -161,7 +161,7 @@
                         </span>
                         <h3 class="mt-5 text-2xl font-semibold text-gray-900">No flower orders yet</h3>
                         <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-600">When you place your first bouquet order, it will appear here with live delivery status and a full order summary.</p>
-                        <a href="{% url 'products:shop' %}" class="mt-6 inline-flex items-center gap-2 rounded-full bg-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-700">
+                        <a href="{% url 'products:shop' %}" class="rose-pill-button mt-6 text-sm">
                             <i class="fas fa-bag-shopping"></i>
                             Shop Flowers
                         </a>
@@ -184,10 +184,10 @@
     }
 
     .tab-button.active {
-        background: linear-gradient(135deg, #ec4899, #db2777);
-        border-color: #ec4899;
+        background: #b75b77;
+        border-color: #b75b77;
         color: #ffffff;
-        box-shadow: 0 18px 40px rgba(219, 39, 119, 0.24);
+        box-shadow: 0 12px 24px rgba(183, 91, 119, 0.22);
     }
 
     .tab-button:hover,
@@ -201,6 +201,9 @@
     .tab-button.active:hover,
     .tab-button.active:focus-visible {
         color: #ffffff;
+        background: #ad526d;
+        border-color: #ad526d;
+        box-shadow: 0 16px 28px rgba(173, 82, 109, 0.26);
     }
 
     .tab-content.hidden {

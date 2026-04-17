@@ -11,13 +11,13 @@
                 <div class="mb-6 flex justify-center">
                     <div class="relative">
                     {% if profile.profile_picture %}
-                    <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-pink-100 shadow-sm">
+                    <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-[#ecd3da] shadow-sm">
                     {% else %}
-                    <div class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-pink-50 text-pink-600 border-4 border-pink-100 shadow-sm flex items-center justify-center text-4xl">
+                    <div class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-[#fbf1f3] text-[#b75b77] border-4 border-[#ecd3da] shadow-sm flex items-center justify-center text-4xl">
                         <i class="fas fa-spa"></i>
                     </div>
                     {% endif %}
-                        <button type="button" id="open-avatar-picker" class="absolute bottom-0 right-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-pink-600 text-white shadow-md hover:bg-pink-700 transition">
+                        <button type="button" id="open-avatar-picker" class="absolute bottom-0 right-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-[#b75b77] text-white shadow-md hover:bg-[#ad526d] transition">
                             <i class="fas fa-pencil-alt text-sm"></i>
                         </button>
                     </div>
@@ -26,7 +26,7 @@
                 <p class="text-sm text-gray-600 mb-6 break-words max-w-xs mx-auto lg:mx-0">{{ user.email }}</p>
                 
                 <nav class="space-y-3 text-left">
-                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-3 bg-pink-50 text-pink-600 font-bold rounded-xl">Profile</a>
+                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-3 bg-[#fbf1f3] text-[#b75b77] font-bold rounded-xl">Profile</a>
                     <a href="{% url 'accounts:order_history' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Order History</a>
                     <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Logout</a>
                 </nav>
@@ -37,10 +37,10 @@
         <div class="lg:col-span-9 space-y-8">
             <!-- Profile Information -->
             <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                <div class="h-1 w-full bg-pink-600"></div>
+                <div class="h-1 w-full bg-[#b75b77]"></div>
                 <div class="p-6 md:p-8">
                 <h2 class="text-3xl font-bold mb-8 flex items-center gap-3">
-                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-pink-50 text-pink-600">
+                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#fbf1f3] text-[#b75b77]">
                         <i class="fas fa-id-card"></i>
                     </span>
                     <span>Profile Information</span>
@@ -56,13 +56,13 @@
                             {% if profile.profile_picture %}
                             <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-20 w-20 rounded-full object-cover border border-gray-200">
                             {% else %}
-                            <div class="profile-avatar-preview h-20 w-20 rounded-full bg-pink-50 text-pink-600 border border-pink-100 flex items-center justify-center text-2xl">
+                            <div class="profile-avatar-preview h-20 w-20 rounded-full bg-[#fbf1f3] text-[#b75b77] border border-[#ecd3da] flex items-center justify-center text-2xl">
                                 <i class="fas fa-spa"></i>
                             </div>
                             {% endif %}
                             <div class="flex-1">
                                 <div class="flex flex-wrap gap-3">
-                                    <button type="button" id="open-avatar-picker-inline" class="inline-flex items-center gap-2 rounded-lg border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-100 transition">
+                                    <button type="button" id="open-avatar-picker-inline" class="inline-flex items-center gap-2 rounded-lg border border-[#e7c7bc] bg-[#fbf1f3] px-4 py-2 text-sm font-semibold text-[#b75b77] hover:bg-[#f6e7eb] transition">
                                         <i class="fas fa-pencil-alt"></i>
                                         Change Photo
                                     </button>
@@ -80,25 +80,25 @@
                     <div class="grid md:grid-cols-2 gap-5">
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">First Name</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
+                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
                         </div>
                         <div>
                             <label class="block text-gray-700 font-semibold mb-2">Last Name</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
+                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
                         </div>
                     </div>
                     
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Email</label>
-                        <input type="email" name="email" value="{{ user.email }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
+                        <input type="email" name="email" value="{{ user.email }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
                     </div>
                     
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Phone Number</label>
-                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
+                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
                     </div>
                     
-                    <button type="submit" class="w-full bg-pink-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-pink-700 transition flex items-center justify-center gap-2">
+                    <button type="submit" class="rose-pill-button rose-pill-button--full flex items-center justify-center gap-2">
                         <i class="fas fa-lock text-sm"></i>
                         <span>Update Profile</span>
                     </button>
@@ -110,7 +110,7 @@
             <div class="bg-white rounded-2xl shadow-md p-6 md:p-8">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h2 class="text-3xl font-bold">Saved Delivery Addresses</h2>
-                    <a href="{% url 'accounts:add_address' %}" class="inline-flex items-center justify-center bg-pink-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-pink-700 transition">
+                    <a href="{% url 'accounts:add_address' %}" class="rose-pill-button inline-flex items-center justify-center">
                         + Add Address
                     </a>
                 </div>
@@ -122,7 +122,7 @@
                         <div class="flex justify-between items-start mb-2">
                             <p class="font-bold">{{ address.label }}</p>
                             {% if address.is_default %}
-                            <span class="bg-pink-100 text-pink-600 text-xs px-2 py-1 rounded-full">Default</span>
+                            <span class="bg-[#fbf1f3] text-[#b75b77] text-xs px-2 py-1 rounded-full">Default</span>
                             {% endif %}
                         </div>
                         <p class="text-gray-700 font-bold">{{ address.recipient_name }}</p>
@@ -131,14 +131,14 @@
                         <p class="text-gray-600 text-sm">{{ address.phone_number }}</p>
                         
                         <div class="flex space-x-2 mt-4">
-                            <a href="{% url 'accounts:edit_address' address.id %}" class="text-pink-600 font-bold hover:text-pink-700">Edit</a>
+                            <a href="{% url 'accounts:edit_address' address.id %}" class="text-[#b75b77] font-bold hover:text-[#ad526d]">Edit</a>
                             <a href="{% url 'accounts:delete_address' address.id %}" class="text-red-600 font-bold hover:text-red-700" onclick="return confirm('Delete this address?')">Delete</a>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-gray-600">No saved addresses yet. <a href="{% url 'accounts:add_address' %}" class="text-pink-600 font-bold">Add one now</a></p>
+                <p class="text-gray-600">No saved addresses yet. <a href="{% url 'accounts:add_address' %}" class="text-[#b75b77] font-bold hover:text-[#ad526d]">Add one now</a></p>
                 {% endif %}
             </div>
             
@@ -155,12 +155,12 @@
                             <p class="text-gray-600 text-sm">{{ order.created_at|date:"M d, Y" }} - &#8369;{{ order.total_amount }}</p>
                             <span class="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{ order.get_status_display }}</span>
                         </div>
-                        <a href="{% url 'orders:order_detail' order.id %}" class="text-pink-600 font-bold hover:text-pink-700">View</a>
+                        <a href="{% url 'orders:order_detail' order.id %}" class="text-[#b75b77] font-bold hover:text-[#ad526d]">View</a>
                     </div>
                     {% endfor %}
                 </div>
                 
-                <a href="{% url 'accounts:order_history' %}" class="block mt-4 text-center text-pink-600 font-bold hover:text-pink-700">View All Orders</a>
+                <a href="{% url 'accounts:order_history' %}" class="block mt-4 text-center text-[#b75b77] font-bold hover:text-[#ad526d]">View All Orders</a>
             </div>
             {% endif %}
         </div>
@@ -181,15 +181,15 @@
         </div>
 
         <div class="grid sm:grid-cols-2 gap-4 mb-6">
-            <button type="button" id="modal-upload-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-pink-300 hover:bg-pink-50 transition">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-100 text-pink-600 mb-3">
+            <button type="button" id="modal-upload-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition">
+                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
                     <i class="fas fa-upload"></i>
                 </div>
                 <p class="font-bold text-gray-900">Upload from device</p>
                 <p class="text-sm text-gray-500 mt-1">Pick a photo from your local storage.</p>
             </button>
             <div class="rounded-xl border border-gray-200 p-5">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-pink-100 text-pink-600 mb-3">
+                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
                     <i class="fas fa-spa"></i>
                 </div>
                 <p class="font-bold text-gray-900">Template avatars</p>
@@ -198,16 +198,16 @@
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+">
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+" alt="Pink flower avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
-            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZGU2OGEnLz48cGF0aCBkPSdNMTIwIDUyYzM0IDAgNjIgMjggNjIgNjIgMCA1OC02MiA5MC02MiA5MHMtNjItMzItNjItOTBjMC0zNCAyOC02MiA2Mi02MnonIGZpbGw9JyM0YWRlODAnLz48cGF0aCBkPSdNMTIwIDc2YzIxIDAgMzggMTcgMzggMzggMCAzNS0zOCA1OC0zOCA1OHMtMzgtMjMtMzgtNThjMC0yMSAxNy0zOCAzOC0zOHonIGZpbGw9JyNiYmY3ZDAnLz48cGF0aCBkPSdNMTIwIDgydjg2JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTEyMCAxMjRjLTEyLTEyLTI0LTE3LTM3LTE4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nNicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBmaWxsPSdub25lJy8+PHBhdGggZD0nTTEyMCAxMzhjMTItMTIgMjQtMTcgMzctMTgnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc2JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48L3N2Zz4=">
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZGU2OGEnLz48cGF0aCBkPSdNMTIwIDUyYzM0IDAgNjIgMjggNjIgNjIgMCA1OC02MiA5MC02MiA5MHMtNjItMzItNjItOTBjMC0zNCAyOC02MiA2Mi02MnonIGZpbGw9JyM0YWRlODAnLz48cGF0aCBkPSdNMTIwIDc2YzIxIDAgMzggMTcgMzggMzggMCAzNS0zOCA1OC0zOCA1OHMtMzgtMjMtMzgtNThjMC0yMSAxNy0zOCAzOC0zOHonIGZpbGw9JyNiYmY3ZDAnLz48cGF0aCBkPSdNMTIwIDgydjg2JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTEyMCAxMjRjLTEyLTEyLTI0LTE3LTM3LTE4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nNicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBmaWxsPSdub25lJy8+PHBhdGggZD0nTTEyMCAxMzhjMTItMTIgMjQtMTcgMzctMTgnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc2JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48L3N2Zz4=">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZGU2OGEnLz48cGF0aCBkPSdNMTIwIDUyYzM0IDAgNjIgMjggNjIgNjIgMCA1OC02MiA5MC02MiA5MHMtNjItMzItNjItOTBjMC0zNCAyOC02MiA2Mi02MnonIGZpbGw9JyM0YWRlODAnLz48cGF0aCBkPSdNMTIwIDc2YzIxIDAgMzggMTcgMzggMzggMCAzNS0zOCA1OC0zOCA1OHMtMzgtMjMtMzgtNThjMC0yMSAxNy0zOCAzOC0zOHonIGZpbGw9JyNiYmY3ZDAnLz48cGF0aCBkPSdNMTIwIDgydjg2JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTEyMCAxMjRjLTEyLTEyLTI0LTE3LTM3LTE4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nNicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBmaWxsPSdub25lJy8+PHBhdGggZD0nTTEyMCAxMzhjMTItMTIgMjQtMTcgMzctMTgnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc2JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48L3N2Zz4=" alt="Leaf avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
-            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZWNkZDMnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzE4JyBmaWxsPScjZmRlNjhhJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcwJyByeD0nMjInIHJ5PSc0MCcgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNzAnIHJ4PScyMicgcnk9JzQwJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9JzcwJyBjeT0nMTIwJyByeD0nNDAnIHJ5PScyMicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNzAnIGN5PScxMjAnIHJ4PSc0MCcgcnk9JzIyJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg4JyBjeT0nODgnIHJ4PScyMCcgcnk9JzM0JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODggODgpJyBmaWxsPScjZmRhNGFmJy8+PGVsbGlwc2UgY3g9JzE1MicgY3k9Jzg4JyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTUyIDg4KScgZmlsbD0nI2ZkYTRhZicvPjxlbGxpcHNlIGN4PSc4OCcgY3k9JzE1Micgcng9JzIwJyByeT0nMzQnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg4IDE1MiknIGZpbGw9JyNmZGE0YWYnLz48ZWxsaXBzZSBjeD0nMTUyJyBjeT0nMTUyJyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1MiAxNTIpJyBmaWxsPScjZmRhNGFmJy8+PHBhdGggZD0nTTEyMCAxNDB2NDYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc4JyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz48cGF0aCBkPSdNMTIwIDE2MGMtMTAtMTAtMjAtMTUtMzEtMTYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTIwIDE2OGMxMC0xMCAyMC0xNSAzMS0xNicgc3Ryb2tlPScjNjVhMzBkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==">
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZWNkZDMnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzE4JyBmaWxsPScjZmRlNjhhJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcwJyByeD0nMjInIHJ5PSc0MCcgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNzAnIHJ4PScyMicgcnk9JzQwJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9JzcwJyBjeT0nMTIwJyByeD0nNDAnIHJ5PScyMicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNzAnIGN5PScxMjAnIHJ4PSc0MCcgcnk9JzIyJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg4JyBjeT0nODgnIHJ4PScyMCcgcnk9JzM0JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODggODgpJyBmaWxsPScjZmRhNGFmJy8+PGVsbGlwc2UgY3g9JzE1MicgY3k9Jzg4JyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTUyIDg4KScgZmlsbD0nI2ZkYTRhZicvPjxlbGxpcHNlIGN4PSc4OCcgY3k9JzE1Micgcng9JzIwJyByeT0nMzQnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg4IDE1MiknIGZpbGw9JyNmZGE0YWYnLz48ZWxsaXBzZSBjeD0nMTUyJyBjeT0nMTUyJyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1MiAxNTIpJyBmaWxsPScjZmRhNGFmJy8+PHBhdGggZD0nTTEyMCAxNDB2NDYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc4JyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz48cGF0aCBkPSdNMTIwIDE2MGMtMTAtMTAtMjAtMTUtMzEtMTYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTIwIDE2OGMxMC0xMCAyMC0xNSAzMS0xNicgc3Ryb2tlPScjNjVhMzBkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmZWNkZDMnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzE4JyBmaWxsPScjZmRlNjhhJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcwJyByeD0nMjInIHJ5PSc0MCcgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNzAnIHJ4PScyMicgcnk9JzQwJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9JzcwJyBjeT0nMTIwJyByeD0nNDAnIHJ5PScyMicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNzAnIGN5PScxMjAnIHJ4PSc0MCcgcnk9JzIyJyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg4JyBjeT0nODgnIHJ4PScyMCcgcnk9JzM0JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODggODgpJyBmaWxsPScjZmRhNGFmJy8+PGVsbGlwc2UgY3g9JzE1MicgY3k9Jzg4JyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTUyIDg4KScgZmlsbD0nI2ZkYTRhZicvPjxlbGxpcHNlIGN4PSc4OCcgY3k9JzE1Micgcng9JzIwJyByeT0nMzQnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg4IDE1MiknIGZpbGw9JyNmZGE0YWYnLz48ZWxsaXBzZSBjeD0nMTUyJyBjeT0nMTUyJyByeD0nMjAnIHJ5PSczNCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1MiAxNTIpJyBmaWxsPScjZmRhNGFmJy8+PHBhdGggZD0nTTEyMCAxNDB2NDYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc4JyBzdHJva2UtbGluZWNhcD0ncm91bmQnLz48cGF0aCBkPSdNMTIwIDE2MGMtMTAtMTAtMjAtMTUtMzEtMTYnIHN0cm9rZT0nIzY1YTMwZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTIwIDE2OGMxMC0xMCAyMC0xNSAzMS0xNicgc3Ryb2tlPScjNjVhMzBkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==" alt="Rose avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
-            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-pink-300 hover:bg-pink-50 transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNkZGQ2ZmUnLz48cGF0aCBkPSdNNzIgMTYwYzAtNTQgNDQtOTggOTgtOTggMCA1NC00NCA5OC05OCA5OHonIGZpbGw9JyNhNzhiZmEnLz48cGF0aCBkPSdNNzAgMTc2YzAtNjYgNTQtMTIwIDEyMC0xMjAgMCA2Ni01NCAxMjAtMTIwIDEyMHonIGZpbGw9JyM4NmVmYWMnLz48cGF0aCBkPSdNODQgMTYyYzAtNDcgMzgtODUgODUtODUgMCA0Ny0zOCA4NS04NSA4NXonIGZpbGw9JyNkY2ZjZTcnLz48cGF0aCBkPSdNODAgMTc2YzI2LTE4IDUyLTQ0IDc4LTc4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTExOCAxMzhjMTAtNCAyMC01IDMyLTMnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTAwIDE1NmM1LTEwIDctMjAgNy0zMicgc3Ryb2tlPScjMTU4MDNkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==">
+            <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNkZGQ2ZmUnLz48cGF0aCBkPSdNNzIgMTYwYzAtNTQgNDQtOTggOTgtOTggMCA1NC00NCA5OC05OCA5OHonIGZpbGw9JyNhNzhiZmEnLz48cGF0aCBkPSdNNzAgMTc2YzAtNjYgNTQtMTIwIDEyMC0xMjAgMCA2Ni01NCAxMjAtMTIwIDEyMHonIGZpbGw9JyM4NmVmYWMnLz48cGF0aCBkPSdNODQgMTYyYzAtNDcgMzgtODUgODUtODUgMCA0Ny0zOCA4NS04NSA4NXonIGZpbGw9JyNkY2ZjZTcnLz48cGF0aCBkPSdNODAgMTc2YzI2LTE4IDUyLTQ0IDc4LTc4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTExOCAxMzhjMTAtNCAyMC01IDMyLTMnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTAwIDE1NmM1LTEwIDctMjAgNy0zMicgc3Ryb2tlPScjMTU4MDNkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNkZGQ2ZmUnLz48cGF0aCBkPSdNNzIgMTYwYzAtNTQgNDQtOTggOTgtOTggMCA1NC00NCA5OC05OCA5OHonIGZpbGw9JyNhNzhiZmEnLz48cGF0aCBkPSdNNzAgMTc2YzAtNjYgNTQtMTIwIDEyMC0xMjAgMCA2Ni01NCAxMjAtMTIwIDEyMHonIGZpbGw9JyM4NmVmYWMnLz48cGF0aCBkPSdNODQgMTYyYzAtNDcgMzgtODUgODUtODUgMCA0Ny0zOCA4NS04NSA4NXonIGZpbGw9JyNkY2ZjZTcnLz48cGF0aCBkPSdNODAgMTc2YzI2LTE4IDUyLTQ0IDc4LTc4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTExOCAxMzhjMTAtNCAyMC01IDMyLTMnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTAwIDE1NmM1LTEwIDctMjAgNy0zMicgc3Ryb2tlPScjMTU4MDNkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==" alt="Layered leaf avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
         </div>

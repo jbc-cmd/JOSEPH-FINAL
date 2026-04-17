@@ -3,7 +3,7 @@
 {% block title %}Contact Us - Joseph Flowershop{% endblock %}
 
 {% block content %}
-<div class="bg-gradient-to-b from-orange-50 to-white min-h-screen py-14">
+<div class="bg-gradient-to-b from-[#fbf1f3] to-white min-h-screen py-14">
     <div class="max-w-6xl mx-auto px-4">
         <div class="grid lg:grid-cols-2 gap-10">
             <!-- Left: Contact info -->
@@ -13,37 +13,37 @@
 
                 <div class="space-y-6">
                     <div class="flex gap-4 items-start">
-                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <div class="w-11 h-11 rounded-xl bg-[#fbf1f3] text-[#b75b77] flex items-center justify-center">
                             <i class="fas fa-map-marker-alt"></i>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Address</p>
-                            <p class="font-semibold text-gray-900">123 Flower Lane, Makati City, Metro Manila 1200</p>
+                            <p class="font-semibold text-gray-900">Amat St, Sarvida St, Surigao, 8400 Surigao del Norte</p>
                         </div>
                     </div>
 
                     <div class="flex gap-4 items-start">
-                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <div class="w-11 h-11 rounded-xl bg-[#fbf1f3] text-[#b75b77] flex items-center justify-center">
                             <i class="fas fa-phone"></i>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Phone</p>
-                            <p class="font-semibold text-gray-900">+63 912 345 6789</p>
+                            <p class="font-semibold text-gray-900">09124169887</p>
                         </div>
                     </div>
 
                     <div class="flex gap-4 items-start">
-                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <div class="w-11 h-11 rounded-xl bg-[#fbf1f3] text-[#b75b77] flex items-center justify-center">
                             <i class="fas fa-envelope"></i>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Email</p>
-                            <p class="font-semibold text-gray-900">hello@petalandbloom.ph</p>
+                            <p class="font-semibold text-gray-900">flowershopjoseph@gmail.com</p>
                         </div>
                     </div>
 
                     <div class="flex gap-4 items-start">
-                        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <div class="w-11 h-11 rounded-xl bg-[#fbf1f3] text-[#b75b77] flex items-center justify-center">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div>
@@ -55,9 +55,24 @@
 
                 <div class="mt-10 bg-gray-50 rounded-2xl p-6">
                     <div class="text-sm text-gray-500">Find us on the map</div>
-                    <div class="mt-4 h-40 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-400">
-                        <i class="fas fa-map-marker-alt text-3xl"></i>
-                        <span class="ml-3">Makati City, Metro Manila</span>
+                    <div class="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                        <iframe
+                            title="Joseph Flowershop location map"
+                            src="https://www.google.com/maps?q=Amat%20St%2C%20Sarvida%20St%2C%20Surigao%2C%208400%20Surigao%20del%20Norte&z=16&output=embed"
+                            class="h-40 w-full"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                    <a
+                        href="https://www.google.com/maps/search/?api=1&query=Amat%20St%2C%20Sarvida%20St%2C%20Surigao%2C%208400%20Surigao%20del%20Norte"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#b75b77] hover:text-[#ad526d]">
+                        <i class="fas fa-location-arrow"></i>
+                        Open in Google Maps
+                    </a>
+                    <div class="mt-2 text-sm text-gray-500">
+                        Amat St, Sarvida St, Surigao, 8400 Surigao del Norte
                     </div>
                 </div>
             </div>
@@ -67,30 +82,40 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">Send a Message</h2>
                 <p class="text-gray-600 mb-8">Fill out the form and we’ll get back to you as soon as possible.</p>
 
+                {% if messages %}
+                <div class="mb-6 space-y-3">
+                    {% for message in messages %}
+                    <div class="rounded-2xl px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}border border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border border-red-200 bg-red-50 text-red-700{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <form method="post" class="space-y-6">
                     {% csrf_token %}
                     <div class="grid md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Name</label>
-                            <input name="name" value="{{ request.POST.name }}" type="text" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-orange-300 focus:outline-none" />
+                            <input name="name" value="{{ form_data.name }}" type="text" required autocomplete="name" placeholder="Your full name" class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-[#d9a8b7] focus:outline-none focus:ring-2 focus:ring-[#f7e2e8]" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Email</label>
-                            <input name="email" value="{{ request.POST.email }}" type="email" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-orange-300 focus:outline-none" />
+                            <input name="email" value="{{ form_data.email }}" type="email" required autocomplete="email" placeholder="your@email.com" class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-[#d9a8b7] focus:outline-none focus:ring-2 focus:ring-[#f7e2e8]" />
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Subject</label>
-                        <input name="subject" value="{{ request.POST.subject }}" type="text" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-orange-300 focus:outline-none" />
+                        <input name="subject" value="{{ form_data.subject }}" type="text" required placeholder="How can we help?" class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-[#d9a8b7] focus:outline-none focus:ring-2 focus:ring-[#f7e2e8]" />
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Message</label>
-                        <textarea name="message" rows="5" required class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-orange-300 focus:outline-none">{{ request.POST.message }}</textarea>
+                        <textarea name="message" rows="5" required placeholder="Tell us about your order, bouquet idea, or question." class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-[#d9a8b7] focus:outline-none focus:ring-2 focus:ring-[#f7e2e8]">{{ form_data.message }}</textarea>
                     </div>
 
-                    <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2">
+                    <button type="submit" class="rose-pill-button rose-pill-button--full rounded-xl">
                         <i class="fas fa-paper-plane"></i>
                         Send Message
                     </button>

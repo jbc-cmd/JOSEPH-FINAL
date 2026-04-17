@@ -5,14 +5,14 @@
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-10">
     <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-        <div class="h-1 w-full bg-pink-600"></div>
+        <div class="h-1 w-full bg-[#b75b77]"></div>
         <div class="p-6 md:p-8">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Add Delivery Address</h1>
                     <p class="text-sm text-gray-500 mt-1">Save a new address for faster checkout.</p>
                 </div>
-                <a href="{% url 'accounts:profile' %}" class="text-sm font-semibold text-pink-600 hover:text-pink-700 sm:pt-2">Back to Profile</a>
+                <a href="{% url 'accounts:profile' %}" class="text-sm font-semibold text-[#b75b77] hover:text-[#ad526d] sm:pt-2">Back to Profile</a>
             </div>
 
             <form method="post" class="space-y-6">
@@ -70,7 +70,7 @@
                 {% endif %}
 
                 <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button type="submit" class="inline-flex min-w-[150px] items-center justify-center bg-pink-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-pink-700 transition">
+                    <button type="submit" class="rose-pill-button inline-flex min-w-[150px] items-center justify-center">
                         Save Address
                     </button>
                     <a href="{% url 'accounts:profile' %}" class="inline-flex min-w-[110px] items-center justify-center border border-gray-200 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition">
@@ -117,14 +117,14 @@
         width: 1rem;
         height: 1rem;
         flex-shrink: 0;
-        accent-color: #db2777;
+        accent-color: #b75b77;
     }
 
     input:focus,
     textarea:focus {
         outline: none;
-        border-color: #f9a8d4;
-        box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.15);
+        border-color: #d9a8b7;
+        box-shadow: 0 0 0 3px rgba(183, 91, 119, 0.12);
     }
 </style>
 {% endblock %}

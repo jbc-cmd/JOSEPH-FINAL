@@ -230,6 +230,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER or 'no-reply@example.com')
 EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
+RESEND_API_KEY = config('RESEND_API_KEY', default='')
+CONTACT_FROM_EMAIL = config('CONTACT_FROM_EMAIL', default=DEFAULT_FROM_EMAIL)
+CONTACT_TO_EMAIL = config('CONTACT_TO_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # Session settings
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

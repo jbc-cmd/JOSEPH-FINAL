@@ -1,29 +1,194 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}About Joseph Flowershop - Our Story{% endblock %}
 
+{% block extra_css %}
+<style>
+    .about-hero {
+        position: relative;
+        min-height: 20rem;
+        overflow: hidden;
+    }
+
+    .about-hero::after {
+        content: "";
+        position: absolute;
+        left: -6%;
+        right: -6%;
+        bottom: -5.5rem;
+        height: 11.5rem;
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, rgba(255, 248, 243, 0.96) 0%, rgba(255, 246, 240, 0.82) 52%, rgba(255, 246, 240, 0) 78%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .about-hero__mist {
+        position: absolute;
+        inset: auto 0 0;
+        height: 7rem;
+        background: linear-gradient(180deg, rgba(255, 247, 241, 0) 0%, rgba(255, 247, 241, 0.42) 58%, rgba(255, 245, 239, 0.86) 100%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .about-section {
+        position: relative;
+        overflow: hidden;
+        margin-top: 0;
+        padding-top: 2.2rem;
+    }
+
+    .about-section::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 8rem;
+        background: linear-gradient(180deg, rgba(255, 248, 243, 0.78) 0%, rgba(255, 247, 242, 0.36) 48%, rgba(255, 247, 242, 0) 100%);
+        pointer-events: none;
+    }
+
+    .about-story-shell {
+        position: relative;
+        max-width: 72rem;
+        margin: -2.85rem auto 4rem;
+        padding: 4.5rem 2rem 3.25rem;
+        border-radius: 44% 44% 18% 18% / 20% 20% 12% 12%;
+        background:
+            linear-gradient(180deg, rgba(255, 250, 247, 0.94), rgba(255, 246, 243, 0.82)),
+            radial-gradient(circle at top, rgba(255, 255, 255, 0.92), rgba(255, 245, 247, 0.52));
+        box-shadow: 0 18px 42px rgba(110, 68, 82, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.68);
+        overflow: hidden;
+        isolation: isolate;
+    }
+
+    .about-story-shell::before,
+    .about-story-shell::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 118%;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .about-story-shell::before {
+        top: -7.5rem;
+        height: 10rem;
+        background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 247, 241, 0.55) 52%, rgba(255, 247, 241, 0) 78%);
+    }
+
+    .about-story-shell::after {
+        bottom: -8rem;
+        height: 10.5rem;
+        background: radial-gradient(circle at center, rgba(248, 225, 231, 0.46) 0%, rgba(248, 225, 231, 0.14) 52%, rgba(248, 225, 231, 0) 78%);
+    }
+
+    .about-story-ribbon {
+        position: absolute;
+        inset: 1rem 1.5rem auto;
+        height: 6.25rem;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, rgba(255, 220, 228, 0.3), rgba(255, 255, 255, 0.52), rgba(255, 214, 224, 0.32));
+        filter: blur(1px);
+        opacity: 0.95;
+    }
+
+    .about-values {
+        margin-top: -3rem;
+        padding-top: 7rem;
+    }
+
+    .about-values::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 9rem;
+        background: linear-gradient(180deg, rgba(255, 246, 241, 0.04) 0%, rgba(255, 246, 241, 0.72) 48%, rgba(255, 244, 246, 0.96) 100%);
+        pointer-events: none;
+    }
+
+    @media (max-width: 640px) {
+        .about-hero::after {
+            bottom: -4.25rem;
+            height: 9rem;
+        }
+
+        .about-hero__mist {
+            height: 5.5rem;
+        }
+
+        .about-section {
+            margin-top: 0;
+            padding-top: 1.5rem;
+        }
+
+        .about-story-shell {
+            margin-top: -1.9rem;
+            padding: 3.75rem 1.25rem 2.75rem;
+            border-radius: 36% 36% 14% 14% / 12% 12% 8% 8%;
+        }
+
+        .about-story-ribbon {
+            inset: 0.9rem 0.9rem auto;
+            height: 4.75rem;
+        }
+
+        .about-values {
+            margin-top: -2rem;
+            padding-top: 5.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Hero Section -->
-<div class="relative h-80 bg-gradient-to-r from-pink-500 to-rose-600 text-white overflow-hidden">
-    <div class="absolute inset-0 bg-black opacity-40"></div>
-    <div class="relative max-w-7xl mx-auto px-4 h-full flex flex-col items-center justify-center text-center">
-        <h1 class="text-5xl font-bold mb-4">About Joseph Flowershop</h1>
-        <p class="text-2xl">Celebrating Life's Beautiful Moments</p>
+<div class="about-hero relative h-80 text-white" style="background-image: linear-gradient(90deg, rgba(255, 248, 243, 0.14), rgba(255, 248, 243, 0.14)), url('{% static "images/About.png" %}'); background-position: center; background-repeat: no-repeat; background-size: cover;">
+    <div class="absolute inset-0 bg-gradient-to-r from-[#3d1f27]/14 via-transparent to-[#fff7f1]/12"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-white/8 via-transparent to-white/6"></div>
+    <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-b from-transparent via-[#fff7f1]/24 to-[#fff7f1]/56"></div>
+    <div class="about-hero__mist"></div>
+    <div class="relative z-10 max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
+        <div class="rounded-[2rem] bg-white/18 px-8 py-7 text-center shadow-[0_24px_60px_rgba(113,52,69,0.12)] backdrop-blur-[3px] border border-white/25">
+            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.42em] text-[#b46d72]">Our Story In Bloom</p>
+            <h1 class="mb-4 text-5xl font-bold text-[#a53b64] drop-shadow-[0_1px_0_rgba(255,255,255,0.45)]">About Joseph Flowershop</h1>
+            <p class="text-2xl text-[#5f4a52]">Celebrating Life's Beautiful Moments</p>
+            <div class="mt-4 flex items-center justify-center gap-3 text-[#cf8b97]">
+                <span class="h-px w-10 bg-current/60"></span>
+                <i class="fas fa-spa text-sm"></i>
+                <span class="h-px w-10 bg-current/60"></span>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- About Section -->
-<div class="bg-white py-20">
+<div class="about-section relative pb-20" style="background-image: linear-gradient(180deg, rgba(255, 249, 244, 0.2), rgba(255, 249, 244, 0.5)), url('{% static "images/home-hero-bg-all.png" %}'); background-position: center; background-repeat: no-repeat; background-size: cover;">
+    <div class="absolute inset-0 opacity-[0.14]" style="background-image: url('{% static "images/home-hero-bg-all.png" %}'); background-position: center; background-repeat: no-repeat; background-size: cover;"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,250,246,0.14),transparent_42%),radial-gradient(circle_at_center,rgba(255,245,247,0.12),transparent_56%)]"></div>
+    <div class="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.74),rgba(255,247,241,0.46)_42%,rgba(255,247,241,0)_100%)]"></div>
+    <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#fff7f1]/70 via-[#fff7f1]/28 to-transparent"></div>
+    <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#fff7f1] via-[#fff7f1]/52 to-transparent"></div>
+    <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#fff7f1]/94 via-[#fff7f1]/34 to-transparent"></div>
+    <div class="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#fff7f1]/94 via-[#fff7f1]/34 to-transparent"></div>
     <div class="max-w-7xl mx-auto px-4">
         <!-- Title and Description -->
-        <div class="text-center mb-16">
-            <h2 class="text-5xl font-bold text-gray-800 mb-8">Where Every Petal Tells a Story</h2>
-            <p class="text-gray-600 text-lg leading-relaxed max-w-3xl mx-auto mb-4">
-                Joseph Flowershop was born from a simple belief — that flowers have the power to transform ordinary moments into extraordinary memories. What started as a small corner shop has blossomed into a beloved destination for flower lovers across Metro Manila.
-            </p>
-            <p class="text-gray-600 text-lg leading-relaxed max-w-3xl mx-auto">
-                Our team of passionate florists brings decades of combined experience, blending traditional Filipino floral artistry with contemporary design. Every bouquet that leaves our shop carries our commitment to beauty, freshness, and heartfelt expression.
-            </p>
+        <div class="about-story-shell text-center">
+            <div class="about-story-ribbon"></div>
+            <div class="relative">
+                <h2 class="text-5xl font-bold text-[#1f2f4b] drop-shadow-[0_1px_0_rgba(255,255,255,0.8)] mb-8">Where Every Petal Tells a Story</h2>
+                <p class="text-[#43536b] text-lg leading-relaxed max-w-3xl mx-auto mb-4 font-semibold [text-wrap:balance]">
+                    Joseph Flowershop was born from a simple belief — that flowers have the power to transform ordinary moments into extraordinary memories. What started as a small corner shop has blossomed into a beloved destination for flower lovers across Metro Manila.
+                </p>
+                <p class="text-[#43536b] text-lg leading-relaxed max-w-3xl mx-auto font-semibold [text-wrap:balance]">
+                    Our team of passionate florists brings decades of combined experience, blending traditional Filipino floral artistry with contemporary design. Every bouquet that leaves our shop carries our commitment to beauty, freshness, and heartfelt expression.
+                </p>
+            </div>
         </div>
         
         <!-- Feature Cards -->
@@ -88,8 +253,10 @@
 </div>
 
 <!-- Our Values Section -->
-<div class="bg-gradient-to-r from-pink-50 to-rose-50 py-20">
-    <div class="max-w-7xl mx-auto px-4">
+<div class="about-values relative overflow-hidden py-20" style="background-image: linear-gradient(180deg, rgba(255, 249, 245, 0.88), rgba(255, 244, 246, 0.92)), url('{% static "images/home-hero-bg-all.png" %}'); background-position: center; background-repeat: no-repeat; background-size: cover;">
+    <div class="absolute inset-0 opacity-[0.12]" style="background-image: url('{% static "images/home-hero-bg-all.png" %}'); background-position: center; background-repeat: no-repeat; background-size: cover;"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.36),transparent_40%),linear-gradient(180deg,rgba(255,247,241,0.12),rgba(255,247,241,0.3))]"></div>
+    <div class="relative max-w-7xl mx-auto px-4">
         <h2 class="text-4xl font-bold text-center text-gray-800 mb-12">Our Values</h2>
         
         <div class="grid md:grid-cols-3 gap-8">
@@ -112,8 +279,24 @@
 </div>
 
 <!-- Call to Action -->
-<div class="bg-gradient-to-r from-pink-500 to-rose-600 text-white py-16">
-    <div class="max-w-4xl mx-auto px-4 text-center">
+<div class="relative overflow-hidden py-16 text-white" style="background:
+    radial-gradient(circle at 18% 50%, rgba(255, 214, 225, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 45%, rgba(255, 204, 219, 0.14), transparent 26%),
+    linear-gradient(135deg, #cf5f8a 0%, #c44779 38%, #b0366b 100%);">
+    <div class="absolute inset-0 opacity-80" style="background:
+        linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 36%, rgba(88, 22, 47, 0.12) 100%),
+        radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 34%, transparent 68%);"></div>
+    <div class="absolute left-10 top-10 h-24 w-24 rounded-full bg-white/8 blur-2xl"></div>
+    <div class="absolute right-10 top-12 h-28 w-28 rounded-full bg-rose-100/10 blur-2xl"></div>
+    <div class="absolute inset-x-[-8%] top-6 h-16 rounded-[50%] bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)] blur-xl"></div>
+    <div class="absolute left-[-2rem] top-1/2 h-40 w-40 -translate-y-1/2 rounded-full border border-white/10 bg-white/6 blur-sm"></div>
+    <div class="absolute right-[-2.5rem] top-1/2 h-44 w-44 -translate-y-1/2 rounded-full border border-white/10 bg-white/6 blur-sm"></div>
+    <div class="absolute left-[12%] bottom-5 h-16 w-28 rotate-[-18deg] rounded-[60%_40%_55%_45%] border border-white/10 bg-white/8 blur-[1px]"></div>
+    <div class="absolute right-[14%] top-6 h-20 w-32 rotate-[18deg] rounded-[58%_42%_48%_52%] border border-white/10 bg-rose-50/10 blur-[1px]"></div>
+    <div class="absolute left-1/2 top-4 h-24 w-56 -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.18),rgba(255,255,255,0.04)_52%,transparent_74%)]"></div>
+    <div class="absolute inset-x-16 top-9 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent"></div>
+    <div class="absolute inset-x-20 bottom-8 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent"></div>
+    <div class="relative max-w-4xl mx-auto px-4 text-center">
         <h2 class="text-4xl font-bold mb-4">Ready to Share Your Feelings?</h2>
         <p class="text-xl mb-8 opacity-90">Let Joseph Flowershop help you express your emotions with our stunning flower arrangements</p>
         <a href="{% url 'products:shop' %}" class="inline-block bg-white text-pink-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition">Start Shopping</a>

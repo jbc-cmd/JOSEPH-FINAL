@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Joseph Flowershop - Home{% endblock %}
 
 {% block content %}
-<section class="home-hero relative overflow-hidden text-gray-800">
+<section class="home-hero relative overflow-hidden text-gray-800" style="background-image: linear-gradient(90deg, rgba(255, 248, 242, 0.08), rgba(255, 248, 242, 0.08)), url('{% static "images/home-hero-bg.png" %}');">
     <div class="home-hero__glow home-hero__glow--left"></div>
     <div class="home-hero__glow home-hero__glow--right"></div>
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
@@ -24,13 +25,14 @@
     </div>
 </section>
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-    <div class="text-center mb-2">
-        <span class="text-[11px] sm:text-xs tracking-[0.35em] text-gray-500 font-semibold">CURATED FOR YOU</span>
-    </div>
-    <h2 class="text-3xl sm:text-4xl font-bold text-center mb-8 sm:mb-12 text-gray-800 playfair-display">Best Sellers</h2>
+<section class="home-featured py-12 sm:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-2">
+            <span class="text-[11px] sm:text-xs tracking-[0.35em] text-gray-500 font-semibold">CURATED FOR YOU</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-8 sm:mb-12 text-gray-800 playfair-display">Best Sellers</h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 sm:gap-8">
         {% for product in featured_products %}
         <div class="home-product-card bg-white rounded-[1.75rem] overflow-hidden shadow-sm hover:shadow-lg transition h-full flex flex-col">
             <div class="relative overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0 aspect-square">
@@ -55,7 +57,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3 rounded-2xl font-semibold hover:shadow-md transition shadow-md flex items-center justify-center gap-2">
+                <button type="submit" class="rose-pill-button rose-pill-button--full rose-pill-button--compact">
                     <i class="fas fa-shopping-bag"></i>Add to Cart
                 </button>
             </form>
@@ -86,32 +88,33 @@
             <p>No featured products available yet.</p>
         </div>
         {% endfor %}
-    </div>
+        </div>
 
-    <div class="text-center mt-10 sm:mt-12">
-        <a href="{% url 'products:shop' %}" class="inline-flex items-center justify-center bg-pink-600 text-white px-8 py-3 rounded-full font-bold hover:bg-pink-700 transition min-w-[13rem]">Shop All Products</a>
+        <div class="text-center mt-10 sm:mt-12">
+            <a href="{% url 'products:shop' %}" class="rose-pill-button min-w-[13rem]">Shop All Products</a>
+        </div>
     </div>
 </section>
 
-<section class="bg-gradient-to-r from-pink-50 to-rose-50 py-12 sm:py-16">
+<section class="home-why-choose py-12 sm:py-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
         <h2 class="text-3xl sm:text-4xl font-bold text-center mb-8 sm:mb-12 playfair-display">Why Choose Joseph Flowershop?</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
             <div class="rounded-[1.5rem] bg-white/80 px-6 py-7 text-center shadow-sm">
-                <div class="text-4xl text-pink-600 mb-4"><i class="fas fa-truck"></i></div>
+                <div class="text-4xl text-[#b75b77] mb-4"><i class="fas fa-truck"></i></div>
                 <h3 class="text-xl font-bold mb-2">Fast Delivery</h3>
                 <p class="text-gray-600">Same-day delivery available in selected areas</p>
             </div>
 
             <div class="rounded-[1.5rem] bg-white/80 px-6 py-7 text-center shadow-sm">
-                <div class="text-4xl text-pink-600 mb-4"><i class="fas fa-check-circle"></i></div>
+                <div class="text-4xl text-[#b75b77] mb-4"><i class="fas fa-check-circle"></i></div>
                 <h3 class="text-xl font-bold mb-2">Quality Guaranteed</h3>
                 <p class="text-gray-600">Fresh flowers sourced from trusted local farmers</p>
             </div>
 
             <div class="rounded-[1.5rem] bg-white/80 px-6 py-7 text-center shadow-sm">
-                <div class="text-4xl text-pink-600 mb-4"><i class="fas fa-smile"></i></div>
+                <div class="text-4xl text-[#b75b77] mb-4"><i class="fas fa-smile"></i></div>
                 <h3 class="text-xl font-bold mb-2">100% Satisfaction</h3>
                 <p class="text-gray-600">Satisfaction guaranteed or your money back</p>
             </div>

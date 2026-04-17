@@ -3,11 +3,71 @@
 
 {% block title %}Custom Bouquet Builder - Joseph Flowershop{% endblock %}
 
+{% block extra_css %}
+<style>
+    .builder-page [class*="text-orange-"] {
+        color: #b75b77 !important;
+    }
+
+    .builder-page [class*="bg-orange-"] {
+        background-color: #fbf1f3 !important;
+    }
+
+    .builder-page [class*="border-orange-"] {
+        border-color: #ecd3da !important;
+    }
+
+    .builder-page [class*="ring-orange-"] {
+        --tw-ring-color: rgb(236 211 218) !important;
+    }
+
+    .builder-page .builder-step-card,
+    .builder-page .builder-step-nav,
+    .builder-page aside > div {
+        border-color: #ecd3da;
+    }
+
+    .builder-page #bouquet-preview {
+        background: linear-gradient(135deg, #fbf1f3 0%, #f8eef2 100%);
+        border-color: #ecd3da;
+    }
+
+    .builder-page #summary-empty,
+    .builder-page #custom-size-controls,
+    .builder-page .rounded-2xl.border.border-orange-100.bg-orange-50\/50 {
+        border-color: #ecd3da;
+        background: #fbf1f3;
+    }
+
+    .builder-page #builder-submit {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        appearance: none;
+        -webkit-appearance: none;
+        border: 0;
+        background: #d1d5db;
+        box-shadow: none;
+    }
+
+    .builder-page #builder-submit:not(:disabled) {
+        background: #b75b77;
+        box-shadow: 0 12px 24px rgba(183, 91, 119, 0.22);
+    }
+
+    .builder-page #builder-submit:not(:disabled):hover {
+        background: #ad526d;
+        box-shadow: 0 16px 28px rgba(173, 82, 109, 0.26);
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="bg-gradient-to-b from-orange-50 via-white to-orange-50/40 min-h-screen py-10 md:py-12">
+<div class="builder-page bg-gradient-to-b from-orange-50 via-white to-orange-50/40 min-h-screen py-10 md:py-12">
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-10 md:mb-12">
-            <p class="text-sm uppercase tracking-[0.35em] text-orange-500 font-semibold mb-3">Custom Bouquet Studio</p>
+            <p class="text-sm uppercase tracking-[0.35em] text-[#b75b77] font-semibold mb-3">Custom Bouquet Studio</p>
             <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-3">Build Your Perfect Bouquet</h1>
             <p class="text-gray-600 text-lg max-w-3xl">Choose your stems, compare sizes, add elegant finishing touches, and see your bouquet total update in real time.</p>
         </div>
@@ -237,7 +297,7 @@
                     </div>
 
                     <div class="mt-6 space-y-3">
-                        <button id="builder-submit" type="button" class="w-full rounded-2xl bg-gray-300 px-5 py-4 text-base font-bold text-white transition cursor-not-allowed" disabled><i class="fas fa-shopping-bag mr-2"></i><span id="builder-submit-label">Select flowers and size to continue</span></button>
+                        <button id="builder-submit" type="button" class="w-full rounded-full px-5 py-4 text-base font-bold text-white transition bg-gray-300 cursor-not-allowed" disabled><i class="fas fa-shopping-bag mr-2"></i><span id="builder-submit-label">Select flowers and size to continue</span></button>
                         <p id="builder-submit-help" class="text-center text-sm text-gray-500">Complete Step 1 and Step 2 to add your bouquet to cart.</p>
                     </div>
                 </div>
@@ -493,8 +553,6 @@ function initializeBouquetBuilder() {
     function updateSubmitState(state, sizeValidation) {
         const isValid = state.totalStems > 0 && sizeValidation.valid;
         submitButton.disabled = !isValid;
-        submitButton.classList.toggle('bg-pink-600', isValid);
-        submitButton.classList.toggle('hover:bg-pink-700', isValid);
         submitButton.classList.toggle('cursor-pointer', isValid);
         submitButton.classList.toggle('bg-gray-300', !isValid);
         submitButton.classList.toggle('cursor-not-allowed', !isValid);

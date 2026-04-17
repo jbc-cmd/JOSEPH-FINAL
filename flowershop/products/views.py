@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
 from django.core.paginator import Paginator
+import requests
 
 
 class HomeView(ListView):
@@ -36,20 +37,62 @@ class ContactView(TemplateView):
     """Contact page."""
     template_name = 'products/contact.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('form_data', {
+            'name': '',
+            'email': '',
+            'subject': '',
+            'message': '',
+        })
+        return context
+
     def post(self, request, *args, **kwargs):
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        subject = request.POST.get('subject', '').strip()
-        message = request.POST.get('message', '').strip()
+        form_data = {
+            'name': request.POST.get('name', '').strip(),
+            'email': request.POST.get('email', '').strip(),
+            'subject': request.POST.get('subject', '').strip(),
+            'message': request.POST.get('message', '').strip(),
+        }
 
-        if not name or not email or not subject or not message:
-            messages.error(request, 'Please fill out all fields before sending.');
-            return self.get(request, *args, **kwargs)
+        if not all(form_data.values()):
+            messages.error(request, 'Please fill out all fields before sending.')
+            return self.render_to_response(self.get_context_data(form_data=form_data))
 
-        full_message = f"Name: {name}\nEmail: {email}\n\n{message}"
-        send_mail(subject, full_message, settings.DEFAULT_FROM_EMAIL, [settings.DEFAULT_FROM_EMAIL], fail_silently=True)
+        full_message = f"Name: {form_data['name']}\nEmail: {form_data['email']}\n\n{form_data['message']}"
+        try:
+            if getattr(settings, 'RESEND_API_KEY', ''):
+                response = requests.post(
+                    'https://api.resend.com/emails',
+                    headers={
+                        'Authorization': f"Bearer {settings.RESEND_API_KEY}",
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'joseph-flowershop/1.0',
+                    },
+                    json={
+                        'from': settings.CONTACT_FROM_EMAIL,
+                        'to': [settings.CONTACT_TO_EMAIL],
+                        'subject': form_data['subject'],
+                        'text': full_message,
+                        'reply_to': form_data['email'],
+                    },
+                    timeout=15,
+                )
+                response.raise_for_status()
+            else:
+                send_mail(
+                    form_data['subject'],
+                    full_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=False,
+                )
+        except Exception:
+            messages.error(request, 'We could not send your message right now. Please try again later or contact us directly.')
+            return self.render_to_response(self.get_context_data(form_data=form_data))
+
         messages.success(request, 'Thanks! Your message has been sent.')
-        return self.get(request, *args, **kwargs)
+        return redirect('products:contact')
 
 
 class TermsView(TemplateView):
