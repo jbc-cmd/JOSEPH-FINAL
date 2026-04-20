@@ -8,12 +8,12 @@
 
     <div class="mb-8 p-4">
         <form method="get" class="flex flex-col gap-4">
-            <div class="flex flex-col md:flex-row gap-3">
+            <div class="flex items-start gap-3">
                 <div class="relative flex-1">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <i class="fas fa-search text-sm"></i>
                     </span>
-                    <input type="text" id="shop-search-input" name="search" value="{{ search_query }}" placeholder="Search flowers and bouquets..." class="w-full rounded-2xl border border-gray-200 bg-white px-11 pr-12 py-3.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200">
+                    <input type="text" id="shop-search-input" name="search" value="{{ search_query }}" placeholder="Search flowers and bouquets..." data-mobile-placeholder="Search flowers" data-desktop-placeholder="Search flowers and bouquets..." class="w-full rounded-2xl border border-gray-200 bg-white px-11 pr-12 py-3.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200">
                     <button type="button" id="clear-shop-search" class="{% if search_query %}flex{% else %}hidden{% endif %} absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition">
                         <i class="fas fa-times text-xs"></i>
                     </button>
@@ -21,24 +21,24 @@
                     <input type="hidden" name="category" value="{{ selected_category }}">
                     {% endif %}
                 </div>
-                <div class="flex gap-3">
-                    <button type="button" id="shop-filters-toggle" aria-expanded="{% if selected_category %}true{% else %}false{% endif %}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
+                <div class="flex shrink-0 gap-3">
+                    <button type="submit" class="hidden items-center justify-center rounded-2xl bg-neutral-900 px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 transition sm:inline-flex sm:px-5">
+                        Search
+                    </button>
+                    <button type="button" id="shop-filters-toggle" aria-expanded="{% if selected_category %}true{% else %}false{% endif %}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition sm:px-5">
                         <i class="fas fa-sliders-h text-sm"></i>
                         <span>Filters</span>
-                    </button>
-                    <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-neutral-900 px-5 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 transition">
-                        Search
                     </button>
                 </div>
             </div>
 
             <div id="shop-filter-panel" class="{% if selected_category %}block{% else %}hidden{% endif %}">
-                <div class="flex flex-wrap gap-3 pt-1">
-                    <a href="{% url 'products:shop' %}{% if search_query or request.GET.sort %}?{% endif %}{% if search_query %}search={{ search_query|urlencode }}{% endif %}{% if search_query and request.GET.sort %}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort|urlencode }}{% endif %}" class="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium transition {% if not selected_category %}bg-neutral-900 text-white{% else %}border border-gray-200 bg-white text-gray-700 hover:border-pink-200 hover:text-pink-600{% endif %}">
+                <div class="grid grid-cols-2 gap-3 pt-1 sm:flex sm:flex-wrap">
+                    <a href="{% url 'products:shop' %}{% if search_query or request.GET.sort %}?{% endif %}{% if search_query %}search={{ search_query|urlencode }}{% endif %}{% if search_query and request.GET.sort %}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort|urlencode }}{% endif %}" class="inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-center text-sm font-medium transition sm:w-auto {% if not selected_category %}bg-neutral-900 text-white{% else %}border border-gray-200 bg-white text-gray-700 hover:border-pink-200 hover:text-pink-600{% endif %}">
                         All
                     </a>
                     {% for category in categories %}
-                    <a href="{% url 'products:shop' %}?category={{ category.slug }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort|urlencode }}{% endif %}" class="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-medium transition {% if selected_category == category.slug %}bg-neutral-900 text-white{% else %}border border-gray-200 bg-white text-gray-700 hover:border-pink-200 hover:text-pink-600{% endif %}">
+                    <a href="{% url 'products:shop' %}?category={{ category.slug }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort|urlencode }}{% endif %}" class="inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 text-center text-sm font-medium transition sm:w-auto {% if selected_category == category.slug %}bg-neutral-900 text-white{% else %}border border-gray-200 bg-white text-gray-700 hover:border-pink-200 hover:text-pink-600{% endif %}">
                         {{ category.name }}
                     </a>
                     {% endfor %}
@@ -185,9 +185,35 @@
         toggleClearButton();
     }
 
+    function initializeShopSearchPlaceholder() {
+        const searchInput = document.getElementById('shop-search-input');
+
+        if (!searchInput || searchInput.dataset.placeholderBound === 'true') {
+            return;
+        }
+
+        const mobileQuery = window.matchMedia('(max-width: 639px)');
+        const syncPlaceholder = () => {
+            searchInput.placeholder = mobileQuery.matches
+                ? (searchInput.dataset.mobilePlaceholder || searchInput.placeholder)
+                : (searchInput.dataset.desktopPlaceholder || searchInput.placeholder);
+        };
+
+        searchInput.dataset.placeholderBound = 'true';
+        syncPlaceholder();
+
+        if (typeof mobileQuery.addEventListener === 'function') {
+            mobileQuery.addEventListener('change', syncPlaceholder);
+        } else if (typeof mobileQuery.addListener === 'function') {
+            mobileQuery.addListener(syncPlaceholder);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', initializeShopFilters);
     document.addEventListener('turbo:load', initializeShopFilters);
     document.addEventListener('DOMContentLoaded', initializeShopSearchClear);
     document.addEventListener('turbo:load', initializeShopSearchClear);
+    document.addEventListener('DOMContentLoaded', initializeShopSearchPlaceholder);
+    document.addEventListener('turbo:load', initializeShopSearchPlaceholder);
 </script>
 {% endblock %}

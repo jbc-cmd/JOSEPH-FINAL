@@ -2,6 +2,26 @@
 
 {% block title %}My Profile - Joseph Flowershop{% endblock %}
 
+{% block extra_css %}
+<style>
+    @media (max-width: 639px) {
+        #profile-information-modal,
+        #avatar-picker-modal {
+            align-items: flex-start;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        #profile-information-modal > .relative,
+        #avatar-picker-modal > .relative {
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+            padding: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-10">
     <div class="grid lg:grid-cols-12 gap-8 items-start">
@@ -17,7 +37,7 @@
                         <i class="fas fa-spa"></i>
                     </div>
                     {% endif %}
-                        <button type="button" id="open-avatar-picker" class="absolute bottom-0 right-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-[#b75b77] text-white shadow-md hover:bg-[#ad526d] transition">
+                        <button type="button" id="open-avatar-picker-trigger" class="absolute bottom-0 right-0 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#b75b77] text-white shadow-md hover:bg-[#ad526d] transition">
                             <i class="fas fa-pencil-alt text-sm"></i>
                         </button>
                     </div>
@@ -26,7 +46,7 @@
                 <p class="text-sm text-gray-600 mb-6 break-words max-w-xs mx-auto lg:mx-0">{{ user.email }}</p>
                 
                 <nav class="space-y-3 text-left">
-                    <a href="{% url 'accounts:profile' %}" class="block px-4 py-3 bg-[#fbf1f3] text-[#b75b77] font-bold rounded-xl">Profile</a>
+                    <a href="{% url 'accounts:profile_information' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Profile</a>
                     <a href="{% url 'accounts:order_history' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Order History</a>
                     <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition">Logout</a>
                 </nav>
@@ -35,77 +55,6 @@
         
         <!-- Main Content -->
         <div class="lg:col-span-9 space-y-8">
-            <!-- Profile Information -->
-            <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-                <div class="h-1 w-full bg-[#b75b77]"></div>
-                <div class="p-6 md:p-8">
-                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3">
-                    <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#fbf1f3] text-[#b75b77]">
-                        <i class="fas fa-id-card"></i>
-                    </span>
-                    <span>Profile Information</span>
-                </h2>
-                
-                <form method="post" enctype="multipart/form-data" class="space-y-6" id="profile-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="avatar_choice" id="avatar-choice-input">
-
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-3">Profile Picture</label>
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                            {% if profile.profile_picture %}
-                            <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-20 w-20 rounded-full object-cover border border-gray-200">
-                            {% else %}
-                            <div class="profile-avatar-preview h-20 w-20 rounded-full bg-[#fbf1f3] text-[#b75b77] border border-[#ecd3da] flex items-center justify-center text-2xl">
-                                <i class="fas fa-spa"></i>
-                            </div>
-                            {% endif %}
-                            <div class="flex-1">
-                                <div class="flex flex-wrap gap-3">
-                                    <button type="button" id="open-avatar-picker-inline" class="inline-flex items-center gap-2 rounded-lg border border-[#e7c7bc] bg-[#fbf1f3] px-4 py-2 text-sm font-semibold text-[#b75b77] hover:bg-[#f6e7eb] transition">
-                                        <i class="fas fa-pencil-alt"></i>
-                                        Change Photo
-                                    </button>
-                                    <label class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
-                                        <i class="fas fa-upload"></i>
-                                        Upload from device
-                                        <input type="file" name="profile_picture" id="profile-picture-input" accept="image/*" class="hidden">
-                                    </label>
-                                </div>
-                                <p class="mt-2 text-xs text-gray-500">Upload a clear square photo for the best result. Avatar changes save automatically.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">First Name</label>
-                            <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 font-semibold mb-2">Last Name</label>
-                            <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Email</label>
-                        <input type="email" name="email" value="{{ user.email }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2">Phone Number</label>
-                        <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
-                    </div>
-                    
-                    <button type="submit" class="rose-pill-button rose-pill-button--full flex items-center justify-center gap-2">
-                        <i class="fas fa-lock text-sm"></i>
-                        <span>Update Profile</span>
-                    </button>
-                </form>
-                </div>
-            </div>
-            
             <!-- Saved Addresses -->
             <div class="bg-white rounded-2xl shadow-md p-6 md:p-8">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
@@ -137,8 +86,6 @@
                     </div>
                     {% endfor %}
                 </div>
-                {% else %}
-                <p class="text-gray-600">No saved addresses yet. <a href="{% url 'accounts:add_address' %}" class="text-[#b75b77] font-bold hover:text-[#ad526d]">Add one now</a></p>
                 {% endif %}
             </div>
             
@@ -167,37 +114,107 @@
     </div>
 </div>
 
-<div id="avatar-picker-modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
-    <div class="absolute inset-0 bg-black/40" data-close-avatar-picker></div>
+<div id="profile-information-modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" data-close-profile-information></div>
     <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl p-6 md:p-8">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h3 class="text-2xl font-bold">Choose Profile Picture</h3>
-                <p class="text-sm text-gray-500 mt-1">Upload your own photo or pick one of the ready-made avatars.</p>
+                <h3 class="text-2xl font-bold">Profile Information</h3>
+                <p class="text-sm text-gray-500 mt-1">Update your account details without leaving this page.</p>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-600" data-close-avatar-picker>
+            <button type="button" class="text-gray-400 hover:text-gray-600" data-close-profile-information>
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4 mb-6">
-            <button type="button" id="modal-upload-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
-                    <i class="fas fa-upload"></i>
-                </div>
-                <p class="font-bold text-gray-900">Upload from device</p>
-                <p class="text-sm text-gray-500 mt-1">Pick a photo from your local storage.</p>
-            </button>
-            <div class="rounded-xl border border-gray-200 p-5">
-                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
+        <form method="post" enctype="multipart/form-data" class="space-y-6" id="profile-form">
+            {% csrf_token %}
+            <input type="hidden" name="avatar_choice" id="avatar-choice-input">
+            <input type="file" name="profile_picture" id="profile-picture-input" accept="image/*" class="hidden">
+
+            <div class="flex items-center gap-4">
+                {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-20 w-20 rounded-full object-cover border border-gray-200">
+                {% else %}
+                <div class="profile-avatar-preview h-20 w-20 rounded-full bg-[#fbf1f3] text-[#b75b77] border border-[#ecd3da] flex items-center justify-center text-2xl">
                     <i class="fas fa-spa"></i>
                 </div>
-                <p class="font-bold text-gray-900">Template avatars</p>
-                <p class="text-sm text-gray-500 mt-1">Choose one of the preset flower and leaf icons below.</p>
+                {% endif %}
+                <button type="button" id="open-avatar-picker" class="inline-flex items-center gap-2 rounded-lg border border-[#e7c7bc] bg-[#fbf1f3] px-4 py-2 text-sm font-semibold text-[#b75b77] hover:bg-[#f6e7eb] transition">
+                    <i class="fas fa-pencil-alt"></i>
+                    Change Photo
+                </button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">First Name</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">Last Name</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Email</label>
+                <input type="email" name="email" value="{{ user.email }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
+            </div>
+
+            <div>
+                <label class="block text-gray-700 font-semibold mb-2">Phone Number</label>
+                <input type="tel" name="phone_number" value="{{ profile.phone_number }}" class="w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#f7e2e8] focus:border-[#d9a8b7]">
+            </div>
+
+            <button type="submit" class="rose-pill-button rose-pill-button--full flex items-center justify-center gap-2">
+                <i class="fas fa-lock text-sm"></i>
+                <span>Update Profile</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<div id="avatar-picker-modal" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" data-close-avatar-picker></div>
+    <div class="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl p-6 md:p-8">
+        <div class="mb-6 flex items-start justify-between gap-4 border-b border-gray-100 pb-5">
+            <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[#b75b77]">Profile Photo</p>
+                <h3 class="mt-2 text-2xl font-bold text-gray-900">Choose Profile Picture</h3>
+                <p class="mt-2 max-w-md text-sm leading-6 text-gray-500">Upload your own photo or pick one of the ready-made avatars.</p>
+            </div>
+            <button type="button" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600" data-close-avatar-picker>
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <button type="button" id="modal-upload-trigger" class="rounded-[24px] border border-gray-200 p-5 text-left transition hover:border-[#d9a8b7] hover:bg-[#fbf1f3]">
+                <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77]">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <p class="mt-4 text-lg font-bold text-gray-900">Upload from device</p>
+                <p class="mt-2 text-sm leading-6 text-gray-500">Pick a photo from your local storage.</p>
+            </button>
+            <div class="rounded-[24px] border border-gray-200 p-5">
+                <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77]">
+                    <i class="fas fa-spa"></i>
+                </div>
+                <p class="mt-4 text-lg font-bold text-gray-900">Template avatars</p>
+                <p class="mt-2 text-sm leading-6 text-gray-500">Choose one of the preset flower and leaf icons below.</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="mt-6 rounded-[28px] border border-gray-100 bg-[#fcfcfc] p-4 sm:p-5">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-gray-900">Pick a template</p>
+                    <p class="mt-1 text-xs text-gray-500">Tap any avatar to apply it instantly.</p>
+                </div>
+            </div>
+
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+" alt="Pink flower avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
@@ -211,31 +228,43 @@
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNkZGQ2ZmUnLz48cGF0aCBkPSdNNzIgMTYwYzAtNTQgNDQtOTggOTgtOTggMCA1NC00NCA5OC05OCA5OHonIGZpbGw9JyNhNzhiZmEnLz48cGF0aCBkPSdNNzAgMTc2YzAtNjYgNTQtMTIwIDEyMC0xMjAgMCA2Ni01NCAxMjAtMTIwIDEyMHonIGZpbGw9JyM4NmVmYWMnLz48cGF0aCBkPSdNODQgMTYyYzAtNDcgMzgtODUgODUtODUgMCA0Ny0zOCA4NS04NSA4NXonIGZpbGw9JyNkY2ZjZTcnLz48cGF0aCBkPSdNODAgMTc2YzI2LTE4IDUyLTQ0IDc4LTc4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTExOCAxMzhjMTAtNCAyMC01IDMyLTMnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTAwIDE1NmM1LTEwIDctMjAgNy0zMicgc3Ryb2tlPScjMTU4MDNkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==" alt="Layered leaf avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
         </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    function initializeAvatarPicker() {
+    function initializeProfileOverviewModal() {
+        const profileModal = document.getElementById('profile-information-modal');
+        const openAvatarPickerTrigger = document.getElementById('open-avatar-picker-trigger');
         const avatarModal = document.getElementById('avatar-picker-modal');
         const avatarChoiceInput = document.getElementById('avatar-choice-input');
         const profilePictureInput = document.getElementById('profile-picture-input');
         const profileForm = document.getElementById('profile-form');
         const openAvatarPickerButton = document.getElementById('open-avatar-picker');
-        const openAvatarPickerInlineButton = document.getElementById('open-avatar-picker-inline');
         const modalUploadTrigger = document.getElementById('modal-upload-trigger');
 
-        if (!avatarModal || !avatarChoiceInput || !profilePictureInput || !profileForm) {
+        if (!profileModal || !openAvatarPickerTrigger || !avatarModal || !avatarChoiceInput || !profilePictureInput || !profileForm) {
             return;
         }
 
-        if (profileForm.dataset.avatarPickerReady === 'true') {
+        if (profileForm.dataset.profileOverviewReady === 'true') {
             return;
         }
-        profileForm.dataset.avatarPickerReady = 'true';
+        profileForm.dataset.profileOverviewReady = 'true';
 
         let avatarSaveInProgress = false;
+
+        function openProfileModal() {
+            profileModal.classList.remove('hidden');
+            profileModal.classList.add('flex');
+        }
+
+        function closeProfileModal() {
+            profileModal.classList.add('hidden');
+            profileModal.classList.remove('flex');
+        }
 
         function openAvatarPicker() {
             avatarModal.classList.remove('hidden');
@@ -267,11 +296,14 @@
             profileForm.requestSubmit();
         }
 
+        openAvatarPickerTrigger.addEventListener('click', openAvatarPicker);
+
+        document.querySelectorAll('[data-close-profile-information]').forEach((button) => {
+            button.addEventListener('click', closeProfileModal);
+        });
+
         if (openAvatarPickerButton) {
             openAvatarPickerButton.addEventListener('click', openAvatarPicker);
-        }
-        if (openAvatarPickerInlineButton) {
-            openAvatarPickerInlineButton.addEventListener('click', openAvatarPicker);
         }
         if (modalUploadTrigger) {
             modalUploadTrigger.addEventListener('click', () => {
@@ -309,7 +341,24 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', initializeAvatarPicker);
-    document.addEventListener('turbo:load', initializeAvatarPicker);
+    document.addEventListener('DOMContentLoaded', initializeProfileOverviewModal);
+    document.addEventListener('turbo:load', initializeProfileOverviewModal);
+    document.addEventListener('turbo:before-cache', () => {
+        const profileForm = document.getElementById('profile-form');
+        const profileModal = document.getElementById('profile-information-modal');
+        const avatarModal = document.getElementById('avatar-picker-modal');
+
+        if (profileForm) {
+            delete profileForm.dataset.profileOverviewReady;
+        }
+        if (profileModal) {
+            profileModal.classList.add('hidden');
+            profileModal.classList.remove('flex');
+        }
+        if (avatarModal) {
+            avatarModal.classList.add('hidden');
+            avatarModal.classList.remove('flex');
+        }
+    });
 </script>
 {% endblock %}

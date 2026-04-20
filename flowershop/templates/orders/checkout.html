@@ -75,20 +75,28 @@
             </div>
             
             <!-- Delivery Date & Time -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Delivery Schedule</h2>
+            <div class="rounded-[28px] border border-pink-100 bg-white/95 p-6 shadow-[0_20px_50px_rgba(204,160,177,0.16)] sm:p-8">
+                <div class="mb-6 flex items-center gap-3">
+                    <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+                        <i class="fas fa-calendar-check"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Delivery Schedule</h2>
+                        <p class="mt-1 text-sm text-gray-600">Choose the day and time window for your bouquet delivery.</p>
+                    </div>
+                </div>
                 
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2">Delivery Date *</label>
-                        <input type="date" name="delivery_date" required class="w-full border border-gray-300 rounded px-4 py-2">
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Date *</label>
+                        <input type="date" name="delivery_date" required class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
                     </div>
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2">Delivery Time Window *</label>
-                        <select name="delivery_time_window" required class="w-full border border-gray-300 rounded px-4 py-2">
-                            <option value="">Select time window</option>
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Time Window *</label>
+                        <select name="delivery_time_window" required class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                            <option value="" selected disabled hidden>Select time window</option>
                             {% for window in delivery_windows %}
-                            <option value="{{ window.id }}">{{ window.get_window_display }} ({{window.start_time}} - {{ window.end_time }})</option>
+                            <option value="{{ window.id }}">{{ window.get_window_display }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -96,86 +104,120 @@
             </div>
             
             <!-- Special Requests -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Special Requests</h2>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-bold mb-2">Gift Message</label>
-                    <textarea name="gift_message" class="w-full border border-gray-300 rounded px-4 py-2" rows="3" placeholder="Add a personal message..."></textarea>
+            <div class="rounded-[32px] border border-pink-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,250,251,0.96)_100%)] p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
+                <div class="mb-6 flex items-start gap-4">
+                    <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),rgba(252,231,243,0.95))] text-pink-600 ring-1 ring-pink-100 shadow-sm">
+                        <i class="fas fa-heart"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <span class="inline-flex rounded-full bg-pink-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-pink-500 ring-1 ring-pink-100">Optional Details</span>
+                        <h2 class="mt-3 text-2xl font-semibold text-gray-900">Special Requests</h2>
+                        <p class="mt-1 max-w-xl text-sm leading-6 text-gray-600">Add a message, delivery notes, or a quiet anonymous-gift option to personalize the order.</p>
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="anonymous_sender" class="border border-gray-300 rounded px-2 py-1">
-                        <span class="ml-2 text-gray-700">Send as anonymous gift</span>
-                    </label>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">Special Instructions</label>
-                    <textarea name="special_instructions" class="w-full border border-gray-300 rounded px-4 py-2" rows="2" placeholder="e.g., Leave at door, Ring doorbell twice..."></textarea>
+                <div class="space-y-5">
+                    <div class="rounded-[24px] border border-pink-100/90 bg-white/80 p-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Gift Message</label>
+                        <textarea name="gift_message" class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100" rows="3" placeholder="Add a personal message..."></textarea>
+                    </div>
+
+                    <div class="rounded-[24px] border border-pink-100 bg-[linear-gradient(135deg,rgba(253,242,248,0.9),rgba(255,255,255,0.96))] px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
+                        <label class="flex items-start gap-3">
+                            <input type="checkbox" name="anonymous_sender" class="mt-1 h-4 w-4 rounded border-pink-300 text-pink-600 focus:ring-pink-300">
+                            <span>
+                                <span class="block text-sm font-semibold text-gray-800">Send as anonymous gift</span>
+                                <span class="mt-1 block text-xs leading-5 text-gray-500">Hide your name from the recipient while keeping the order details the same.</span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="rounded-[24px] border border-pink-100/90 bg-white/80 p-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Special Instructions</label>
+                        <textarea name="special_instructions" class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm placeholder:text-gray-400 focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100" rows="2" placeholder="e.g., Leave at door, Ring doorbell twice..."></textarea>
+                    </div>
                 </div>
             </div>
             
             <!-- Payment Method -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Payment Method</h2>
-                
+            <div class="rounded-[32px] border border-pink-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,250,251,0.96)_100%)] p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
+                <div class="mb-6 flex items-start gap-4">
+                    <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),rgba(252,231,243,0.95))] text-pink-600 ring-1 ring-pink-100 shadow-sm">
+                        <i class="fas fa-wallet"></i>
+                    </span>
+                    <div class="min-w-0">
+                        <span class="inline-flex rounded-full bg-pink-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-pink-500 ring-1 ring-pink-100">How You'll Pay</span>
+                        <h2 class="mt-3 text-2xl font-semibold text-gray-900">Payment Method</h2>
+                        <p class="mt-1 text-sm leading-6 text-gray-600">Choose your preferred payment option for this order.</p>
+                    </div>
+                </div>
+
                 <div class="space-y-4">
-                    <label class="flex items-center">
-                        <input type="radio" name="payment_method" value="COD" checked class="border border-gray-300 rounded">
-                        <span class="ml-2">Cash on Delivery (COD)</span>
+                    <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
+                        <input type="radio" name="payment_method" value="COD" checked class="mt-1 h-4 w-4 border-pink-300 text-pink-600 focus:ring-pink-300">
+                        <span>
+                            <span class="block text-base font-semibold text-gray-900">Cash on Delivery (COD)</span>
+                            <span class="mt-1 block text-sm text-gray-500">Pay once your bouquet arrives at the delivery address.</span>
+                        </span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="payment_method" value="CREDIT_CARD" class="border border-gray-300 rounded">
-                        <span class="ml-2">Credit/Debit Card</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="payment_method" value="GCASH" class="border border-gray-300 rounded">
-                        <span class="ml-2">GCash</span>
+                    <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
+                        <input type="radio" name="payment_method" value="GCASH" class="mt-1 h-4 w-4 border-pink-300 text-pink-600 focus:ring-pink-300">
+                        <span>
+                            <span class="block text-base font-semibold text-gray-900">GCash</span>
+                            <span class="mt-1 block text-sm text-gray-500">Use your GCash account for a quicker digital payment option.</span>
+                        </span>
                     </label>
                 </div>
             </div>
         </div>
         
         <!-- Order Summary Sidebar -->
-        <div class="bg-white rounded-lg shadow-md p-6 h-fit">
-            <h2 class="text-2xl font-bold mb-6">Order Summary</h2>
-            <div id="checkout-status" class="hidden mb-4 rounded-lg border px-4 py-3 text-sm"></div>
+        <div class="h-fit rounded-[32px] border border-pink-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,248,250,0.96)_100%)] p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
+            <div class="mb-6 flex items-start gap-4">
+                <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.95),rgba(252,231,243,0.95))] text-pink-600 ring-1 ring-pink-100 shadow-sm">
+                    <i class="fas fa-receipt"></i>
+                </span>
+                <div class="min-w-0">
+                    <span class="inline-flex rounded-full bg-pink-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-pink-500 ring-1 ring-pink-100">Checkout Review</span>
+                    <h2 class="mt-3 text-2xl font-semibold text-gray-900">Order Summary</h2>
+                    <p class="mt-1 text-sm leading-6 text-gray-600">Take one last look at your bouquet, fees, and final total before placing the order.</p>
+                </div>
+            </div>
+            <div id="checkout-status" class="hidden mb-5 rounded-2xl border px-4 py-3 text-sm"></div>
             
-            <div class="space-y-4 mb-6 border-b pb-6 max-h-64 overflow-y-auto">
+            <div class="mb-6 max-h-64 space-y-4 overflow-y-auto rounded-[24px] border border-pink-100/90 bg-white/85 p-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
                 {% for item in items %}
-                <div class="flex justify-between items-start">
+                <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="font-bold text-sm">{{ item.get_item_name }}</p>
-                        <p class="text-gray-600 text-xs">Qty: {{ item.quantity }}</p>
+                        <p class="text-sm font-semibold text-gray-900">{{ item.get_item_name }}</p>
+                        <p class="mt-1 text-xs uppercase tracking-[0.16em] text-gray-500">Qty: {{ item.quantity }}</p>
                     </div>
                     <span class="font-bold">₱{{ item.get_subtotal }}</span>
                 </div>
                 {% endfor %}
             </div>
             
-            <div class="space-y-4 mb-6 border-b pb-6">
-                <div class="flex justify-between">
-                    <span>Subtotal:</span>
+            <div class="mb-6 rounded-[24px] border border-pink-100/90 bg-white/85 p-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
+                <div class="flex justify-between gap-4 text-sm text-gray-700">
+                    <span>Subtotal</span>
                     <span class="font-bold">₱{{ subtotal }}</span>
                 </div>
-                <div class="flex justify-between">
-                    <span>Delivery Fee:</span>
+                <div class="flex justify-between gap-4 text-sm text-gray-700">
+                    <span>Delivery Fee</span>
                     <span class="font-bold">₱{{ delivery_fee }}</span>
                 </div>
             </div>
             
-            <div class="flex justify-between text-xl font-bold mb-6">
-                <span>Total:</span>
+            <div class="mb-6 flex justify-between gap-4 border-t border-pink-100 pt-5 text-xl font-bold">
+                <span class="text-xl font-semibold text-gray-900">Total</span>
                 <span class="text-pink-600">₱{{ total }}</span>
             </div>
             
-            <button type="submit" class="w-full bg-pink-600 text-white py-3 rounded-lg font-bold hover:bg-pink-700">
+            <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 py-3.5 font-semibold text-white shadow-[0_18px_30px_rgba(219,39,119,0.25)] transition hover:brightness-105">
                 Place Order
             </button>
             
-            <a href="{% url 'cart:cart' %}" class="block w-full text-center mt-3 text-pink-600 border border-pink-600 py-2 rounded-lg hover:bg-pink-50">
+            <a href="{% url 'cart:cart' %}" class="mt-3 block w-full rounded-2xl border border-pink-200 bg-white/85 py-3 text-center font-medium text-pink-600 transition hover:bg-pink-50">
                 Back to Cart
             </a>
         </div>

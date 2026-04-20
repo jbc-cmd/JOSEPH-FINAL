@@ -13,77 +13,77 @@
         <div class="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1.45fr)_minmax(330px,0.95fr)]">
             <div class="space-y-8">
                 <section class="rounded-[32px] border border-white/70 bg-white/95 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
-                    {% if messages %}
-                    <div class="mb-6 space-y-3">
-                        {% for message in messages %}
-                        <div class="rounded-2xl border px-4 py-3 text-sm {% if message.tags == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border-rose-200 bg-rose-50 text-rose-700{% endif %}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
                     <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-sm font-semibold uppercase tracking-[0.22em] text-pink-600">Order Details</p>
-                            <h1 class="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{{ order.order_number }}</h1>
+                            <h1 class="mt-3 font-sans text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{{ order.order_number }}</h1>
                             <p class="mt-3 text-sm leading-6 text-gray-600">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|date:"g:i A" }}</p>
-                            <div class="mt-4 flex items-center gap-3">
-                                <span class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Payment Status</span>
-                                {% if payment and payment.status == 'COMPLETED' %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                                    {{ payment.get_status_display }}
-                                </span>
-                                {% elif payment and payment.status == 'PROCESSING' %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                                    <span class="h-2 w-2 rounded-full bg-amber-500"></span>
-                                    {{ payment.get_status_display }}
-                                </span>
-                                {% elif payment and payment.status == 'FAILED' %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
-                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
-                                    {{ payment.get_status_display }}
-                                </span>
-                                {% elif payment and payment.status == 'REFUNDED' %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                                    <span class="h-2 w-2 rounded-full bg-sky-500"></span>
-                                    {{ payment.get_status_display }}
-                                </span>
-                                {% elif payment and payment.status == 'CANCELLED' %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
-                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
-                                    {{ payment.get_status_display }}
-                                </span>
-                                {% else %}
-                                <span class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
-                                    <span class="h-2 w-2 rounded-full bg-gray-400"></span>
-                                    {% if payment %}{{ payment.get_status_display }}{% else %}Pending{% endif %}
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="self-start">
-                            {% include 'orders/partials/status_badge.html' with status=order.status label=order.get_status_display %}
                         </div>
                     </div>
 
                     <div class="mt-8 rounded-[28px] border {{ status_summary.panel }} p-6">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-start gap-4">
                             <div class="flex items-start gap-4">
                                 <span class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-pink-600 shadow-sm ring-1 ring-white/80">
                                     <i class="fas {{ status_summary.icon }} text-xl"></i>
                                 </span>
                                 <div>
-                                    <p class="text-sm font-semibold uppercase tracking-[0.22em] text-pink-600">Current Status</p>
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <p class="text-sm font-semibold uppercase tracking-[0.22em] text-pink-600">Current Status</p>
+                                        {% include 'orders/partials/status_badge.html' with status=order.status label=order.get_status_display %}
+                                    </div>
                                     <h2 class="mt-2 text-2xl font-semibold text-gray-900">{{ status_summary.title }}</h2>
                                     <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-600">{{ status_summary.description }}</p>
                                 </div>
                             </div>
-                            <div class="rounded-2xl bg-white/90 px-4 py-3 text-sm text-gray-700 ring-1 ring-white/80">
-                                <p class="font-semibold text-gray-900">Estimated delivery</p>
-                                <p class="mt-1">{{ estimated_arrival }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="rounded-[32px] border border-white/70 bg-white/95 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
+                    <div class="mb-6 flex items-center gap-3">
+                        <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+                            <i class="fas fa-bag-shopping"></i>
+                        </span>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900">Order Items</h2>
+                            <p class="mt-1 text-sm text-gray-600">A quick summary of your bouquet order</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for item in items %}
+                        <div class="rounded-[24px] border border-gray-100 bg-[#fcfcfc] p-4">
+                            <div class="flex items-start gap-4">
+                                {% if item.get_item_image %}
+                                <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="h-20 w-20 rounded-2xl object-cover ring-1 ring-gray-100">
+                                {% else %}
+                                <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 ring-1 ring-gray-100">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                {% endif %}
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-base font-semibold text-gray-900">{{ item.get_item_name }}</p>
+                                    <p class="mt-2 text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
+                                    <p class="mt-3 text-sm font-semibold text-pink-600">&#8369;{{ item.subtotal|floatformat:2 }}</p>
+                                </div>
                             </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-6 space-y-3 border-t border-gray-100 pt-6 text-sm">
+                        <div class="flex items-center justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span class="font-medium text-gray-900">&#8369;{{ order.subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-gray-600">
+                            <span>Delivery Fee</span>
+                            <span class="font-medium text-gray-900">&#8369;{{ order.delivery_fee|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex items-center justify-between border-t border-gray-100 pt-4 text-base font-semibold text-gray-900">
+                            <span>Total</span>
+                            <span class="text-2xl text-pink-600">&#8369;{{ order.total_amount|floatformat:2 }}</span>
                         </div>
                     </div>
                 </section>
@@ -189,38 +189,6 @@
                     <div class="rounded-[32px] border border-white/70 bg-white/95 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)]">
                         <div class="mb-6 flex items-center gap-3">
                             <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
-                                <i class="fas fa-location-dot"></i>
-                            </span>
-                            <div>
-                                <h2 class="text-xl font-semibold text-gray-900">Delivery Information</h2>
-                                <p class="mt-1 text-sm text-gray-600">Recipient and destination details</p>
-                            </div>
-                        </div>
-                        <div class="space-y-5">
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Recipient</p>
-                                <p class="mt-2 text-sm font-medium text-gray-900">{{ order.customer_name }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Phone</p>
-                                <p class="mt-2 text-sm font-medium text-gray-900">{{ order.customer_phone }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Address</p>
-                                <p class="mt-2 text-sm leading-6 text-gray-700">{{ order.delivery_address }}<br>{{ order.delivery_city }}{% if order.delivery_postal_code %}, {{ order.delivery_postal_code }}{% endif %}</p>
-                            </div>
-                            {% if order.gift_message %}
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Gift Message</p>
-                                <p class="mt-2 rounded-2xl bg-[#fcf7f8] px-4 py-3 text-sm leading-6 text-gray-700 ring-1 ring-pink-100">{{ order.gift_message }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="rounded-[32px] border border-white/70 bg-white/95 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)]">
-                        <div class="mb-6 flex items-center gap-3">
-                            <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
                                 <i class="fas fa-calendar-check"></i>
                             </span>
                             <div>
@@ -257,54 +225,6 @@
             </div>
 
             <aside class="space-y-8">
-                <section class="rounded-[32px] border border-white/70 bg-white/95 p-6 shadow-[0_24px_60px_rgba(204,160,177,0.18)] sm:p-8">
-                    <div class="mb-6 flex items-center gap-3">
-                        <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
-                            <i class="fas fa-bag-shopping"></i>
-                        </span>
-                        <div>
-                            <h2 class="text-xl font-semibold text-gray-900">Order Items</h2>
-                            <p class="mt-1 text-sm text-gray-600">A quick summary of your bouquet order</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        {% for item in items %}
-                        <div class="rounded-[24px] border border-gray-100 bg-[#fcfcfc] p-4">
-                            <div class="flex items-start gap-4">
-                                {% if item.get_item_image %}
-                                <img src="{{ item.get_item_image }}" alt="{{ item.get_item_name }}" class="h-20 w-20 rounded-2xl object-cover ring-1 ring-gray-100">
-                                {% else %}
-                                <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 text-gray-400 ring-1 ring-gray-100">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                                {% endif %}
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-base font-semibold text-gray-900">{{ item.get_item_name }}</p>
-                                    <p class="mt-2 text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
-                                    <p class="mt-3 text-sm font-semibold text-pink-600">&#8369;{{ item.subtotal|floatformat:2 }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="mt-6 space-y-3 border-t border-gray-100 pt-6 text-sm">
-                        <div class="flex items-center justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <span class="font-medium text-gray-900">&#8369;{{ order.subtotal|floatformat:2 }}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-gray-600">
-                            <span>Delivery Fee</span>
-                            <span class="font-medium text-gray-900">&#8369;{{ order.delivery_fee|floatformat:2 }}</span>
-                        </div>
-                        <div class="flex items-center justify-between border-t border-gray-100 pt-4 text-base font-semibold text-gray-900">
-                            <span>Total</span>
-                            <span class="text-2xl text-pink-600">&#8369;{{ order.total_amount|floatformat:2 }}</span>
-                        </div>
-                    </div>
-                </section>
-
                 {% include 'orders/partials/support_card.html' %}
             </aside>
         </div>

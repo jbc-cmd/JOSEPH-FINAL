@@ -48,8 +48,15 @@
                 <span class="absolute top-3 left-3 bg-amber-100/95 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Featured</span>
                 {% endif %}
 
-                <button class="absolute top-3 right-3 bg-white/95 rounded-full p-2.5 shadow hover:shadow-md transition">
-                    <i class="fas fa-heart text-gray-400 hover:text-pink-600"></i>
+                <button
+                    type="button"
+                    class="js-home-favorite absolute top-3 right-3 rounded-full bg-white/95 p-2.5 shadow transition hover:shadow-md"
+                    data-product-id="{{ product.id }}"
+                    data-product-name="{{ product.name }}"
+                    aria-label="Save {{ product.name }} to favorites"
+                    aria-pressed="false"
+                >
+                    <i class="fas fa-heart text-gray-400 transition-colors"></i>
                 </button>
             </div>
 
@@ -121,5 +128,64 @@
         </div>
     </div>
 </section>
+
+{% block extra_js %}
+<script>
+    function initializeHomeFavorites() {
+        const favoriteButtons = document.querySelectorAll('.js-home-favorite');
+
+        if (!favoriteButtons.length) {
+            return;
+        }
+
+        const storageKey = 'homeFavoriteProducts';
+        let favorites = [];
+
+        try {
+            favorites = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        } catch (error) {
+            favorites = [];
+        }
+
+        const syncButtonState = (button, isFavorite) => {
+            const icon = button.querySelector('i');
+            button.setAttribute('aria-pressed', String(isFavorite));
+            button.classList.toggle('ring-2', isFavorite);
+            button.classList.toggle('ring-pink-200', isFavorite);
+            if (icon) {
+                icon.classList.toggle('text-pink-600', isFavorite);
+                icon.classList.toggle('text-gray-400', !isFavorite);
+            }
+        };
+
+        favoriteButtons.forEach((button) => {
+            if (button.dataset.bound === 'true') {
+                return;
+            }
+
+            const productId = Number(button.dataset.productId);
+            syncButtonState(button, favorites.includes(productId));
+
+            button.dataset.bound = 'true';
+            button.addEventListener('click', () => {
+                const existingIndex = favorites.indexOf(productId);
+
+                if (existingIndex >= 0) {
+                    favorites.splice(existingIndex, 1);
+                    syncButtonState(button, false);
+                } else {
+                    favorites.push(productId);
+                    syncButtonState(button, true);
+                }
+
+                localStorage.setItem(storageKey, JSON.stringify(favorites));
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeHomeFavorites);
+    document.addEventListener('turbo:load', initializeHomeFavorites);
+</script>
+{% endblock %}
 
 {% endblock %}

@@ -28,6 +28,12 @@
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: var(--site-background);
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -54,9 +60,9 @@
     <!-- Navigation -->
     <nav class="sticky top-0 z-50 shadow-md backdrop-blur-sm" style="background-color: rgba(246, 237, 228, 0.84);">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-[auto_1fr_auto] items-center h-24 sm:h-28 gap-4 lg:gap-6">
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center h-20 gap-3 sm:grid-cols-[auto_1fr_auto] sm:h-28 sm:gap-4 lg:gap-6">
                 <!-- Logo -->
-                <div class="flex items-center justify-start flex-shrink-0 min-w-[13rem] self-center">
+                <div class="flex min-w-0 items-center justify-start self-center sm:flex-shrink-0 sm:min-w-[13rem]">
                     <a href="{% url 'products:home' %}" class="flex items-center hover:opacity-90 transition">
                         <span class="flex h-20 w-[11.5rem] items-center overflow-hidden sm:h-24 sm:w-[13rem]">
                             <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="h-[7.75rem] w-auto max-w-none flex-shrink-0 object-cover object-center sm:h-[9rem]">
@@ -248,7 +254,7 @@
                         </div>
                         <a href="https://mail.google.com/mail/?view=cm&fs=1&to=flowershopjoseph@gmail.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-gray-300 hover:text-[#d9a8b7] transition">
                             <i class="fas fa-envelope w-5 text-[#b75b77]"></i>
-                            <span>flowershopjoseph@gmail.com</span>
+                            <span class="break-all">flowershopjoseph@gmail.com</span>
                         </a>
                     </div>
                 </div>

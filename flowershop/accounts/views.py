@@ -14,7 +14,9 @@ from django.contrib.auth.models import User
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.http import require_POST
 from .models import UserProfile, DeliveryAddress
+from .forms import DeliveryAddressForm
 from orders.models import Order
 
 
@@ -243,46 +245,53 @@ def logout_view(request):
 
 
 @login_required(login_url='accounts:login')
+def _update_profile(request, redirect_name):
+    """Handle profile form updates and avatar changes."""
+    user_profile = request.user.profile
+    first_name = request.POST.get('first_name')
+    last_name = request.POST.get('last_name')
+    email = request.POST.get('email')
+    phone_number = request.POST.get('phone_number')
+    profile_picture = request.FILES.get('profile_picture')
+    avatar_choice = request.POST.get('avatar_choice', '').strip()
+
+    request.user.first_name = first_name
+    request.user.last_name = last_name
+    request.user.email = email
+    request.user.save()
+
+    user_profile.phone_number = phone_number
+    if profile_picture:
+        user_profile.profile_picture = profile_picture
+    elif avatar_choice.startswith('data:image/'):
+        try:
+            header, encoded = avatar_choice.split(',', 1)
+            extension = _avatar_extension_from_header(header)
+            if not extension:
+                raise ValueError('Unsupported avatar image type.')
+            user_profile.profile_picture.save(
+                f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
+                ContentFile(base64.b64decode(encoded)),
+                save=False,
+            )
+        except (ValueError, IndexError, base64.binascii.Error):
+            messages.error(request, 'Selected avatar could not be applied.')
+            return redirect(redirect_name)
+    user_profile.save()
+
+    messages.success(request, 'Profile updated successfully!')
+    return redirect(redirect_name)
+
+
+@login_required(login_url='accounts:login')
 def profile(request):
-    """User profile page."""
+    """Account overview page."""
+    if request.method == 'POST':
+        return _update_profile(request, 'accounts:profile')
+
     user_profile = request.user.profile
     addresses = request.user.delivery_addresses.all()
     recent_orders = request.user.orders.all()[:5]
-    
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        phone_number = request.POST.get('phone_number')
-        profile_picture = request.FILES.get('profile_picture')
-        avatar_choice = request.POST.get('avatar_choice', '').strip()
-        
-        request.user.first_name = first_name
-        request.user.last_name = last_name
-        request.user.email = email
-        request.user.save()
-        
-        user_profile.phone_number = phone_number
-        if profile_picture:
-            user_profile.profile_picture = profile_picture
-        elif avatar_choice.startswith('data:image/'):
-            try:
-                header, encoded = avatar_choice.split(',', 1)
-                extension = _avatar_extension_from_header(header)
-                if not extension:
-                    raise ValueError('Unsupported avatar image type.')
-                user_profile.profile_picture.save(
-                    f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
-                    ContentFile(base64.b64decode(encoded)),
-                    save=False,
-                )
-            except (ValueError, IndexError, base64.binascii.Error):
-                messages.error(request, 'Selected avatar could not be applied.')
-                return redirect('accounts:profile')
-        user_profile.save()
-        
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('accounts:profile')
     
     context = {
         'profile': user_profile,
@@ -290,6 +299,29 @@ def profile(request):
         'recent_orders': recent_orders,
     }
     return render(request, 'accounts/profile.html', context)
+
+
+@login_required(login_url='accounts:login')
+def profile_information(request):
+    """Dedicated profile information page."""
+    if request.method == 'POST':
+        return _update_profile(request, 'accounts:profile_information')
+
+    context = {
+        'profile': request.user.profile,
+    }
+    return render(request, 'accounts/profile_information.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def delete_account(request):
+    """Delete the authenticated user's account."""
+    user = request.user
+    logout(request)
+    user.delete()
+    messages.success(request, 'Your account has been deleted.')
+    return redirect('products:home')
 
 
 @login_required(login_url='accounts:login')
@@ -304,7 +336,7 @@ def order_history(request):
 class DeliveryAddressCreateView(LoginRequiredMixin, CreateView):
     """Add new delivery address."""
     model = DeliveryAddress
-    fields = ['label', 'recipient_name', 'phone_number', 'address', 'city', 'postal_code', 'notes', 'is_default']
+    form_class = DeliveryAddressForm
     template_name = 'accounts/add_address.html'
     success_url = reverse_lazy('accounts:profile')
     login_url = 'accounts:login'
@@ -321,7 +353,7 @@ class DeliveryAddressCreateView(LoginRequiredMixin, CreateView):
 class DeliveryAddressUpdateView(LoginRequiredMixin, UpdateView):
     """Edit delivery address."""
     model = DeliveryAddress
-    fields = ['label', 'recipient_name', 'phone_number', 'address', 'city', 'postal_code', 'notes', 'is_default']
+    form_class = DeliveryAddressForm
     template_name = 'accounts/edit_address.html'
     success_url = reverse_lazy('accounts:profile')
     login_url = 'accounts:login'
