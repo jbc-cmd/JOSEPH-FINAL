@@ -15,17 +15,19 @@
                 <a href="{% url 'accounts:profile' %}" class="text-sm font-semibold text-pink-600 hover:text-pink-700 sm:pt-2">Back to Profile</a>
             </div>
 
-            <form method="post" class="space-y-6">
+            <form method="post" class="space-y-6" novalidate data-address-form>
                 {% csrf_token %}
 
                 <div class="grid md:grid-cols-2 gap-4 md:gap-5">
                     <div>
                         <label for="{{ form.label.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Label</label>
                         {{ form.label }}
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="label">{{ form.label.errors.0 }}</p>
                     </div>
                     <div>
                         <label for="{{ form.recipient_name.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Recipient Name</label>
                         {{ form.recipient_name }}
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="recipient_name">{{ form.recipient_name.errors.0 }}</p>
                     </div>
                 </div>
 
@@ -33,39 +35,45 @@
                     <div>
                         <label for="{{ form.phone_number.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Phone Number</label>
                         {{ form.phone_number }}
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="phone_number">{{ form.phone_number.errors.0 }}</p>
                     </div>
                     <div>
                         <label for="{{ form.city.id_for_label }}" class="block text-gray-700 font-semibold mb-2">City</label>
                         {{ form.city }}
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="city">{{ form.city.errors.0 }}</p>
                     </div>
                 </div>
 
                 <div>
                     <label for="{{ form.address.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Address</label>
                     {{ form.address }}
+                    <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="address">{{ form.address.errors.0 }}</p>
                 </div>
 
                 <div class="grid md:grid-cols-[minmax(0,1fr)_220px] gap-4 md:gap-5 items-end">
                     <div>
                         <label for="{{ form.postal_code.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Postal Code</label>
                         {{ form.postal_code }}
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="postal_code">{{ form.postal_code.errors.0 }}</p>
                     </div>
-                    <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 md:mb-px">
+                    <div class="inline-flex w-fit rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 md:mb-px">
                         <label class="inline-flex items-center gap-3 text-gray-700 font-semibold leading-none">
                             {{ form.is_default }}
                             <span>Set as default address</span>
                         </label>
+                        <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="is_default">{{ form.is_default.errors.0 }}</p>
                     </div>
                 </div>
 
                 <div>
                     <label for="{{ form.notes.id_for_label }}" class="block text-gray-700 font-semibold mb-2">Delivery Notes</label>
                     {{ form.notes }}
+                    <p class="mt-2 text-sm text-red-600 min-h-[1.25rem]" data-error-for="notes">{{ form.notes.errors.0 }}</p>
                 </div>
 
-                {% if form.errors %}
+                {% if form.non_field_errors %}
                 <div class="rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-700">
-                    {{ form.errors }}
+                    {{ form.non_field_errors }}
                 </div>
                 {% endif %}
 
@@ -99,18 +107,15 @@
     }
 
     textarea {
-        height: 56px;
+        height: auto;
+        min-height: 88px;
         resize: none;
         overflow-y: hidden;
         display: block;
-        line-height: 1.25;
+        line-height: 1.5;
         padding-top: 1rem;
         padding-bottom: 1rem;
         vertical-align: middle;
-    }
-
-    #id_address {
-        min-height: 56px;
     }
 
     input[type="checkbox"] {
@@ -126,13 +131,124 @@
         border-color: #f9a8d4;
         box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.15);
     }
+
+    input.field-error,
+    textarea.field-error,
+    input[aria-invalid="true"],
+    textarea[aria-invalid="true"] {
+        border-color: #fca5a5;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+    }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    function initializeAddressFormValidation() {
+        const form = document.querySelector('[data-address-form]');
+        if (!form || form.dataset.validationReady === 'true') {
+            return;
+        }
+
+        form.dataset.validationReady = 'true';
+
+        const namePattern = /^[A-Za-z]+(?:[ '.-][A-Za-z]+)*$/;
+        const labelPattern = /^[A-Za-z0-9]+(?:[ '&().,-][A-Za-z0-9]+)*$/;
+        const phonePattern = /^\+?\d{10,15}$/;
+
+        function setFieldError(fieldName, message) {
+            const errorEl = form.querySelector(`[data-error-for="${fieldName}"]`);
+            if (errorEl) {
+                errorEl.textContent = message || '';
+            }
+        }
+
+        function setFieldState(field, hasError) {
+            field.classList.toggle('field-error', hasError);
+            if (hasError) {
+                field.setAttribute('aria-invalid', 'true');
+            } else {
+                field.removeAttribute('aria-invalid');
+            }
+        }
+
+        function validateField(field) {
+            const value = (field.value || '').trim();
+
+            if (field.name === 'label') {
+                if (!value) return 'Label is required.';
+                if (value.length < 2) return 'Label must be at least 2 characters.';
+                if (!labelPattern.test(value)) return 'Label contains unsupported characters.';
+            }
+
+            if (field.name === 'recipient_name') {
+                if (!value) return 'Recipient name is required.';
+                if (value.length < 2) return 'Recipient name must be at least 2 characters.';
+                if (!namePattern.test(value)) return 'Recipient name can only use letters, spaces, apostrophes, periods, and hyphens.';
+            }
+
+            if (field.name === 'phone_number') {
+                const phone = value.replace(/[\s\-()]/g, '');
+                if (!phone) return 'Phone number is required.';
+                if (!phonePattern.test(phone)) return 'Enter a valid phone number using 10 to 15 digits.';
+            }
+
+            if (field.name === 'city') {
+                if (!value) return 'City is required.';
+                if (value.length < 2) return 'City must be at least 2 characters.';
+                if (!namePattern.test(value)) return 'City can only use letters, spaces, apostrophes, periods, and hyphens.';
+            }
+
+            if (field.name === 'address') {
+                if (!value) return 'Address is required.';
+                if (value.length < 10) return 'Address must be at least 10 characters.';
+                if (value.length > 255) return 'Address must be 255 characters or fewer.';
+            }
+
+            if (field.name === 'postal_code' && value && !/^\d+$/.test(value)) {
+                return 'Postal code must contain numbers only.';
+            }
+
+            if (field.name === 'notes' && value.length > 300) {
+                return 'Delivery notes must be 300 characters or fewer.';
+            }
+
+            return '';
+        }
+
+        form.querySelectorAll('input:not([type="checkbox"]), textarea').forEach((field) => {
+            field.addEventListener('input', () => {
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
+            });
+
+            field.addEventListener('blur', () => {
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
+            });
+        });
+
+        form.addEventListener('submit', (event) => {
+            let hasErrors = false;
+            form.querySelectorAll('input:not([type="checkbox"]), textarea').forEach((field) => {
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
+                if (error) {
+                    hasErrors = true;
+                }
+            });
+
+            if (hasErrors) {
+                event.preventDefault();
+            }
+        });
+    }
+
     function autoResizeTextarea(textarea) {
-        textarea.style.height = '56px';
+        textarea.style.height = '88px';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
@@ -140,5 +256,8 @@
         autoResizeTextarea(textarea);
         textarea.addEventListener('input', () => autoResizeTextarea(textarea));
     });
+
+    document.addEventListener('DOMContentLoaded', initializeAddressFormValidation);
+    document.addEventListener('turbo:load', initializeAddressFormValidation);
 </script>
 {% endblock %}

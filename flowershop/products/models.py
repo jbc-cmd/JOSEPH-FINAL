@@ -161,6 +161,8 @@ class Product(models.Model):
 
     @property
     def rating_percentage(self):
+        if not self.review_count:
+            return 0
         return max(0, min(100, (float(self.rating or 0) / 5) * 100))
 
 

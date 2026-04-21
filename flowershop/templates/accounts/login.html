@@ -5,18 +5,18 @@
 {% block body_class %}hide-nav{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(135deg, rgba(246, 237, 228, 0.8) 0%, rgba(255, 105, 180, 0.1) 100%);">
+<div class="min-h-screen flex items-center justify-center px-4 py-10 md:py-0" style="background: linear-gradient(135deg, rgba(246, 237, 228, 0.8) 0%, rgba(255, 105, 180, 0.1) 100%);">
     <div class="w-full max-w-md">
         <button type="button" onclick="history.back()" class="mb-6 inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/80 px-4 py-2 text-sm font-semibold text-pink-600 hover:bg-pink-50 md:hidden">
             <i class="fas fa-arrow-left"></i>
             <span>Back</span>
         </button>
         <!-- Logo -->
-        <div class="text-center mb-8">
-            <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="mx-auto h-28 w-auto object-contain sm:h-32">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="mx-auto h-36 w-auto object-contain sm:h-40">
         </div>
 
-        <div class="bg-white rounded-3xl shadow-xl p-8 border border-pink-100">
+        <div class="-mt-6 bg-white rounded-3xl shadow-xl p-8 border border-pink-100 sm:-mt-8">
             <h1 class="text-3xl font-bold text-center mb-2" style="font-family: 'Playfair Display', serif;">Login to Your Account</h1>
             <p class="text-center text-gray-600 mb-8">Welcome back! Please enter your details.</p>
 
@@ -25,16 +25,31 @@
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Username</label>
-                    <input type="text" name="username" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
+                    <input type="text" name="username" required value="{{ request.POST.username|default:'' }}"
+                           class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if messages %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
                            placeholder="Enter your username">
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Password</label>
-                    <input type="password" name="password" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                           placeholder="Enter your password">
+                    <div class="relative">
+                        <input type="password" name="password" required
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if messages %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="Enter your password" data-password-input>
+                        <button type="button" class="absolute inset-y-0 right-4 hidden items-center text-gray-400 transition hover:text-pink-500" aria-label="Show password" data-password-toggle>
+                            <i class="fas fa-eye" data-password-icon></i>
+                        </button>
+                    </div>
+                    {% if messages %}
+                    <div class="mt-2 space-y-1">
+                        {% for message in messages %}
+                        <p class="inline-flex items-start gap-2 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 shadow-sm">
+                            <i class="fas fa-exclamation-circle mt-0.5"></i>
+                            <span>{{ message }}</span>
+                        </p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -46,17 +61,6 @@
                     Login
                 </button>
             </form>
-
-            {% if messages %}
-            <div class="mt-6 space-y-2">
-                {% for message in messages %}
-                <div class="p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-red-700 text-sm flex items-center gap-2">
-                    <i class="fas fa-exclamation-circle"></i>
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
 
             <div class="mt-6 pt-6 border-t border-gray-200 text-center">
                 <p class="text-gray-700">Don't have an account?
@@ -80,6 +84,42 @@
 </style>
 {% block extra_js %}
 <script>
+    function initializePasswordToggle() {
+        const passwordInput = document.querySelector('[data-password-input]');
+        const passwordToggle = document.querySelector('[data-password-toggle]');
+        const passwordIcon = document.querySelector('[data-password-icon]');
+
+        if (!passwordInput || !passwordToggle || !passwordIcon || passwordToggle.dataset.ready === 'true') {
+            return;
+        }
+
+        passwordToggle.dataset.ready = 'true';
+
+        function syncPasswordToggle() {
+            const hasValue = passwordInput.value.length > 0;
+            passwordToggle.classList.toggle('hidden', !hasValue);
+            passwordToggle.classList.toggle('flex', hasValue);
+
+            if (!hasValue) {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+                passwordToggle.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        passwordToggle.addEventListener('click', () => {
+            const showPassword = passwordInput.type === 'password';
+            passwordInput.type = showPassword ? 'text' : 'password';
+            passwordIcon.classList.toggle('fa-eye', !showPassword);
+            passwordIcon.classList.toggle('fa-eye-slash', showPassword);
+            passwordToggle.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+        });
+
+        passwordInput.addEventListener('input', syncPasswordToggle);
+        syncPasswordToggle();
+    }
+
     function refreshCachedAuthPage(event) {
         if (event.persisted) {
             window.location.reload();
@@ -87,6 +127,8 @@
     }
 
     window.addEventListener('pageshow', refreshCachedAuthPage);
+    document.addEventListener('DOMContentLoaded', initializePasswordToggle);
+    document.addEventListener('turbo:load', initializePasswordToggle);
 </script>
 {% endblock %}
 {% endblock %}

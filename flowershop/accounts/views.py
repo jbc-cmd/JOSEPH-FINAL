@@ -251,7 +251,7 @@ def _update_profile(request, redirect_name):
     first_name = request.POST.get('first_name')
     last_name = request.POST.get('last_name')
     email = request.POST.get('email')
-    phone_number = request.POST.get('phone_number')
+    phone_number = request.POST.get('phone_number', '').strip()
     profile_picture = request.FILES.get('profile_picture')
     avatar_choice = request.POST.get('avatar_choice', '').strip()
 
@@ -260,7 +260,8 @@ def _update_profile(request, redirect_name):
     request.user.email = email
     request.user.save()
 
-    user_profile.phone_number = phone_number
+    if phone_number:
+        user_profile.phone_number = phone_number
     if profile_picture:
         user_profile.profile_picture = profile_picture
     elif avatar_choice.startswith('data:image/'):

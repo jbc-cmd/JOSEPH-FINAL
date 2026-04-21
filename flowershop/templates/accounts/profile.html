@@ -189,7 +189,7 @@
             </button>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid gap-4 sm:grid-cols-3">
             <button type="button" id="modal-upload-trigger" class="rounded-[24px] border border-gray-200 p-5 text-left transition hover:border-[#d9a8b7] hover:bg-[#fbf1f3]">
                 <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77]">
                     <i class="fas fa-upload"></i>
@@ -197,21 +197,31 @@
                 <p class="mt-4 text-lg font-bold text-gray-900">Upload from device</p>
                 <p class="mt-2 text-sm leading-6 text-gray-500">Pick a photo from your local storage.</p>
             </button>
-            <div class="rounded-[24px] border border-gray-200 p-5">
+            <button type="button" id="modal-camera-trigger" class="rounded-[24px] border border-gray-200 p-5 text-left transition hover:border-[#d9a8b7] hover:bg-[#fbf1f3]">
+                <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77]">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <p class="mt-4 text-lg font-bold text-gray-900">Use camera</p>
+                <p class="mt-2 text-sm leading-6 text-gray-500">Take a new photo with your device camera.</p>
+            </button>
+            <button type="button" id="modal-template-trigger" class="rounded-[24px] border border-gray-200 p-5 text-left transition hover:border-[#d9a8b7] hover:bg-[#fbf1f3]">
                 <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77]">
                     <i class="fas fa-spa"></i>
                 </div>
                 <p class="mt-4 text-lg font-bold text-gray-900">Template avatars</p>
                 <p class="mt-2 text-sm leading-6 text-gray-500">Choose one of the preset flower and leaf icons below.</p>
-            </div>
+            </button>
         </div>
 
-        <div class="mt-6 rounded-[28px] border border-gray-100 bg-[#fcfcfc] p-4 sm:p-5">
+        <div id="template-avatar-panel" class="mt-6 hidden rounded-[28px] border border-gray-100 bg-[#fcfcfc] p-4 sm:p-5">
             <div class="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <p class="text-sm font-semibold text-gray-900">Pick a template</p>
                     <p class="mt-1 text-xs text-gray-500">Tap any avatar to apply it instantly.</p>
                 </div>
+                <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-400 transition hover:bg-gray-100 hover:text-gray-600" data-close-template-panel>
+                    <i class="fas fa-times text-sm"></i>
+                </button>
             </div>
 
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -244,6 +254,9 @@
         const profileForm = document.getElementById('profile-form');
         const openAvatarPickerButton = document.getElementById('open-avatar-picker');
         const modalUploadTrigger = document.getElementById('modal-upload-trigger');
+        const modalCameraTrigger = document.getElementById('modal-camera-trigger');
+        const modalTemplateTrigger = document.getElementById('modal-template-trigger');
+        const templateAvatarPanel = document.getElementById('template-avatar-panel');
 
         if (!profileModal || !openAvatarPickerTrigger || !avatarModal || !avatarChoiceInput || !profilePictureInput || !profileForm) {
             return;
@@ -274,6 +287,9 @@
         function closeAvatarPicker() {
             avatarModal.classList.add('hidden');
             avatarModal.classList.remove('flex');
+            if (templateAvatarPanel) {
+                templateAvatarPanel.classList.add('hidden');
+            }
         }
 
         function updateAvatarPreviews(src) {
@@ -308,12 +324,33 @@
         if (modalUploadTrigger) {
             modalUploadTrigger.addEventListener('click', () => {
                 closeAvatarPicker();
+                profilePictureInput.removeAttribute('capture');
                 profilePictureInput.click();
+            });
+        }
+        if (modalCameraTrigger) {
+            modalCameraTrigger.addEventListener('click', () => {
+                closeAvatarPicker();
+                profilePictureInput.setAttribute('capture', 'user');
+                profilePictureInput.click();
+            });
+        }
+        if (modalTemplateTrigger && templateAvatarPanel) {
+            modalTemplateTrigger.addEventListener('click', () => {
+                templateAvatarPanel.classList.remove('hidden');
+                templateAvatarPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         }
 
         document.querySelectorAll('[data-close-avatar-picker]').forEach((button) => {
             button.addEventListener('click', closeAvatarPicker);
+        });
+        document.querySelectorAll('[data-close-template-panel]').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (templateAvatarPanel) {
+                    templateAvatarPanel.classList.add('hidden');
+                }
+            });
         });
 
         document.querySelectorAll('.avatar-template-option').forEach((button) => {
@@ -338,6 +375,7 @@
                 submitAvatarChange();
             };
             reader.readAsDataURL(file);
+            profilePictureInput.removeAttribute('capture');
         });
     }
 

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Joseph Flowershop - Home{% endblock %}
@@ -85,7 +85,11 @@
                 </div>
 
                 <div class="flex items-center">
+                    {% if product.review_count %}
                     <div class="text-yellow-400 text-sm tracking-[0.2em]">★★★★★</div>
+                    {% else %}
+                    <div class="text-gray-200 text-sm tracking-[0.2em]">★★★★★</div>
+                    {% endif %}
                     <span class="text-xs text-gray-500 ml-2">({{ product.review_count }} reviews)</span>
                 </div>
             </div>

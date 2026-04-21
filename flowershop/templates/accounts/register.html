@@ -12,11 +12,11 @@
             <span>Back</span>
         </button>
         <!-- Logo -->
-        <div class="text-center mb-8">
-            <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="mx-auto h-28 w-auto object-contain sm:h-32">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/logo.png' %}" alt="Joseph Flowershop" class="mx-auto h-36 w-auto object-contain sm:h-40">
         </div>
 
-        <div class="bg-white rounded-3xl shadow-xl p-8 border border-pink-100">
+        <div class="-mt-6 bg-white rounded-3xl shadow-xl p-8 border border-pink-100 sm:-mt-8">
             <h1 class="text-3xl font-bold text-center mb-2" style="font-family: 'Playfair Display', serif;">Create Your Account</h1>
             <p class="text-center text-gray-600 mb-8">Join us and start sending beautiful flowers!</p>
 
@@ -29,17 +29,17 @@
                         <label class="block text-gray-800 font-semibold mb-2">First Name</label>
                         <input type="text" name="first_name" value="{{ form_data.first_name|default:'' }}"
                                minlength="2" maxlength="50" autocomplete="given-name"
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                               placeholder="John">
-                        <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="first_name">{{ register_errors.first_name }}</p>
+                               class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.first_name %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="Juan">
+                        <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.first_name %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="first_name">{{ register_errors.first_name }}</p>
                     </div>
                     <div>
                         <label class="block text-gray-800 font-semibold mb-2">Last Name</label>
                         <input type="text" name="last_name" value="{{ form_data.last_name|default:'' }}"
                                minlength="2" maxlength="50" autocomplete="family-name"
-                               class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                               placeholder="Doe">
-                        <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="last_name">{{ register_errors.last_name }}</p>
+                               class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.last_name %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="Dela Cruz">
+                        <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.last_name %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="last_name">{{ register_errors.last_name }}</p>
                     </div>
                 </div>
 
@@ -47,46 +47,56 @@
                     <label class="block text-gray-800 font-semibold mb-2">Username</label>
                     <input type="text" name="username" required value="{{ form_data.username|default:'' }}"
                            minlength="4" maxlength="30" autocomplete="username" spellcheck="false"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
+                           class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.username %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
                            placeholder="Your username">
-                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="username">{{ register_errors.username }}</p>
+                    <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.username %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="username">{{ register_errors.username }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Email</label>
                     <input type="email" name="email" required value="{{ form_data.email|default:'' }}"
                            maxlength="254" autocomplete="email"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
+                           class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.email %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
                            placeholder="your@email.com">
-                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="email">{{ register_errors.email }}</p>
+                    <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.email %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="email">{{ register_errors.email }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Phone Number</label>
                     <input type="tel" name="phone_number" required value="{{ form_data.phone_number|default:'' }}"
                            minlength="10" maxlength="20" autocomplete="tel"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                               placeholder="09124169887">
-                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="phone_number">{{ register_errors.phone_number }}</p>
+                           class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.phone_number %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="09XXXXXXXXX">
+                    <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.phone_number %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="phone_number">{{ register_errors.phone_number }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Password</label>
-                    <input type="password" name="password1" required
-                           minlength="8" autocomplete="new-password"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                           placeholder="Create a strong password">
+                    <div class="relative">
+                        <input type="password" name="password1" required
+                               minlength="8" autocomplete="new-password"
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.password1 %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="Create a strong password" data-password-input>
+                        <button type="button" class="absolute inset-y-0 right-4 hidden items-center text-gray-400 transition hover:text-pink-500" aria-label="Show password" data-password-toggle>
+                            <i class="fas fa-eye" data-password-icon></i>
+                        </button>
+                    </div>
                     <p class="text-xs text-gray-600 mt-1">At least 8 characters with uppercase, lowercase, number, and special character</p>
-                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="password1">{{ register_errors.password1 }}</p>
+                    <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.password1 %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="password1">{{ register_errors.password1 }}</p>
                 </div>
 
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Confirm Password</label>
-                    <input type="password" name="password2" required
-                           autocomplete="new-password"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl text-gray-700 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 placeholder-gray-400 transition"
-                           placeholder="Confirm your password">
-                    <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="password2">{{ register_errors.password2 }}</p>
+                    <div class="relative">
+                        <input type="password" name="password2" required
+                               autocomplete="new-password"
+                               class="w-full px-4 py-3 pr-12 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.password2 %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
+                               placeholder="Confirm your password" data-password-input>
+                        <button type="button" class="absolute inset-y-0 right-4 hidden items-center text-gray-400 transition hover:text-pink-500" aria-label="Show password" data-password-toggle>
+                            <i class="fas fa-eye" data-password-icon></i>
+                        </button>
+                    </div>
+                    <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.password2 %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="password2">{{ register_errors.password2 }}</p>
                 </div>
 
                 <div class="flex items-start gap-2 pt-2">
@@ -95,7 +105,7 @@
                         I agree to the <a href="{% url 'products:terms' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Terms of Service</a> and <a href="{% url 'products:privacy' %}" class="text-pink-600 hover:text-pink-700 font-semibold">Privacy Policy</a>
                     </label>
                 </div>
-                <p class="mt-1 text-xs text-red-600 min-h-[1rem]" data-error-for="agree">{{ register_errors.agree }}</p>
+                <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.agree %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="agree">{{ register_errors.agree }}</p>
 
                 <button type="submit" class="rose-pill-button rose-pill-button--full mt-6 disabled:opacity-70 disabled:cursor-not-allowed" data-submit-button>
                     Create Account
@@ -151,7 +161,27 @@
             const errorEl = form.querySelector(`[data-error-for="${fieldName}"]`);
             if (errorEl) {
                 errorEl.textContent = message || '';
+                errorEl.classList.toggle('rounded-xl', Boolean(message));
+                errorEl.classList.toggle('bg-red-50', Boolean(message));
+                errorEl.classList.toggle('px-3', Boolean(message));
+                errorEl.classList.toggle('py-2', Boolean(message));
+                errorEl.classList.toggle('shadow-sm', Boolean(message));
             }
+        }
+
+        function setFieldState(field, hasError) {
+            if (!field || field.name === 'agree') {
+                return;
+            }
+
+            field.classList.toggle('border-red-300', hasError);
+            field.classList.toggle('bg-red-50/50', hasError);
+            field.classList.toggle('focus:border-red-400', hasError);
+            field.classList.toggle('focus:ring-red-100', hasError);
+
+            field.classList.toggle('border-gray-200', !hasError);
+            field.classList.toggle('focus:border-pink-400', !hasError);
+            field.classList.toggle('focus:ring-pink-100', !hasError);
         }
 
         function validateField(field) {
@@ -209,13 +239,21 @@
                     setFieldError(field.name, validateField(field));
                     return;
                 }
-                setFieldError(field.name, validateField(field));
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
                 if (field.name === 'password1') {
                     const confirmField = form.querySelector('[name="password2"]');
-                    setFieldError('password2', validateField(confirmField));
+                    const confirmError = validateField(confirmField);
+                    setFieldError('password2', confirmError);
+                    setFieldState(confirmField, Boolean(confirmError));
                 }
             });
-            field.addEventListener('blur', () => setFieldError(field.name, validateField(field)));
+            field.addEventListener('blur', () => {
+                const error = validateField(field);
+                setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
+            });
             if (field.name === 'agree') {
                 field.addEventListener('change', () => setFieldError(field.name, validateField(field)));
             }
@@ -226,6 +264,7 @@
             form.querySelectorAll('input').forEach((field) => {
                 const error = validateField(field);
                 setFieldError(field.name, error);
+                setFieldState(field, Boolean(error));
                 if (error) {
                     hasErrors = true;
                 }
@@ -247,6 +286,48 @@
         });
     }
 
+    function initializePasswordToggles() {
+        document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
+            if (toggle.dataset.ready === 'true') {
+                return;
+            }
+
+            const wrapper = toggle.closest('.relative');
+            const input = wrapper ? wrapper.querySelector('[data-password-input]') : null;
+            const icon = toggle.querySelector('[data-password-icon]');
+
+            if (!input || !icon) {
+                return;
+            }
+
+            toggle.dataset.ready = 'true';
+
+            function syncPasswordToggle() {
+                const hasValue = input.value.length > 0;
+                toggle.classList.toggle('hidden', !hasValue);
+                toggle.classList.toggle('flex', hasValue);
+
+                if (!hasValue) {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    toggle.setAttribute('aria-label', 'Show password');
+                }
+            }
+
+            toggle.addEventListener('click', () => {
+                const showPassword = input.type === 'password';
+                input.type = showPassword ? 'text' : 'password';
+                icon.classList.toggle('fa-eye', !showPassword);
+                icon.classList.toggle('fa-eye-slash', showPassword);
+                toggle.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+            });
+
+            input.addEventListener('input', syncPasswordToggle);
+            syncPasswordToggle();
+        });
+    }
+
     function refreshCachedAuthPage(event) {
         if (event.persisted) {
             window.location.reload();
@@ -256,6 +337,8 @@
     window.addEventListener('pageshow', refreshCachedAuthPage);
     document.addEventListener('DOMContentLoaded', initializeRegisterForm);
     document.addEventListener('turbo:load', initializeRegisterForm);
+    document.addEventListener('DOMContentLoaded', initializePasswordToggles);
+    document.addEventListener('turbo:load', initializePasswordToggles);
 </script>
 {% endblock %}
 {% endblock %}

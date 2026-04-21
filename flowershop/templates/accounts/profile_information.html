@@ -119,7 +119,7 @@
             </button>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="grid sm:grid-cols-3 gap-4 mb-6">
             <button type="button" id="modal-upload-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition">
                 <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
                     <i class="fas fa-upload"></i>
@@ -127,14 +127,32 @@
                 <p class="font-bold text-gray-900">Upload from device</p>
                 <p class="text-sm text-gray-500 mt-1">Pick a photo from your local storage.</p>
             </button>
-            <div class="rounded-xl border border-gray-200 p-5">
+            <button type="button" id="modal-camera-trigger" class="rounded-xl border border-gray-200 p-5 text-left hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition">
+                <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <p class="font-bold text-gray-900">Use camera</p>
+                <p class="text-sm text-gray-500 mt-1">Take a new photo with your device camera.</p>
+            </button>
+            <button type="button" id="modal-template-trigger" class="rounded-xl border border-gray-200 p-5 text-left transition hover:border-[#d9a8b7] hover:bg-[#fbf1f3]">
                 <div class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf1f3] text-[#b75b77] mb-3">
                     <i class="fas fa-spa"></i>
                 </div>
                 <p class="font-bold text-gray-900">Template avatars</p>
                 <p class="text-sm text-gray-500 mt-1">Choose one of the preset flower and leaf icons below.</p>
-            </div>
+            </button>
         </div>
+
+        <div id="template-avatar-panel" class="hidden rounded-[28px] border border-gray-100 bg-[#fcfcfc] p-4 sm:p-5">
+            <div class="mb-4 flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-semibold text-gray-900">Pick a template</p>
+                    <p class="mt-1 text-xs text-gray-500">Tap any avatar to apply it instantly.</p>
+                </div>
+                <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-gray-400 transition hover:bg-gray-100 hover:text-gray-600" data-close-template-panel>
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <button type="button" class="avatar-template-option rounded-2xl border border-gray-200 p-3 hover:border-[#d9a8b7] hover:bg-[#fbf1f3] transition" data-avatar="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNmYmNmZTgnLz48Y2lyY2xlIGN4PScxMjAnIGN5PScxMjAnIHI9JzIyJyBmaWxsPScjZmZmOGUxJy8+PGVsbGlwc2UgY3g9JzEyMCcgY3k9JzcyJyByeD0nMjYnIHJ5PSczNCcgZmlsbD0nI2Y0NzJiNicvPjxlbGxpcHNlIGN4PScxMjAnIGN5PScxNjgnIHJ4PScyNicgcnk9JzM0JyBmaWxsPScjZjQ3MmI2Jy8+PGVsbGlwc2UgY3g9JzcyJyBjeT0nMTIwJyByeD0nMzQnIHJ5PScyNicgZmlsbD0nI2ZiNzE4NScvPjxlbGxpcHNlIGN4PScxNjgnIGN5PScxMjAnIHJ4PSczNCcgcnk9JzI2JyBmaWxsPScjZmI3MTg1Jy8+PGVsbGlwc2UgY3g9Jzg2JyBjeT0nODYnIHJ4PScyNCcgcnk9JzI4JyB0cmFuc2Zvcm09J3JvdGF0ZSgtNDUgODYgODYpJyBmaWxsPScjZjlhOGQ0Jy8+PGVsbGlwc2UgY3g9JzE1NCcgY3k9Jzg2JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoNDUgMTU0IDg2KScgZmlsbD0nI2Y5YThkNCcvPjxlbGxpcHNlIGN4PSc4NicgY3k9JzE1NCcgcng9JzI0JyByeT0nMjgnIHRyYW5zZm9ybT0ncm90YXRlKDQ1IDg2IDE1NCknIGZpbGw9JyNmOWE4ZDQnLz48ZWxsaXBzZSBjeD0nMTU0JyBjeT0nMTU0JyByeD0nMjQnIHJ5PScyOCcgdHJhbnNmb3JtPSdyb3RhdGUoLTQ1IDE1NCAxNTQpJyBmaWxsPScjZjlhOGQ0Jy8+PC9zdmc+">
@@ -150,6 +168,7 @@
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJyB2aWV3Qm94PScwIDAgMjQwIDI0MCc+PGNpcmNsZSBjeD0nMTIwJyBjeT0nMTIwJyByPScxMjAnIGZpbGw9JyNkZGQ2ZmUnLz48cGF0aCBkPSdNNzIgMTYwYzAtNTQgNDQtOTggOTgtOTggMCA1NC00NCA5OC05OCA5OHonIGZpbGw9JyNhNzhiZmEnLz48cGF0aCBkPSdNNzAgMTc2YzAtNjYgNTQtMTIwIDEyMC0xMjAgMCA2Ni01NCAxMjAtMTIwIDEyMHonIGZpbGw9JyM4NmVmYWMnLz48cGF0aCBkPSdNODQgMTYyYzAtNDcgMzgtODUgODUtODUgMCA0Ny0zOCA4NS04NSA4NXonIGZpbGw9JyNkY2ZjZTcnLz48cGF0aCBkPSdNODAgMTc2YzI2LTE4IDUyLTQ0IDc4LTc4JyBzdHJva2U9JyMxNTgwM2QnIHN0cm9rZS13aWR0aD0nOCcgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJy8+PHBhdGggZD0nTTExOCAxMzhjMTAtNCAyMC01IDMyLTMnIHN0cm9rZT0nIzE1ODAzZCcgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnIGZpbGw9J25vbmUnLz48cGF0aCBkPSdNMTAwIDE1NmM1LTEwIDctMjAgNy0zMicgc3Ryb2tlPScjMTU4MDNkJyBzdHJva2Utd2lkdGg9JzUnIHN0cm9rZS1saW5lY2FwPSdyb3VuZCcgZmlsbD0nbm9uZScvPjwvc3ZnPg==" alt="Layered leaf avatar" class="h-24 w-24 mx-auto rounded-full object-cover">
             </button>
         </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -163,6 +182,9 @@
         const profileForm = document.getElementById('profile-form');
         const openAvatarPickerButton = document.getElementById('open-avatar-picker');
         const modalUploadTrigger = document.getElementById('modal-upload-trigger');
+        const modalCameraTrigger = document.getElementById('modal-camera-trigger');
+        const modalTemplateTrigger = document.getElementById('modal-template-trigger');
+        const templateAvatarPanel = document.getElementById('template-avatar-panel');
 
         if (!avatarModal || !avatarChoiceInput || !profilePictureInput || !profileForm) {
             return;
@@ -183,6 +205,9 @@
         function closeAvatarPicker() {
             avatarModal.classList.add('hidden');
             avatarModal.classList.remove('flex');
+            if (templateAvatarPanel) {
+                templateAvatarPanel.classList.add('hidden');
+            }
         }
 
         function updateAvatarPreviews(src) {
@@ -211,12 +236,33 @@
         if (modalUploadTrigger) {
             modalUploadTrigger.addEventListener('click', () => {
                 closeAvatarPicker();
+                profilePictureInput.removeAttribute('capture');
                 profilePictureInput.click();
+            });
+        }
+        if (modalCameraTrigger) {
+            modalCameraTrigger.addEventListener('click', () => {
+                closeAvatarPicker();
+                profilePictureInput.setAttribute('capture', 'user');
+                profilePictureInput.click();
+            });
+        }
+        if (modalTemplateTrigger && templateAvatarPanel) {
+            modalTemplateTrigger.addEventListener('click', () => {
+                templateAvatarPanel.classList.remove('hidden');
+                templateAvatarPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         }
 
         document.querySelectorAll('[data-close-avatar-picker]').forEach((button) => {
             button.addEventListener('click', closeAvatarPicker);
+        });
+        document.querySelectorAll('[data-close-template-panel]').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (templateAvatarPanel) {
+                    templateAvatarPanel.classList.add('hidden');
+                }
+            });
         });
 
         document.querySelectorAll('.avatar-template-option').forEach((button) => {
@@ -241,6 +287,7 @@
                 submitAvatarChange();
             };
             reader.readAsDataURL(file);
+            profilePictureInput.removeAttribute('capture');
         });
     }
 
