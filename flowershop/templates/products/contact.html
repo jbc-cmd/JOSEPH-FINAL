@@ -2,6 +2,19 @@
 
 {% block title %}Contact Us - Joseph Flowershop{% endblock %}
 
+{% block extra_css %}
+<style>
+    .contact-feedback-banner {
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .contact-submit-button[disabled] {
+        cursor: wait;
+        opacity: 0.88;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="bg-gradient-to-b from-[#fbf1f3] to-white min-h-screen py-14">
     <div class="max-w-6xl mx-auto px-4">
@@ -26,9 +39,15 @@
                         <div class="w-11 h-11 rounded-xl bg-[#fbf1f3] text-[#b75b77] flex items-center justify-center">
                             <i class="fas fa-phone"></i>
                         </div>
-                        <div>
+                        <div class="flex flex-1 items-center justify-between gap-3">
+                            <div>
                             <p class="text-sm text-gray-500">Phone</p>
                             <p class="font-semibold text-gray-900">09124169887</p>
+                            </div>
+                            <a href="tel:09124169887" class="inline-flex items-center gap-2 rounded-full bg-[#b75b77] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#ad526d]">
+                                <i class="fas fa-phone-alt text-xs"></i>
+                                <span>Call Now</span>
+                            </a>
                         </div>
                     </div>
 
@@ -58,13 +77,13 @@
                     <div class="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
                         <iframe
                             title="Joseph Flowershop location map"
-                            src="https://www.google.com/maps?q=Amat%20St%2C%20Sarvida%20St%2C%20Surigao%2C%208400%20Surigao%20del%20Norte&z=16&output=embed"
+                            src="https://www.google.com/maps?q=Surigao%20City%20Joseph%20Flowershop%2C%20Amat%20St%2C%20Sarvida%20St%2C%20Surigao%20City%2C%20Surigao%20del%20Norte%2C%20Philippines&z=18&output=embed"
                             class="h-40 w-full"
                             loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade"></iframe>
                     </div>
                     <a
-                        href="https://www.google.com/maps/search/?api=1&query=Amat%20St%2C%20Sarvida%20St%2C%20Surigao%2C%208400%20Surigao%20del%20Norte"
+                        href="https://www.google.com/maps/search/?api=1&query=Surigao%20City%20Joseph%20Flowershop%2C%20Amat%20St%2C%20Sarvida%20St%2C%20Surigao%20City%2C%20Surigao%20del%20Norte%2C%20Philippines"
                         target="_blank"
                         rel="noopener noreferrer"
                         class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[#b75b77] hover:text-[#ad526d]">
@@ -85,14 +104,14 @@
                 {% if messages %}
                 <div class="mb-6 space-y-3">
                     {% for message in messages %}
-                    <div class="rounded-2xl px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}border border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border border-red-200 bg-red-50 text-red-700{% endif %}">
+                    <div class="contact-feedback-banner rounded-2xl px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}border border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border border-red-200 bg-red-50 text-red-700{% endif %}" role="status" aria-live="polite">
                         {{ message }}
                     </div>
                     {% endfor %}
                 </div>
                 {% endif %}
 
-                <form method="post" class="space-y-6">
+                <form method="post" class="space-y-6" data-contact-form>
                     {% csrf_token %}
                     <div class="grid md:grid-cols-2 gap-4">
                         <div>
@@ -115,13 +134,48 @@
                         <textarea name="message" rows="5" required placeholder="Tell us about your order, bouquet idea, or question." class="mt-2 w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-[#d9a8b7] focus:outline-none focus:ring-2 focus:ring-[#f7e2e8]">{{ form_data.message }}</textarea>
                     </div>
 
-                    <button type="submit" class="rose-pill-button rose-pill-button--full rounded-xl">
-                        <i class="fas fa-paper-plane"></i>
-                        Send Message
+                    <div class="hidden rounded-2xl border border-[#f1d4dd] bg-[#fff6f8] px-4 py-3 text-sm font-medium text-[#a54f69]" data-contact-loading role="status" aria-live="polite">
+                        <span class="inline-flex items-center gap-2">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Sending your message...</span>
+                        </span>
+                    </div>
+
+                    <button type="submit" class="contact-submit-button rose-pill-button rose-pill-button--full rounded-xl" data-contact-submit>
+                        <i class="fas fa-paper-plane" data-contact-submit-icon></i>
+                        <span data-contact-submit-label>Send Message</span>
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function initializeContactFormFeedback() {
+        const form = document.querySelector('[data-contact-form]');
+        const submitButton = document.querySelector('[data-contact-submit]');
+        const submitLabel = document.querySelector('[data-contact-submit-label]');
+        const submitIcon = document.querySelector('[data-contact-submit-icon]');
+        const loadingNotice = document.querySelector('[data-contact-loading]');
+
+        if (!form || !submitButton || submitButton.dataset.bound === 'true') {
+            return;
+        }
+
+        submitButton.dataset.bound = 'true';
+        form.addEventListener('submit', () => {
+            submitButton.disabled = true;
+            submitButton.setAttribute('aria-busy', 'true');
+            if (submitLabel) submitLabel.textContent = 'Sending...';
+            if (submitIcon) submitIcon.className = 'fas fa-spinner fa-spin';
+            if (loadingNotice) loadingNotice.classList.remove('hidden');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeContactFormFeedback);
+    document.addEventListener('turbo:load', initializeContactFormFeedback);
+</script>
 {% endblock %}

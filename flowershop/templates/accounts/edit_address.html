@@ -12,11 +12,12 @@
                     <h1 class="text-3xl font-bold text-gray-900">Edit Delivery Address</h1>
                     <p class="text-sm text-gray-500 mt-1">Update your saved delivery details.</p>
                 </div>
-                <a href="{% url 'accounts:profile' %}" class="text-sm font-semibold text-pink-600 hover:text-pink-700 sm:pt-2">Back to Profile</a>
+                <a href="{{ return_url }}" class="text-sm font-semibold text-pink-600 hover:text-pink-700 sm:pt-2">Back</a>
             </div>
 
             <form method="post" class="space-y-6" novalidate data-address-form>
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ return_url }}">
 
                 <div class="grid md:grid-cols-2 gap-4 md:gap-5">
                     <div>
@@ -81,7 +82,7 @@
                     <button type="submit" class="inline-flex min-w-[150px] items-center justify-center bg-pink-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-pink-700 transition">
                         Update Address
                     </button>
-                    <a href="{% url 'accounts:profile' %}" class="inline-flex min-w-[110px] items-center justify-center border border-gray-200 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition">
+                    <a href="{{ return_url }}" class="inline-flex min-w-[110px] items-center justify-center border border-gray-200 px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition">
                         Cancel
                     </a>
                 </div>

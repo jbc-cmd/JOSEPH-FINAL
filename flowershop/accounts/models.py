@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 
 
 class UserProfile(models.Model):
@@ -27,6 +29,24 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username}'s Profile"
 
+    def sync_default_delivery_address(self):
+        """Mirror the user's default saved delivery address into the profile."""
+        primary_address = self.user.delivery_addresses.filter(is_default=True).first() or self.user.delivery_addresses.first()
+
+        if not primary_address:
+            self.default_delivery_address = ''
+            self.address = ''
+        else:
+            address_parts = [primary_address.address.strip(), primary_address.city.strip()]
+            if primary_address.postal_code:
+                address_parts.append(primary_address.postal_code.strip())
+
+            formatted_address = ', '.join(part for part in address_parts if part)
+            self.default_delivery_address = formatted_address
+            self.address = formatted_address
+
+        self.save(update_fields=['address', 'default_delivery_address', 'updated_at'])
+
 
 class DeliveryAddress(models.Model):
     """Saved delivery addresses for quick checkout."""
@@ -50,3 +70,15 @@ class DeliveryAddress(models.Model):
     
     def __str__(self):
         return f"{self.label} - {self.recipient_name}"
+
+
+@receiver(post_save, sender=DeliveryAddress)
+def sync_profile_delivery_address_on_save(sender, instance, **kwargs):
+    profile, _ = UserProfile.objects.get_or_create(user=instance.user)
+    profile.sync_default_delivery_address()
+
+
+@receiver(post_delete, sender=DeliveryAddress)
+def sync_profile_delivery_address_on_delete(sender, instance, **kwargs):
+    profile, _ = UserProfile.objects.get_or_create(user=instance.user)
+    profile.sync_default_delivery_address()

@@ -2,9 +2,137 @@
 
 {% block title %}Shop - Joseph Flowershop{% endblock %}
 
+{% block extra_css %}
+<style>
+    .shop-product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .shop-product-card {
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 1.2rem;
+        border: 1px solid rgba(164, 122, 127, 0.1);
+        background: #f9f6f3;
+        box-shadow: 0 8px 20px rgba(93, 72, 64, 0.12);
+    }
+
+    .shop-product-image {
+        aspect-ratio: 1 / 1.2;
+    }
+
+    .shop-product-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.72);
+    }
+
+    .shop-product-title,
+    .shop-product-description {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+    }
+
+    .shop-product-title {
+        -webkit-line-clamp: 2;
+    }
+
+    .shop-product-description {
+        -webkit-line-clamp: 2;
+    }
+
+    .shop-product-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .shop-product-add {
+        position: absolute;
+        left: 0.85rem;
+        right: 0.85rem;
+        bottom: 0.85rem;
+    }
+
+    .shop-product-add .rose-pill-button {
+        min-height: 2.85rem;
+        padding: 0.7rem 1.15rem;
+        border-radius: 9999px;
+        background: #b76882;
+        box-shadow: 0 12px 24px rgba(183, 104, 130, 0.28);
+    }
+
+    .shop-product-add .rose-pill-button:hover {
+        background: #ad5d78;
+    }
+
+    .shop-product-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        border-radius: 0.85rem;
+        background: #eef2f5;
+        padding: 0.95rem 1rem;
+        text-align: center;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #475569;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .shop-product-secondary:hover {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .shop-product-rating > div {
+        color: transparent;
+    }
+
+    .shop-product-rating::before,
+    .shop-product-rating::after {
+        content: "★★★★★";
+        position: absolute;
+        inset: 0;
+        white-space: nowrap;
+        font-size: inherit;
+        line-height: inherit;
+        pointer-events: none;
+    }
+
+    .shop-product-rating::before {
+        color: #d1d5db;
+    }
+
+    .shop-product-rating::after {
+        width: var(--rating-width, 0%);
+        overflow: hidden;
+        color: #facc15;
+    }
+
+    @media (min-width: 640px) {
+        .shop-product-image {
+            aspect-ratio: 1 / 1.16;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .shop-product-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-8">Shop Our Flowers</h1>
+    <h1 class="mb-8 text-4xl font-bold">Shop Our Flowers</h1>
 
     <div class="mb-8 p-4">
         <form method="get" class="flex flex-col gap-4">
@@ -13,8 +141,8 @@
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                         <i class="fas fa-search text-sm"></i>
                     </span>
-                    <input type="text" id="shop-search-input" name="search" value="{{ search_query }}" placeholder="Search flowers and bouquets..." data-mobile-placeholder="Search flowers" data-desktop-placeholder="Search flowers and bouquets..." class="w-full rounded-2xl border border-gray-200 bg-white px-11 pr-12 py-3.5 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200">
-                    <button type="button" id="clear-shop-search" class="{% if search_query %}flex{% else %}hidden{% endif %} absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition">
+                    <input type="text" id="shop-search-input" name="search" value="{{ search_query }}" placeholder="Search flowers and bouquets..." data-mobile-placeholder="Search flowers" data-desktop-placeholder="Search flowers and bouquets..." class="w-full rounded-2xl border border-gray-200 bg-white px-11 py-3.5 pr-12 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-200">
+                    <button type="button" id="clear-shop-search" class="{% if search_query %}flex{% else %}hidden{% endif %} absolute right-4 top-1/2 h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-gray-700">
                         <i class="fas fa-times text-xs"></i>
                     </button>
                     {% if selected_category %}
@@ -22,10 +150,10 @@
                     {% endif %}
                 </div>
                 <div class="flex shrink-0 gap-3">
-                    <button type="submit" class="hidden items-center justify-center rounded-2xl bg-neutral-900 px-4 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 transition sm:inline-flex sm:px-5">
+                    <button type="submit" class="hidden items-center justify-center rounded-2xl bg-neutral-900 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 sm:inline-flex sm:px-5">
                         Search
                     </button>
-                    <button type="button" id="shop-filters-toggle" aria-expanded="{% if selected_category %}true{% else %}false{% endif %}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition sm:px-5">
+                    <button type="button" id="shop-filters-toggle" aria-expanded="{% if selected_category %}true{% else %}false{% endif %}" class="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 sm:px-5">
                         <i class="fas fa-sliders-h text-sm"></i>
                         <span>Filters</span>
                     </button>
@@ -48,7 +176,7 @@
     </div>
 
     <div>
-        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-gray-600">Showing {{ products|length }} products</p>
             <form method="get">
                 {% if search_query %}
@@ -57,7 +185,7 @@
                 {% if selected_category %}
                 <input type="hidden" name="category" value="{{ selected_category }}">
                 {% endif %}
-                <select name="sort" onchange="this.form.submit()" class="appearance-none rounded-2xl border-2 border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-200 cursor-pointer transition" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.5em 1.5em; padding-right: 2.5rem;">
+                <select name="sort" onchange="this.form.submit()" class="cursor-pointer appearance-none rounded-2xl border-2 border-gray-200 bg-white px-5 py-3 pr-10 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-200" style="background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.5em 1.5em;">
                     <option value="-created_at" {% if request.GET.sort|default:'-created_at' == '-created_at' %}selected{% endif %}>Latest</option>
                     <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name (A-Z)</option>
                     <option value="price" {% if request.GET.sort == 'price' %}selected{% endif %}>Price (Low to High)</option>
@@ -66,48 +194,58 @@
             </form>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="shop-product-grid grid gap-3 sm:gap-5 md:gap-6 mb-8">
             {% for product in products %}
-            <div class="product-card bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="relative aspect-[4/4.8] sm:aspect-[4/4.9] overflow-hidden bg-gray-50">
+            <article class="product-card shop-product-card">
+                <div class="shop-product-image relative overflow-hidden bg-gray-50">
+                    <a href="{% url 'products:product_detail' product.slug %}" class="block h-full w-full">
                     {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover hover:scale-110 transition" style="object-position: center 32%;">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full w-full object-cover transition duration-300 hover:scale-105" style="object-position: center 32%;">
+                    {% else %}
+                    <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-rose-50 via-white to-orange-50 text-2xl text-rose-300">
+                        <i class="fas fa-seedling"></i>
+                    </div>
                     {% endif %}
-
-                    <form method="post" action="{% url 'cart:add_to_cart' %}" class="absolute left-3 right-3 bottom-3 sm:left-4 sm:right-4 sm:bottom-4">
-                        {% csrf_token %}
-                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <input type="hidden" name="quantity" value="1">
-                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <button type="submit" class="rose-pill-button rose-pill-button--full rose-pill-button--compact text-sm">
-                            <i class="fas fa-bag-shopping text-sm"></i>
-                            <span>Add to Cart</span>
-                        </button>
-                    </form>
+                    </a>
+                    <div class="shop-product-add">
+                        <form method="post" action="{% url 'cart:add_to_cart' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="rose-pill-button rose-pill-button--full rose-pill-button--compact text-sm" {% if not product.is_available %}disabled{% endif %}>
+                                <i class="fas fa-bag-shopping text-sm"></i>
+                                <span>{% if product.is_available %}Add to Cart{% else %}Unavailable{% endif %}</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
-                <div class="p-4 sm:p-5">
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">{{ product.name }}</h3>
+                <div class="shop-product-body p-4 sm:p-5">
+                    <h3 class="shop-product-title mb-2 text-[1.05rem] font-bold leading-tight text-gray-800 sm:text-[1.8rem]">{{ product.name }}</h3>
                     <div class="mb-3 flex items-center gap-2">
-                        <div class="relative text-sm leading-none">
+                        <div class="shop-product-rating relative text-[11px] leading-none sm:text-sm" style="--rating-width: {{ product.rating_percentage }}%;">
                             <div class="text-gray-200">★★★★★</div>
-                            <div class="absolute inset-0 overflow-hidden text-yellow-400" style="width: {{ product.rating_percentage }}%;">★★★★★</div>
+                            <div class="absolute inset-0 overflow-hidden whitespace-nowrap text-yellow-400" style="width: {{ product.rating_percentage }}%;">★★★★★</div>
                         </div>
-                        <span class="text-xs text-gray-500">{{ product.rating|floatformat:1 }} ({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
+                        <span class="text-[11px] text-gray-500 sm:text-base">{{ product.rating|floatformat:1 }} ({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
                     </div>
-                    <p class="text-gray-600 text-sm mb-4">{{ product.description|truncatewords:8 }}</p>
+                    <p class="shop-product-description mb-5 text-sm leading-6 text-gray-600 sm:text-base">{{ product.description|truncatewords:10 }}</p>
 
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-2xl font-bold text-pink-600">&#8369;{{ product.price }}</span>
+                    <div class="mb-6 flex items-end justify-between gap-2">
+                        <span class="text-[1.05rem] font-bold text-pink-600 sm:text-[2.1rem]">&#8369;{{ product.price }}</span>
+                        {% if not product.is_available %}
+                        <span class="rounded-full bg-gray-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-gray-500 sm:text-xs">Sold Out</span>
+                        {% endif %}
                     </div>
 
-                    <div class="flex">
-                        <a href="{% url 'products:product_detail' product.slug %}" class="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-center hover:bg-gray-200">View Details</a>
+                    <div class="shop-product-actions mt-auto">
+                        <a href="{% url 'products:product_detail' product.slug %}" class="shop-product-secondary">View Details</a>
                     </div>
                 </div>
-            </div>
+            </article>
             {% empty %}
-            <div class="col-span-3 text-center text-gray-500 py-12">
+            <div class="col-span-2 py-12 text-center text-gray-500 md:col-span-3">
                 <p class="text-xl">No products found</p>
             </div>
             {% endfor %}
@@ -116,15 +254,15 @@
         {% if is_paginated %}
         <div class="flex justify-center space-x-2">
             {% if page_obj.has_previous %}
-            <a href="?page=1" class="px-3 py-2 border rounded hover:bg-gray-100">&laquo; First</a>
-            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 border rounded hover:bg-gray-100">&lt; Previous</a>
+            <a href="?page=1" class="rounded border px-3 py-2 hover:bg-gray-100">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded border px-3 py-2 hover:bg-gray-100">&lt; Previous</a>
             {% endif %}
 
             <span class="px-3 py-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 border rounded hover:bg-gray-100">Next &gt;</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 border rounded hover:bg-gray-100">Last &raquo;</a>
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded border px-3 py-2 hover:bg-gray-100">Next &gt;</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="rounded border px-3 py-2 hover:bg-gray-100">Last &raquo;</a>
             {% endif %}
         </div>
         {% endif %}

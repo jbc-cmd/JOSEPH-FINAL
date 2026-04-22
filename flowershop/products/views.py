@@ -8,7 +8,39 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
 from django.core.paginator import Paginator
+import re
 import requests
+
+
+INAPPROPRIATE_REVIEW_WORDS = {
+    'bitch',
+    'bullshit',
+    'damn',
+    'fuck',
+    'fucking',
+    'shit',
+    'slut',
+    'whore',
+}
+
+
+def _mask_inappropriate_review_words(comment):
+    """Tone down a small set of inappropriate review words without blocking submission."""
+    lowered_hits = set()
+
+    def replace_match(match):
+        word = match.group(0)
+        lowered_hits.add(word.lower())
+        if len(word) <= 2:
+            return '*' * len(word)
+        return f"{word[0]}{'*' * (len(word) - 2)}{word[-1]}"
+
+    sanitized_comment = re.sub(
+        r'\b[a-zA-Z]+\b',
+        lambda match: replace_match(match) if match.group(0).lower() in INAPPROPRIATE_REVIEW_WORDS else match.group(0),
+        comment,
+    )
+    return sanitized_comment, bool(lowered_hits)
 
 
 class HomeView(ListView):
@@ -182,23 +214,24 @@ def submit_review(request, slug):
     photo = request.FILES.get('photo')
 
     if not rating or rating not in {'1', '2', '3', '4', '5'}:
-        messages.error(request, 'Please choose a star rating from 1 to 5.')
+        messages.error(request, 'Please choose a star rating from 1 to 5.', extra_tags='review')
         return redirect('products:product_detail', slug=slug)
 
     if not comment:
-        messages.error(request, 'Please write a short review before submitting.')
+        messages.error(request, 'Please write a short review before submitting.', extra_tags='review')
         return redirect('products:product_detail', slug=slug)
 
+    sanitized_comment, was_sanitized = _mask_inappropriate_review_words(comment)
     existing_review = product.reviews.filter(user=request.user).first()
     has_purchased_product = request.user.orders.filter(items__product=product).exists()
     review_defaults = {
         'customer_name': request.user.get_full_name() or request.user.username,
         'customer_email': request.user.email,
         'rating': int(rating),
-        'comment': comment,
+        'comment': sanitized_comment,
         'photo': photo if photo else (existing_review.photo if existing_review else None),
         'is_verified_purchase': has_purchased_product or (existing_review.is_verified_purchase if existing_review else False),
-        'is_approved': existing_review.is_approved if existing_review else False,
+        'is_approved': True,
     }
 
     if existing_review:
@@ -206,10 +239,13 @@ def submit_review(request, slug):
             setattr(existing_review, field, value)
         if photo is None and 'remove_photo' in request.POST:
             existing_review.photo = None
-        existing_review.is_approved = False
+        existing_review.is_approved = True
         existing_review.save()
         product.update_review_stats()
-        messages.success(request, 'Your review was updated and is awaiting approval.')
+        if was_sanitized:
+            messages.success(request, 'Your review was updated and posted. Some wording was softened to keep reviews respectful.', extra_tags='review')
+        else:
+            messages.success(request, 'Your review was updated and posted.', extra_tags='review')
     else:
         ProductReview.objects.create(
             product=product,
@@ -217,7 +253,10 @@ def submit_review(request, slug):
             **review_defaults,
         )
         product.update_review_stats()
-        messages.success(request, 'Thanks for your review. It is now awaiting approval.')
+        if was_sanitized:
+            messages.success(request, 'Thanks for your review. It has been posted, and some wording was softened to keep reviews respectful.', extra_tags='review')
+        else:
+            messages.success(request, 'Thanks for your review. It has been posted.', extra_tags='review')
 
     return redirect('products:product_detail', slug=slug)
 

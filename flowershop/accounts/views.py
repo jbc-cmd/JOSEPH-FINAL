@@ -2,6 +2,7 @@ import base64
 import re
 import uuid
 
+from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.validators import validate_email
@@ -15,6 +16,7 @@ from django.views.generic import CreateView, ListView, DetailView, DeleteView, U
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
+from django.utils.http import url_has_allowed_host_and_scheme
 from .models import UserProfile, DeliveryAddress
 from .forms import DeliveryAddressForm
 from orders.models import Order
@@ -161,18 +163,19 @@ def register(request):
             return render(request, 'accounts/register.html', _build_register_context(form_data, errors, next_url))
 
         try:
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password1,
-                first_name=first_name,
-                last_name=last_name
-            )
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1,
+                    first_name=first_name,
+                    last_name=last_name
+                )
 
-            user_profile, _ = UserProfile.objects.get_or_create(user=user)
-            user_profile.phone_number = phone_number
-            user_profile.full_clean()
-            user_profile.save()
+                user_profile, _ = UserProfile.objects.get_or_create(user=user)
+                user_profile.phone_number = phone_number
+                user_profile.full_clean()
+                user_profile.save()
 
             login(request, user)
 
@@ -247,38 +250,48 @@ def logout_view(request):
 @login_required(login_url='accounts:login')
 def _update_profile(request, redirect_name):
     """Handle profile form updates and avatar changes."""
-    user_profile = request.user.profile
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
     first_name = request.POST.get('first_name')
     last_name = request.POST.get('last_name')
     email = request.POST.get('email')
-    phone_number = request.POST.get('phone_number', '').strip()
+    raw_phone_number = request.POST.get('phone_number', '').strip()
+    phone_number = _normalize_phone_number(raw_phone_number) if raw_phone_number else ''
     profile_picture = request.FILES.get('profile_picture')
     avatar_choice = request.POST.get('avatar_choice', '').strip()
 
-    request.user.first_name = first_name
-    request.user.last_name = last_name
-    request.user.email = email
-    request.user.save()
+    if phone_number and not PHONE_PATTERN.fullmatch(phone_number):
+        messages.error(request, 'Enter a valid phone number using 10 to 15 digits.')
+        return redirect(redirect_name)
 
-    if phone_number:
-        user_profile.phone_number = phone_number
-    if profile_picture:
-        user_profile.profile_picture = profile_picture
-    elif avatar_choice.startswith('data:image/'):
-        try:
-            header, encoded = avatar_choice.split(',', 1)
-            extension = _avatar_extension_from_header(header)
-            if not extension:
-                raise ValueError('Unsupported avatar image type.')
-            user_profile.profile_picture.save(
-                f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
-                ContentFile(base64.b64decode(encoded)),
-                save=False,
-            )
-        except (ValueError, IndexError, base64.binascii.Error):
-            messages.error(request, 'Selected avatar could not be applied.')
-            return redirect(redirect_name)
-    user_profile.save()
+    try:
+        with transaction.atomic():
+            request.user.first_name = first_name
+            request.user.last_name = last_name
+            request.user.email = email
+            request.user.save()
+
+            user_profile.phone_number = phone_number
+            if profile_picture:
+                user_profile.profile_picture = profile_picture
+            elif avatar_choice.startswith('data:image/'):
+                try:
+                    header, encoded = avatar_choice.split(',', 1)
+                    extension = _avatar_extension_from_header(header)
+                    if not extension:
+                        raise ValueError('Unsupported avatar image type.')
+                    user_profile.profile_picture.save(
+                        f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
+                        ContentFile(base64.b64decode(encoded)),
+                        save=False,
+                    )
+                except (ValueError, IndexError, base64.binascii.Error):
+                    messages.error(request, 'Selected avatar could not be applied.')
+                    return redirect(redirect_name)
+            user_profile.full_clean()
+            user_profile.save()
+    except ValidationError as exc:
+        messages.error(request, exc.messages[0] if exc.messages else 'Profile update could not be saved.')
+        return redirect(redirect_name)
 
     messages.success(request, 'Profile updated successfully!')
     return redirect(redirect_name)
@@ -290,7 +303,7 @@ def profile(request):
     if request.method == 'POST':
         return _update_profile(request, 'accounts:profile')
 
-    user_profile = request.user.profile
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
     addresses = request.user.delivery_addresses.all()
     recent_orders = request.user.orders.all()[:5]
     
@@ -309,7 +322,7 @@ def profile_information(request):
         return _update_profile(request, 'accounts:profile_information')
 
     context = {
-        'profile': request.user.profile,
+        'profile': UserProfile.objects.get_or_create(user=request.user)[0],
     }
     return render(request, 'accounts/profile_information.html', context)
 
@@ -361,9 +374,27 @@ class DeliveryAddressUpdateView(LoginRequiredMixin, UpdateView):
     
     def get_queryset(self):
         return DeliveryAddress.objects.filter(user=self.request.user)
+
+    def _get_safe_next_url(self):
+        next_url = (self.request.POST.get('next') or self.request.GET.get('next') or '').strip()
+        if next_url and url_has_allowed_host_and_scheme(
+            url=next_url,
+            allowed_hosts={self.request.get_host()},
+            require_https=self.request.is_secure(),
+        ):
+            return next_url
+        return ''
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['return_url'] = self._get_safe_next_url() or reverse_lazy('accounts:profile')
+        return context
     
     def get_success_url(self):
         messages.success(self.request, 'Address updated successfully!')
+        next_url = self._get_safe_next_url()
+        if next_url:
+            return next_url
         return reverse_lazy('accounts:profile')
 
 
