@@ -16,6 +16,7 @@ urlpatterns = [
     path('products/', include('products.urls')),
     path('cart/', include('cart.urls')),
     path('orders/', include('orders.urls')),
+    path('payments/', include('payments.urls')),
     path('bouquet/', include('custom_bouquet.urls')),
     path('', product_views.HomeView.as_view(), name='home'),  # Home page
 ]

@@ -20,6 +20,7 @@ from django.utils import timezone
 import uuid
 import re
 import logging
+from payments.services import PayMongoError, create_checkout_session, paymongo_is_configured
 
 
 logger = logging.getLogger(__name__)
@@ -274,6 +275,9 @@ def checkout(request):
         'total': total,
         'saved_address': saved_address,
         'is_direct_purchase': bool(direct_purchase),
+        'static_qrph_image_url': getattr(settings, 'STATIC_QRPH_IMAGE_URL', ''),
+        'static_qrph_merchant_name': getattr(settings, 'STATIC_QRPH_MERCHANT_NAME', 'Joseph Flowershop'),
+        'static_qrph_contact_number': getattr(settings, 'STATIC_QRPH_CONTACT_NUMBER', '09124169887'),
     }
 
     return render(request, 'orders/checkout.html', context)
@@ -283,6 +287,7 @@ def checkout(request):
 def create_order(request):
     """Create order from checkout."""
     expects_json = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    allowed_payment_methods = {choice[0] for choice in Payment.PAYMENT_METHOD_CHOICES}
 
     def error_response(message, redirect_url=None):
         if expects_json:
@@ -342,6 +347,20 @@ def create_order(request):
         gift_message = request.POST.get('gift_message', '')
         anonymous_sender = request.POST.get('anonymous_sender') == 'on'
         special_instructions = request.POST.get('special_instructions', '')
+        payment_method = (request.POST.get('payment_method') or 'COD').strip().upper()
+        qrph_reference_number = request.POST.get('qrph_reference_number', '').strip()
+
+        if payment_method not in allowed_payment_methods:
+            return error_response('Please choose a valid payment method.')
+
+        if payment_method in {'GCASH', 'QRPH'}:
+            if not paymongo_is_configured():
+                return error_response('This digital payment method is selected, but PayMongo is not configured yet. Add your PayMongo keys before using it.')
+        if payment_method == 'QRPH':
+            if not getattr(settings, 'STATIC_QRPH_IMAGE_URL', ''):
+                return error_response('QRPh is selected, but the static QR image is not configured yet. Add STATIC_QRPH_IMAGE_URL first.')
+            if not qrph_reference_number:
+                return error_response('Please enter the QRPh payment reference number after sending your payment.')
 
         try:
             validate_email(customer_email)
@@ -434,12 +453,38 @@ def create_order(request):
         )
 
         # Create payment record
-        Payment.objects.create(
+        payment = Payment.objects.create(
             order=order,
-            payment_method=request.POST.get('payment_method', 'COD'),
+            payment_method=payment_method,
             amount=order.total_amount,
             status='PENDING'
         )
+
+        checkout_url = ''
+        if payment_method == 'GCASH':
+            try:
+                session_payload = create_checkout_session(
+                    order=order,
+                    request=request,
+                    payment_method_types=['gcash'],
+                )
+            except PayMongoError as exc:
+                if order.delivery_id:
+                    order.delivery.delete()
+                order.delete()
+                return error_response(str(exc))
+
+            checkout_data = session_payload.get('data', {})
+            checkout_attributes = checkout_data.get('attributes', {})
+            checkout_url = checkout_attributes.get('checkout_url', '')
+            payment.transaction_id = checkout_data.get('id', '')[:255]
+            payment.payment_gateway = 'PAYMONGO'
+            payment.reference_number = order.order_number
+            payment.save(update_fields=['transaction_id', 'payment_gateway', 'reference_number', 'updated_at'])
+        elif payment_method == 'QRPH':
+            payment.payment_gateway = 'PAYMONGO_STATIC_QRPH'
+            payment.reference_number = qrph_reference_number[:100]
+            payment.save(update_fields=['payment_gateway', 'reference_number', 'updated_at'])
 
         # Clear appropriate cart/session
         if direct_purchase:
@@ -454,12 +499,17 @@ def create_order(request):
 
         redirect_url = reverse('orders:order_confirmation', kwargs={'order_id': order.id})
         if expects_json:
-            return JsonResponse({
+            payload = {
                 'success': True,
                 'order_number': order.order_number,
                 'redirect_url': redirect_url
-            })
+            }
+            if checkout_url:
+                payload['checkout_url'] = checkout_url
+            return JsonResponse(payload)
         messages.success(request, f'Order {order.order_number} placed successfully.')
+        if checkout_url:
+            return redirect(checkout_url)
         return redirect(redirect_url)
 
     except Exception as e:

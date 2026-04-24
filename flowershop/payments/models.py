@@ -9,6 +9,7 @@ class Payment(models.Model):
         ('DEBIT_CARD', 'Debit Card'),
         ('PAYPAL', 'PayPal'),
         ('GCASH', 'GCash'),
+        ('QRPH', 'QRPh'),
         ('PAYMAYA', 'PayMaya'),
         ('COD', 'Cash on Delivery'),
     ]

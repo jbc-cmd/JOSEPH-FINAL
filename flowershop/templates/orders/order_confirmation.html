@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-8">
-    <div class="text-center mb-8">
-        <div class="text-6xl text-green-500 mb-4"><i class="fas fa-check-circle"></i></div>
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
-        <p class="text-xl text-gray-600">Thank you for your order. Your flowers will be delivered soon!</p>
+        <div class="text-center mb-8">
+        <div class="text-6xl {% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}text-amber-500{% else %}text-green-500{% endif %} mb-4"><i class="fas {% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}fa-clock{% else %}fa-check-circle{% endif %}"></i></div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">{% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}Payment Pending{% else %}Order Confirmed!{% endif %}</h1>
+        <p class="text-xl text-gray-600">{% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}Your order was created and is waiting for the shop to verify your QRPh payment reference.{% elif order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' %}Your order was created and is waiting for PayMongo to confirm the {{ order.payment.get_payment_method_display }} payment.{% else %}Thank you for your order. Your flowers will be delivered soon!{% endif %}</p>
     </div>
     
     <!-- Order Details -->
@@ -30,6 +30,7 @@
                     <p><strong class="text-gray-900">Order Number:</strong> <span class="text-lg font-semibold text-pink-600">{{ order.order_number }}</span></p>
                     <p><strong class="text-gray-900">Order Date:</strong> {{ order.created_at|date:"M d, Y" }}</p>
                     <p><strong class="text-gray-900">Status:</strong> <span class="ml-1 inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 ring-1 ring-blue-100">{{ order.get_status_display }}</span></p>
+                    <p><strong class="text-gray-900">Payment Status:</strong> {{ order.payment.get_status_display }}</p>
                 </div>
             </div>
             
@@ -102,13 +103,25 @@
     </div>
     
     <!-- Next Steps -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-        <h3 class="font-bold text-blue-900 mb-2">What's Next?</h3>
-        <ol class="list-decimal list-inside text-blue-800 space-y-1">
+    <div class="{% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}bg-amber-50 border-amber-200{% else %}bg-blue-50 border-blue-200{% endif %} border rounded-lg p-6 mb-8">
+        <h3 class="{% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}text-amber-900{% else %}text-blue-900{% endif %} font-bold mb-2">What's Next?</h3>
+        <ol class="list-decimal list-inside {% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' or order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}text-amber-800{% else %}text-blue-800{% endif %} space-y-1">
+            {% if order.payment.status != 'COMPLETED' and order.payment.payment_method == 'QRPH' %}
+            <li>Keep the payment receipt or screenshot from your bank or e-wallet app.</li>
+            <li>We will verify the QRPh payment reference you submitted with your order.</li>
+            <li>Your bouquet will move into processing once the payment is verified.</li>
+            <li>You can track the latest payment and order status from the order details page.</li>
+            {% elif order.payment.status != 'COMPLETED' and order.payment.payment_method == 'GCASH' %}
+            <li>Complete the payment in the PayMongo {{ order.payment.get_payment_method_display }} page if you have not finished yet.</li>
+            <li>PayMongo will send a secure confirmation back to the shop.</li>
+            <li>Your bouquet will move into processing once payment is confirmed.</li>
+            <li>You can track the latest payment and order status from the order details page.</li>
+            {% else %}
             <li>We'll confirm your order and prepare the flowers</li>
             <li>Your arrangement will be beautifully crafted</li>
             <li>It will be delivered on your scheduled date and time</li>
             <li>You'll receive a notification when it's out for delivery</li>
+            {% endif %}
         </ol>
     </div>
     

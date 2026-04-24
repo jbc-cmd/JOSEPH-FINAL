@@ -60,6 +60,58 @@
         box-shadow: 0 16px 28px rgba(173, 82, 109, 0.26);
         transform: translateY(-1px);
     }
+
+    .builder-page .builder-message-textarea {
+        box-sizing: border-box;
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        inline-size: 100%;
+        max-inline-size: 100%;
+        min-height: 7rem;
+        padding: 0.875rem 1rem;
+        line-height: 1.5;
+        field-sizing: fixed;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        background-clip: padding-box;
+        overflow-x: auto;
+        overflow-y: auto;
+        overflow-wrap: anywhere;
+        word-break: break-all;
+        white-space: pre-wrap;
+        resize: vertical;
+    }
+
+    .builder-page .builder-textarea-meta {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .builder-page .builder-textarea-helper {
+        flex: 1 1 12rem;
+        min-width: 0;
+    }
+
+    .builder-page .builder-textarea-status {
+        flex: 0 0 auto;
+        margin-left: auto;
+        text-align: right;
+        white-space: normal;
+    }
+
+    .builder-page .builder-summary-message {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        white-space: normal;
+    }
 </style>
 {% endblock %}
 
@@ -243,14 +295,14 @@
 
                     <div class="rounded-2xl border border-gray-200 bg-white p-5">
                         <label for="bouquet-message" class="block text-sm font-semibold text-gray-700 mb-2">Gift message</label>
-                        <textarea id="bouquet-message" rows="4" maxlength="500" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add a heartfelt note for the recipient (optional)"></textarea>
-                        <div class="mt-2 flex items-center justify-between gap-3"><p class="text-xs text-gray-500">Leave a sweet note to include with your bouquet.</p><p id="message-status" class="text-xs font-medium text-gray-400">No message added yet</p></div>
+                        <textarea id="bouquet-message" rows="4" wrap="soft" maxlength="500" class="builder-message-textarea w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add a heartfelt note for the recipient (optional)"></textarea>
+                        <div class="builder-textarea-meta mt-2"><p class="builder-textarea-helper text-xs text-gray-500">Leave a sweet note to include with your bouquet.</p><p id="message-status" class="builder-textarea-status text-xs font-medium text-gray-400">No message added yet</p></div>
                     </div>
 
                     <div class="rounded-2xl border border-gray-200 bg-white p-5 mt-4">
                         <label for="florist-instructions" class="block text-sm font-semibold text-gray-700 mb-2">Florist instructions</label>
-                        <textarea id="florist-instructions" rows="4" maxlength="500" class="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add bouquet detail requests for the florist, like arrangement style, emphasis, or presentation preferences (optional)"></textarea>
-                        <div class="mt-2 flex items-center justify-between gap-3"><p class="text-xs text-gray-500">Use this for bouquet-making requests, not the recipient card message.</p><p id="florist-instructions-status" class="text-xs font-medium text-gray-400">No florist instructions added yet</p></div>
+                        <textarea id="florist-instructions" rows="4" wrap="soft" maxlength="500" class="builder-message-textarea w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="Add bouquet detail requests for the florist, like arrangement style, emphasis, or presentation preferences (optional)"></textarea>
+                        <div class="builder-textarea-meta mt-2"><p class="builder-textarea-helper text-xs text-gray-500">Use this for bouquet-making requests, not the recipient card message.</p><p id="florist-instructions-status" class="builder-textarea-status text-xs font-medium text-gray-400">No florist instructions added yet</p></div>
                     </div>
                 </section>
             </div>
@@ -281,7 +333,7 @@
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div><p class="text-sm font-semibold text-gray-900">Size</p><p id="summary-size-name" class="text-sm text-gray-500">Select a bouquet size</p></div></div>
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Wrapping</p><p id="summary-wrapping-name" class="text-sm text-gray-500">Classic wrap preselected</p></div><span id="summary-wrapping-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
                                 <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Extras</p><p id="summary-extras-status" class="text-sm text-gray-500">No extras selected</p></div><span id="summary-extras-price" class="text-sm font-semibold text-orange-600">&#8369;0</span></div></div>
-                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div><p class="text-sm font-semibold text-gray-900">Message</p><p id="summary-message-status" class="text-sm text-gray-500">No message added yet</p></div><span id="summary-message-badge" class="text-xs font-semibold text-gray-400">Optional</span></div></div>
+                                <div class="rounded-2xl bg-gray-50 px-4 py-3"><div class="flex items-center justify-between gap-3"><div class="min-w-0"><p class="text-sm font-semibold text-gray-900">Message</p><p id="summary-message-status" class="builder-summary-message text-sm text-gray-500">No message added yet</p></div><span id="summary-message-badge" class="text-xs font-semibold text-gray-400">Optional</span></div></div>
                             </div>
                             <div class="rounded-2xl border border-orange-100 bg-orange-50/50 px-4 py-4">
                                 <p class="text-sm font-semibold text-gray-900 mb-3">Pricing breakdown</p>
