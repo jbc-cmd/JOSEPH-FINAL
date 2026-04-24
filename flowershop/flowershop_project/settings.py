@@ -29,6 +29,21 @@ def env_list(value):
     return [item.strip() for item in str(value).split(',') if item.strip()]
 
 
+def derive_csrf_trusted_origins(hosts):
+    origins = []
+    for host in hosts:
+        normalized = str(host).strip()
+        if not normalized or normalized in {'localhost', '127.0.0.1'}:
+            continue
+
+        if normalized.startswith('.'):
+            origins.append(f"https://*{normalized}")
+        else:
+            origins.append(f"https://{normalized}")
+
+    return origins
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-change-in-production')
 
@@ -217,6 +232,8 @@ CORS_ALLOWED_ORIGINS = config(
     cast=env_list,
 )
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=env_list)
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = derive_csrf_trusted_origins(ALLOWED_HOSTS)
 
 # Authentication settings
 LOGIN_URL = 'login'

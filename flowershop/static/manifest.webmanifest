@@ -1,0 +1,18 @@
+{
+  "name": "Joseph Flowershop",
+  "short_name": "Flowershop",
+  "description": "Joseph Flowershop online flower delivery.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6ede4",
+  "theme_color": "#f6ede4",
+  "icons": [
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "1536x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
