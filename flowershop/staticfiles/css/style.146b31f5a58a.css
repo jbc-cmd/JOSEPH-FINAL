@@ -191,7 +191,7 @@ p a:hover {
 .home-featured {
     background:
         linear-gradient(180deg, rgba(246, 237, 228, 0.74), rgba(246, 237, 228, 0.9)),
-        url("/static/images/home-hero-bg-all.png");
+        url("/static/images/home-hero-bg-all.50d9c84da30a.png");
     background-position: center top;
     background-repeat: no-repeat;
     background-size: 100% 100%;
@@ -201,7 +201,7 @@ p a:hover {
 .home-why-choose {
     background:
         linear-gradient(180deg, rgba(250, 246, 247, 0.82), rgba(247, 239, 241, 0.92)),
-        url("/static/images/home-hero-bg-all.png");
+        url("/static/images/home-hero-bg-all.50d9c84da30a.png");
     background-position: center bottom;
     background-repeat: no-repeat;
     background-size: 100% 100%;
