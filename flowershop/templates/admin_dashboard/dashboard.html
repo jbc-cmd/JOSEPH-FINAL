@@ -1,0 +1,286 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="stats-grid">
+    <article class="stat-card">
+        <span>Total Sales</span>
+        <strong>{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}</strong>
+        <p>All completed payments</p>
+    </article>
+    <article class="stat-card">
+        <span>Today</span>
+        <strong>{{ admin_settings.currency_symbol }}{{ metrics.daily_sales }}</strong>
+        <p>Revenue in the last 24 hours</p>
+    </article>
+    <article class="stat-card">
+        <span>This Week</span>
+        <strong>{{ admin_settings.currency_symbol }}{{ metrics.weekly_sales }}</strong>
+        <p>Rolling 7-day revenue</p>
+    </article>
+    <article class="stat-card">
+        <span>This Month</span>
+        <strong>{{ admin_settings.currency_symbol }}{{ metrics.monthly_sales }}</strong>
+        <p>Current monthly revenue</p>
+    </article>
+    <article class="stat-card">
+        <span>Orders</span>
+        <strong>{{ metrics.total_orders }}</strong>
+        <p>{{ metrics.pending_orders }} pending</p>
+    </article>
+    <article class="stat-card">
+        <span>Customers</span>
+        <strong>{{ metrics.total_customers }}</strong>
+        <p>{{ metrics.new_signups }} new today</p>
+    </article>
+    <article class="stat-card">
+        <span>Products</span>
+        <strong>{{ metrics.total_products }}</strong>
+        <p>Available catalog items</p>
+    </article>
+    <article class="stat-card">
+        <span>Refund Requests</span>
+        <strong>{{ metrics.refund_requests }}</strong>
+        <p>Need review</p>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Revenue</p>
+                <h3>Sales trend</h3>
+            </div>
+        </div>
+        {{ sales_chart_data|json_script:"sales-chart-data" }}
+        <canvas id="salesChart" height="110"></canvas>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Security</p>
+                <h3>Login monitoring</h3>
+            </div>
+        </div>
+        <div class="mini-metrics">
+            <div><strong>{{ security_snapshot.total_logins }}</strong><span>Successful logins</span></div>
+            <div><strong>{{ security_snapshot.failed_logins }}</strong><span>Failed attempts</span></div>
+            <div><strong>{{ security_snapshot.admin_actions }}</strong><span>Admin actions</span></div>
+        </div>
+        <div class="list-block">
+            {% for ip in security_snapshot.suspicious_ips %}
+            <div class="list-row">
+                <strong>{{ ip.ip }}</strong>
+                <span>{{ ip.count }} failed attempts</span>
+            </div>
+            {% empty %}
+            <p class="empty-state">No suspicious IP clusters detected this week.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Control Center</p>
+                <h3>Quick actions</h3>
+            </div>
+        </div>
+        <div class="list-block">
+            <div class="list-row"><strong>Catalog</strong><span><a href="{% url 'admin_dashboard:product_add' %}">Add product</a> • <a href="{% url 'admin_dashboard:category_add' %}">Add category</a></span></div>
+            <div class="list-row"><strong>Orders</strong><span><a href="{% url 'admin_dashboard:orders' %}?status=PENDING">Pending orders</a> • <a href="{% url 'admin_dashboard:orders' %}?payment_status=REFUNDED">Refunded</a></span></div>
+            <div class="list-row"><strong>People</strong><span><a href="{% url 'admin_dashboard:users' %}?role=customer">Customers</a> • <a href="{% url 'admin_dashboard:users' %}?role=admin_superuser">Admins</a></span></div>
+            <div class="list-row"><strong>Insights</strong><span><a href="{% url 'admin_dashboard:reports' %}">Reports</a> • <a href="{% url 'admin_dashboard:inventory' %}">Inventory</a></span></div>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Attention Needed</p>
+                <h3>Low stock and refunds</h3>
+            </div>
+        </div>
+        <div class="list-block">
+            {% for product in low_stock_products %}
+            <div class="list-row">
+                <strong>{{ product.name }}</strong>
+                <span>{{ product.stock_quantity }} left • <a href="{% url 'admin_dashboard:product_edit' product.id %}">Restock</a></span>
+            </div>
+            {% empty %}
+            <p class="empty-state">No low stock products right now.</p>
+            {% endfor %}
+            {% for refund in pending_refunds %}
+            <div class="list-row">
+                <strong>{{ refund.payment.order.order_number }}</strong>
+                <span>{{ refund.get_reason_display }} • <a href="{% url 'admin_dashboard:order_detail' refund.payment.order.id %}">Review refund</a></span>
+            </div>
+            {% empty %}
+            <p class="empty-state">No pending refund requests.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Users</p>
+                <h3>Recent accounts</h3>
+            </div>
+            <a href="{% url 'admin_dashboard:users' %}" class="text-link">Manage users</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>User</th><th>Role</th><th>Joined</th></tr>
+                </thead>
+                <tbody>
+                    {% for managed_user in recent_users %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'admin_dashboard:user_detail' managed_user.id %}">{{ managed_user.get_full_name|default:managed_user.username }}</a>
+                            <div class="muted">{{ managed_user.username }}</div>
+                        </td>
+                        <td>
+                            {% if managed_user.is_superuser %}
+                            <span class="badge">Admin/Superuser</span>
+                            {% elif managed_user.is_staff %}
+                            <span class="badge">Staff</span>
+                            {% else %}
+                            <span class="badge badge-neutral">Customer</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ managed_user.date_joined|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="empty-state">No users yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Products</p>
+                <h3>Quick product edits</h3>
+            </div>
+            <a href="{% url 'admin_dashboard:products' %}" class="text-link">Manage products</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Product</th><th>Category</th><th>Stock</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for product in recent_products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name|default:"Uncategorized" }}</td>
+                        <td>{{ product.stock_quantity }}</td>
+                        <td><a href="{% url 'admin_dashboard:product_edit' product.id %}">Edit</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-state">No products available.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Orders</p>
+                <h3>Recent orders</h3>
+            </div>
+            <a href="{% url 'admin_dashboard:orders' %}" class="text-link">View all</a>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><a href="{% url 'admin_dashboard:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                        <td>{{ order.customer_name }}</td>
+                        <td><span class="badge">{{ order.get_status_display }}</span></td>
+                        <td>{{ admin_settings.currency_symbol }}{{ order.total_amount }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-state">No orders yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Audit Trail</p>
+                <h3>Recent admin activity</h3>
+            </div>
+            <a href="{% url 'admin_dashboard:audit_logs' %}" class="text-link">View logs</a>
+        </div>
+        <div class="timeline">
+            {% for item in recent_activity %}
+            <div class="timeline-item">
+                <strong>{{ item.action }}</strong>
+                <p>{{ item.description|default:item.target_label }}</p>
+                <span>{{ item.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+            {% empty %}
+            <p class="empty-state">No admin activity logged yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+const chartData = JSON.parse(document.getElementById('sales-chart-data').textContent);
+const ctx = document.getElementById('salesChart');
+if (ctx && chartData.length) {
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.map(item => item.label),
+            datasets: [
+                {
+                    label: 'Sales',
+                    data: chartData.map(item => item.sales),
+                    borderColor: '#c56278',
+                    backgroundColor: 'rgba(197, 98, 120, 0.12)',
+                    fill: true,
+                    tension: 0.35
+                },
+                {
+                    label: 'Orders',
+                    data: chartData.map(item => item.orders),
+                    borderColor: '#284b63',
+                    backgroundColor: 'rgba(40, 75, 99, 0.08)',
+                    fill: false,
+                    tension: 0.35
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+</script>
+{% endblock %}

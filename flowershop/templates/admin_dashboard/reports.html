@@ -1,0 +1,64 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="toolbar toolbar-split">
+    <div>
+        <p class="admin-eyebrow">Sales Intelligence</p>
+        <h3>Revenue and product performance</h3>
+    </div>
+    <div class="action-row">
+        <a href="{% url 'admin_dashboard:export_reports_csv' %}" class="button-secondary">Download CSV</a>
+        <a href="{% url 'admin_dashboard:export_reports_pdf' %}" class="button-link">Download PDF</a>
+    </div>
+</section>
+
+<section class="stats-grid stats-grid-compact">
+    <article class="stat-card"><span>Total Sales</span><strong>{{ admin_settings.currency_symbol }}{{ overview.total_sales }}</strong></article>
+    <article class="stat-card"><span>Monthly Revenue</span><strong>{{ admin_settings.currency_symbol }}{{ overview.monthly_sales }}</strong></article>
+    <article class="stat-card"><span>Total Orders</span><strong>{{ overview.total_orders }}</strong></article>
+    <article class="stat-card"><span>Customers</span><strong>{{ overview.total_customers }}</strong></article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Best Sellers</p><h3>Top performing products</h3></div></div>
+        <div class="list-block">
+            {% for product in best_selling %}
+            <div class="list-row"><strong>{{ product.name }}</strong><span>{{ product.total_units }} units sold • <a href="{% url 'admin_dashboard:product_edit' product.id %}">Edit</a></span></div>
+            {% empty %}
+            <p class="empty-state">No sales data yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+    <article class="panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Low Sellers</p><h3>Products that need attention</h3></div></div>
+        <div class="list-block">
+            {% for product in low_selling %}
+            <div class="list-row"><strong>{{ product.name }}</strong><span>{{ product.total_units }} units sold • <a href="{% url 'admin_dashboard:product_edit' product.id %}">Edit</a></span></div>
+            {% empty %}
+            <p class="empty-state">No sales data yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-head"><div><p class="admin-eyebrow">Monthly Trends</p><h3>Revenue by month</h3></div></div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Month</th><th>Revenue</th><th>Orders</th></tr></thead>
+            <tbody>
+                {% for item in monthly_trends %}
+                <tr>
+                    <td>{{ item.label }}</td>
+                    <td>{{ admin_settings.currency_symbol }}{{ item.revenue }}</td>
+                    <td>{{ item.orders }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="empty-state">No monthly trend data yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

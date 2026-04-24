@@ -1,0 +1,98 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Customer</p>
+                <h3>{{ managed_user.get_full_name|default:managed_user.username }}</h3>
+            </div>
+        </div>
+        <div class="detail-grid">
+            <div><span>Email</span><strong>{{ managed_user.email }}</strong></div>
+            <div><span>Joined</span><strong>{{ managed_user.date_joined|date:"M d, Y H:i" }}</strong></div>
+            <div><span>Last login</span><strong>{{ managed_user.last_login|date:"M d, Y H:i"|default:"Never" }}</strong></div>
+            <div><span>Last active</span><strong>{{ managed_user.profile.last_active_at|date:"M d, Y H:i"|default:"Never tracked" }}</strong></div>
+        </div>
+
+        <div class="action-row">
+            <form method="post" action="{% url 'admin_dashboard:toggle_user_status' managed_user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="button-secondary">{% if managed_user.is_active %}Suspend Account{% else %}Activate Account{% endif %}</button>
+            </form>
+            <form method="post" action="{% url 'admin_dashboard:delete_user' managed_user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="button-danger" data-confirm="Delete this user account permanently?">Delete User</button>
+            </form>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Password Reset</p>
+                <h3>Set a temporary or manual password</h3>
+            </div>
+        </div>
+        <form method="post" action="{% url 'admin_dashboard:reset_user_password' managed_user.id %}" class="stack-form">
+            {% csrf_token %}
+            {{ reset_form.as_p }}
+            <button type="submit">Reset Password</button>
+        </form>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Login History</p>
+                <h3>Recent sign-in attempts</h3>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Time</th><th>Status</th><th>IP</th></tr></thead>
+                <tbody>
+                    {% for attempt in login_history %}
+                    <tr>
+                        <td>{{ attempt.created_at|date:"M d, Y H:i" }}</td>
+                        <td><span class="badge {% if attempt.status == 'FAILED' %}badge-danger{% endif %}">{{ attempt.status }}</span></td>
+                        <td>{{ attempt.ip_address|default:"Unavailable" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="empty-state">No login history found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="admin-eyebrow">Purchase History</p>
+                <h3>Recent orders</h3>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead><tr><th>Order</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+                <tbody>
+                    {% for order in purchase_history %}
+                    <tr>
+                        <td><a href="{% url 'admin_dashboard:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                        <td>{{ order.get_status_display }}</td>
+                        <td>{{ admin_settings.currency_symbol }}{{ order.total_amount }}</td>
+                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty-state">No purchases yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

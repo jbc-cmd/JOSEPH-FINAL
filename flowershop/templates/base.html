@@ -98,6 +98,9 @@
                             <div class="overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5">
                                 <a href="{% url 'accounts:profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Profile</a>
                                 <a href="{% url 'accounts:order_history' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">My Orders</a>
+                                {% if user.is_staff or user.is_superuser %}
+                                <a href="{% url 'admin_dashboard:home' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">Admin Dashboard</a>
+                                {% endif %}
                                 <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-pink-50">Logout</a>
                             </div>
                         </div>

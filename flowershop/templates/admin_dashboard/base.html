@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} | Admin Dashboard{% endblock %}
+{% block body_class %}hide-nav admin-dashboard-body{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'admin_dashboard/css/admin_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-brand">
+            <div class="admin-brand-mark">JF</div>
+            <div>
+                <p class="admin-eyebrow">Control Center</p>
+                <h1>{{ admin_settings.site_title }}</h1>
+            </div>
+        </div>
+
+        <nav class="admin-nav">
+            <p class="admin-nav-label">Workspace</p>
+            <a href="{% url 'admin_dashboard:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Overview</a>
+            <a href="{% url 'admin_dashboard:users' %}" class="{% if request.resolver_match.url_name == 'users' or request.resolver_match.url_name == 'user_detail' %}active{% endif %}">Users</a>
+            <a href="{% url 'admin_dashboard:security' %}" class="{% if request.resolver_match.url_name == 'security' %}active{% endif %}">Security</a>
+            <p class="admin-nav-label">Commerce</p>
+            <a href="{% url 'admin_dashboard:products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_add' or request.resolver_match.url_name == 'product_edit' %}active{% endif %}">Products</a>
+            <a href="{% url 'admin_dashboard:categories' %}" class="{% if request.resolver_match.url_name == 'categories' or request.resolver_match.url_name == 'category_add' or request.resolver_match.url_name == 'category_edit' %}active{% endif %}">Categories</a>
+            <a href="{% url 'admin_dashboard:orders' %}" class="{% if request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}">Orders</a>
+            <a href="{% url 'admin_dashboard:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">Reports</a>
+            <a href="{% url 'admin_dashboard:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">Inventory</a>
+            <p class="admin-nav-label">System</p>
+            <a href="{% url 'admin_dashboard:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">Notifications</a>
+            <a href="{% url 'admin_dashboard:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">Settings</a>
+            <a href="{% url 'admin_dashboard:audit_logs' %}" class="{% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}">Audit Logs</a>
+        </nav>
+
+        <section class="sidebar-panel">
+            <p class="admin-nav-label">Live Snapshot</p>
+            <div class="sidebar-metrics">
+                <div>
+                    <strong>{{ control_center_summary.orders }}</strong>
+                    <span>Orders</span>
+                </div>
+                <div>
+                    <strong>{{ control_center_summary.customers }}</strong>
+                    <span>Customers</span>
+                </div>
+                <div>
+                    <strong>{{ control_center_summary.products }}</strong>
+                    <span>Products</span>
+                </div>
+                <div>
+                    <strong>{{ control_center_summary.pending_orders }}</strong>
+                    <span>Pending</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="sidebar-panel">
+            <p class="admin-nav-label">Quick Access</p>
+            <div class="sidebar-links">
+                <a href="{% url 'admin_dashboard:product_add' %}">Add product</a>
+                <a href="{% url 'admin_dashboard:orders' %}?status=PENDING">Pending orders</a>
+                <a href="{% url 'admin_dashboard:users' %}?role=customer">Customers</a>
+                <a href="{% url 'admin_dashboard:inventory' %}">Stock alerts</a>
+            </div>
+        </section>
+    </aside>
+
+    <div class="admin-main">
+        <header class="admin-topbar">
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <div>
+                <p class="admin-eyebrow">Administrator Workspace</p>
+                <h2>{{ page_title }}</h2>
+            </div>
+            <div class="admin-top-actions">
+                <a class="top-chip" href="{% url 'admin_dashboard:notifications' %}">
+                    Notifications
+                    <span>{{ notification_items|length }}</span>
+                </a>
+                <div class="top-profile">
+                    <div>
+                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                        <p>{{ request.user.email|default:"Admin account" }}</p>
+                    </div>
+                </div>
+                <a class="logout-link" href="{% url 'accounts:logout' %}">Logout</a>
+            </div>
+        </header>
+
+        <section class="admin-content">
+            {% if messages %}
+            <div class="message-stack">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block admin_content %}{% endblock %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'admin_dashboard/js/admin_dashboard.js' %}"></script>
+{% block admin_extra_js %}{% endblock %}
+{% endblock %}

@@ -18,6 +18,7 @@ class UserProfile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     is_subscribed_to_newsletter = models.BooleanField(default=True)
+    last_active_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

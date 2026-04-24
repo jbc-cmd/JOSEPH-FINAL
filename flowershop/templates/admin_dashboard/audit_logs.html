@@ -1,0 +1,39 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="panel">
+    <form class="toolbar" method="get">
+        <select name="category">
+            <option value="">All categories</option>
+            <option value="AUTH" {% if category == 'AUTH' %}selected{% endif %}>Authentication</option>
+            <option value="USER" {% if category == 'USER' %}selected{% endif %}>User</option>
+            <option value="PRODUCT" {% if category == 'PRODUCT' %}selected{% endif %}>Product</option>
+            <option value="ORDER" {% if category == 'ORDER' %}selected{% endif %}>Order</option>
+            <option value="REPORT" {% if category == 'REPORT' %}selected{% endif %}>Report</option>
+            <option value="SETTINGS" {% if category == 'SETTINGS' %}selected{% endif %}>Settings</option>
+            <option value="SECURITY" {% if category == 'SECURITY' %}selected{% endif %}>Security</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Time</th><th>Admin</th><th>Category</th><th>Action</th><th>Target</th><th>IP</th></tr></thead>
+            <tbody>
+                {% for log in log_page %}
+                <tr>
+                    <td>{{ log.created_at|date:"M d, Y H:i" }}</td>
+                    <td>{{ log.admin_user.username|default:"Unknown" }}</td>
+                    <td>{{ log.get_category_display }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.target_label|default:"-" }}</td>
+                    <td>{{ log.ip_address|default:"Unavailable" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty-state">No audit logs found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "admin_dashboard/partials/pagination.html" with page_obj=log_page %}
+</section>
+{% endblock %}

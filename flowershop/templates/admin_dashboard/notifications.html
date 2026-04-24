@@ -1,0 +1,23 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="panel">
+    <div class="panel-head"><div><p class="admin-eyebrow">Alerts</p><h3>Notification center</h3></div></div>
+    <div class="timeline">
+        {% for item in notifications %}
+        <div class="timeline-item">
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.message }}</p>
+            <span>{{ item.created_at|date:"M d, Y H:i" }}</span>
+            {% if item.url %}
+            <div class="action-row">
+                <a href="{{ item.url }}" class="text-link">{{ item.action_label|default:"Open" }}</a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="empty-state">No notifications right now.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

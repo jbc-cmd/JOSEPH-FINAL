@@ -1,0 +1,84 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="grid-two">
+    <article class="panel form-panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Website</p><h3>General settings</h3></div></div>
+        <form method="post" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="general">
+            {{ general_form.as_p }}
+            <button type="submit">Save Website Settings</button>
+        </form>
+    </article>
+
+    <article class="panel form-panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Administration</p><h3>Tax and alerts</h3></div></div>
+        <form method="post" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="admin">
+            {{ admin_form.as_p }}
+            <button type="submit">Save Admin Settings</button>
+        </form>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel form-panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Profile</p><h3>Admin profile settings</h3></div></div>
+        <form method="post" enctype="multipart/form-data" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="profile">
+            {{ profile_form.as_p }}
+            <button type="submit">Save Profile</button>
+        </form>
+    </article>
+
+    <article class="panel form-panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Payments</p><h3>{% if selected_service %}Edit service configuration{% else %}Add service configuration{% endif %}</h3></div></div>
+        <form method="post" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="service">
+            {% if selected_service %}
+            <input type="hidden" name="service_id" value="{{ selected_service.id }}">
+            {% endif %}
+            {{ service_form.as_p }}
+            <button type="submit">{% if selected_service %}Update Service{% else %}Save Service{% endif %}</button>
+        </form>
+    </article>
+</section>
+
+<section class="grid-two">
+    <article class="panel form-panel">
+        <div class="panel-head"><div><p class="admin-eyebrow">Security</p><h3>Change admin password</h3></div></div>
+        <form method="post" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="password">
+            {{ password_form.as_p }}
+            <button type="submit">Update Password</button>
+        </form>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-head"><div><p class="admin-eyebrow">Active Integrations</p><h3>Saved payment and service settings</h3></div></div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Service</th><th>Environment</th><th>Status</th><th>Updated</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for service in service_configs %}
+                <tr>
+                    <td>{{ service.get_service_name_display }}</td>
+                    <td>{{ service.get_environment_display }}</td>
+                    <td>{% if service.is_active %}Active{% else %}Inactive{% endif %}</td>
+                    <td>{{ service.updated_at|date:"M d, Y H:i" }}</td>
+                    <td><a href="{% url 'admin_dashboard:settings' %}?service={{ service.id }}">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="empty-state">No service configurations saved yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

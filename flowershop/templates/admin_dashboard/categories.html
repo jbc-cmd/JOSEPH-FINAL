@@ -1,0 +1,36 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="panel">
+    <div class="toolbar toolbar-split">
+        <div>
+            <p class="admin-eyebrow">Catalog</p>
+            <h3>Product categories</h3>
+        </div>
+        <a href="{% url 'admin_dashboard:category_add' %}" class="button-link">Add Category</a>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Name</th><th>Status</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td><span class="badge {% if not category.is_active %}badge-danger{% endif %}">{% if category.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td>{{ category.description|default:"No description" }}</td>
+                    <td class="actions-cell">
+                        <a href="{% url 'admin_dashboard:category_edit' category.id %}">Edit</a>
+                        <form method="post" action="{% url 'admin_dashboard:category_delete' category.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="button-inline-danger" data-confirm="Delete this category?">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="empty-state">No categories available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="panel form-panel">
+    <div class="panel-head"><div><p class="admin-eyebrow">Category Management</p><h3>{% if mode == 'create' %}Add category{% else %}Edit {{ category.name }}{% endif %}</h3></div></div>
+    <form method="post" enctype="multipart/form-data" class="stack-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="action-row">
+            <button type="submit">{% if mode == 'create' %}Create Category{% else %}Save Changes{% endif %}</button>
+            <a href="{% url 'admin_dashboard:categories' %}" class="button-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

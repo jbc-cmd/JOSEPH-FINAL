@@ -1,0 +1,46 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_content %}
+<section class="panel">
+    <div class="toolbar toolbar-split">
+        <form method="get" class="toolbar">
+            <input type="search" name="search" value="{{ search }}" placeholder="Search products">
+            <select name="availability">
+                <option value="">All</option>
+                <option value="featured" {% if availability == 'featured' %}selected{% endif %}>Featured</option>
+                <option value="low_stock" {% if availability == 'low_stock' %}selected{% endif %}>Low stock</option>
+                <option value="out" {% if availability == 'out' %}selected{% endif %}>Out of stock</option>
+                <option value="inactive" {% if availability == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+        <a href="{% url 'admin_dashboard:product_add' %}" class="button-link">Add Product</a>
+    </div>
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Performance</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for product in product_page %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name|default:"Uncategorized" }}</td>
+                    <td>{{ admin_settings.currency_symbol }}{{ product.price }}</td>
+                    <td>{{ product.stock_quantity }}</td>
+                    <td>{{ product.total_units }} sold</td>
+                    <td class="actions-cell">
+                        <a href="{% url 'admin_dashboard:product_edit' product.id %}">Edit</a>
+                        <form method="post" action="{% url 'admin_dashboard:product_delete' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="button-inline-danger" data-confirm="Delete this product?">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty-state">No products found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% include "admin_dashboard/partials/pagination.html" with page_obj=product_page %}
+</section>
+{% endblock %}

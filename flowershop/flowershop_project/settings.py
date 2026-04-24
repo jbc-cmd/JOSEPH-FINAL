@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'payments.apps.PaymentsConfig',
     'delivery.apps.DeliveryConfig',
     'configurations.apps.ConfigurationsConfig',
+    'admin_dashboard.apps.AdminDashboardConfig',
 ]
 
 CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
@@ -99,6 +100,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'admin_dashboard.middleware.LastActivityMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

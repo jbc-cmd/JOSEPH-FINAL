@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.validators import validate_email
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.password_validation import validate_password
@@ -20,6 +20,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from .models import UserProfile, DeliveryAddress
 from .forms import DeliveryAddressForm
 from orders.models import Order
+from admin_dashboard.models import LoginAttempt
+from admin_dashboard.utils import get_admin_settings, get_client_ip, log_admin_activity
 
 
 def _avatar_extension_from_header(header):
@@ -58,6 +60,13 @@ def _build_register_context(form_data=None, errors=None, next_url=''):
         'form_data': form_data or {},
         'register_errors': errors or {},
         'next_url': next_url,
+    }
+
+
+def _build_password_change_context(errors=None, should_open=False):
+    return {
+        'password_change_errors': errors or {},
+        'open_change_password_modal': should_open,
     }
 
 
@@ -202,6 +211,8 @@ def register(request):
 def login_view(request):
     """User login."""
     if request.user.is_authenticated:
+        if request.user.is_staff or request.user.is_superuser:
+            return redirect('admin_dashboard:home')
         return redirect('products:home')
 
     if request.method == 'POST':
@@ -211,6 +222,30 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            LoginAttempt.objects.create(
+                user=user,
+                username=username or user.username,
+                status='SUCCESS',
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                path=request.path,
+            )
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.last_active_at = user.last_login
+            profile.save(update_fields=['last_active_at', 'updated_at'])
+
+            if user.is_staff or user.is_superuser:
+                request.session.set_expiry(get_admin_settings().session_timeout_minutes * 60)
+                log_admin_activity(
+                    request,
+                    category='AUTH',
+                    action='Admin login',
+                    description=f'{user.username} signed into the admin dashboard.',
+                    target_type='User',
+                    target_id=user.pk,
+                    target_label=user.username,
+                )
+
             next_url = request.GET.get('next', 'products:home')
             action = request.GET.get('action', '')
 
@@ -228,8 +263,17 @@ def login_view(request):
             else:
                 messages.success(request, f'Welcome back, {user.first_name or user.username}!')
 
+            if (user.is_staff or user.is_superuser) and next_url == 'products:home':
+                return redirect('admin_dashboard:home')
             return redirect(next_url)
         else:
+            LoginAttempt.objects.create(
+                username=username or '',
+                status='FAILED',
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                path=request.path,
+            )
             messages.error(request, 'Invalid username or password')
 
     return render(request, 'accounts/login.html')
@@ -237,6 +281,16 @@ def login_view(request):
 
 def logout_view(request):
     """User logout."""
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        log_admin_activity(
+            request,
+            category='AUTH',
+            action='Admin logout',
+            description=f'{request.user.username} signed out of the admin dashboard.',
+            target_type='User',
+            target_id=request.user.pk,
+            target_label=request.user.username,
+        )
     logout(request)
 
     # Clear all existing messages
@@ -323,8 +377,56 @@ def profile_information(request):
 
     context = {
         'profile': UserProfile.objects.get_or_create(user=request.user)[0],
+        **_build_password_change_context(),
     }
     return render(request, 'accounts/profile_information.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def change_password(request):
+    """Allow the authenticated user to change their password from the profile page."""
+    current_password = request.POST.get('current_password', '')
+    new_password = request.POST.get('new_password', '')
+    confirm_password = request.POST.get('confirm_password', '')
+
+    errors = {}
+    if not current_password:
+        errors['current_password'] = 'Current password is required.'
+    elif not request.user.check_password(current_password):
+        errors['current_password'] = 'Current password is incorrect.'
+
+    if not new_password:
+        errors['new_password'] = 'New password is required.'
+    elif len(new_password) < 8:
+        errors['new_password'] = 'Password must be at least 8 characters long.'
+
+    if not confirm_password:
+        errors['confirm_password'] = 'Please confirm your new password.'
+    elif new_password != confirm_password:
+        errors['confirm_password'] = 'New passwords do not match.'
+
+    if new_password and new_password == current_password:
+        errors['new_password'] = 'Your new password must be different from your current password.'
+
+    if new_password and 'new_password' not in errors:
+        try:
+            validate_password(new_password, user=request.user)
+        except ValidationError as exc:
+            errors['new_password'] = exc.messages[0] if exc.messages else 'Enter a valid password.'
+
+    if errors:
+        context = {
+            'profile': UserProfile.objects.get_or_create(user=request.user)[0],
+            **_build_password_change_context(errors=errors, should_open=True),
+        }
+        return render(request, 'accounts/profile_information.html', context)
+
+    request.user.set_password(new_password)
+    request.user.save()
+    update_session_auth_hash(request, request.user)
+    messages.success(request, 'Your password has been changed successfully.')
+    return redirect('accounts:profile_information')
 
 
 @login_required(login_url='accounts:login')
