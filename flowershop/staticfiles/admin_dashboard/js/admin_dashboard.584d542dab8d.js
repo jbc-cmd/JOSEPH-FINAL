@@ -1,10 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('adminSidebar');
     const toggle = document.getElementById('sidebarToggle');
+    const backdrop = document.getElementById('sidebarBackdrop');
 
     if (toggle && sidebar) {
+        const setSidebarState = (isOpen) => {
+            sidebar.classList.toggle('is-open', isOpen);
+            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            document.body.classList.toggle('admin-sidebar-open', isOpen);
+            if (backdrop) {
+                backdrop.classList.toggle('is-open', isOpen);
+            }
+        };
+
         toggle.addEventListener('click', () => {
-            sidebar.classList.toggle('is-open');
+            setSidebarState(!sidebar.classList.contains('is-open'));
+        });
+
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                setSidebarState(false);
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                setSidebarState(false);
+            }
         });
     }
 

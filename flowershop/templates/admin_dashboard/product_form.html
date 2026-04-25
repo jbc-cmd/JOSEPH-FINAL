@@ -6,11 +6,87 @@
         <div>
             <p class="admin-eyebrow">Product Management</p>
             <h3>{% if mode == 'create' %}Add new product{% else %}Edit {{ product.name }}{% endif %}</h3>
+            <p class="panel-intro">Keep catalog details, pricing, and availability organized before publishing to the storefront.</p>
         </div>
     </div>
-    <form method="post" enctype="multipart/form-data" class="stack-form">
+    <form method="post" enctype="multipart/form-data" class="stack-form product-editor-form">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% if form.non_field_errors %}
+        <div class="form-errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-section">
+            <div class="form-section-head">
+                <span>01</span>
+                <div>
+                    <h4>Product details</h4>
+                    <p>Name, URL slug, descriptions, and product image.</p>
+                </div>
+            </div>
+            <div class="form-grid">
+                {% for field in form %}
+                    {% if field.name == 'name' or field.name == 'slug' or field.name == 'description' or field.name == 'composition' or field.name == 'image' %}
+                    <div class="form-field {% if field.name == 'description' or field.name == 'composition' or field.name == 'image' %}form-field-wide{% endif %} {% if field.errors %}has-error{% endif %}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-head">
+                <span>02</span>
+                <div>
+                    <h4>Catalog and stock</h4>
+                    <p>Category, type, size, price, and available quantity.</p>
+                </div>
+            </div>
+            <div class="form-grid">
+                {% for field in form %}
+                    {% if field.name == 'product_type' or field.name == 'category' or field.name == 'price' or field.name == 'stock_quantity' or field.name == 'size' %}
+                    <div class="form-field {% if field.errors %}has-error{% endif %}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-head">
+                <span>03</span>
+                <div>
+                    <h4>Storefront visibility</h4>
+                    <p>Choose how this product appears to customers.</p>
+                </div>
+            </div>
+            <div class="toggle-grid">
+                {% for field in form %}
+                    {% if field.name == 'is_featured' or field.name == 'is_available' %}
+                    <label class="toggle-card {% if field.errors %}has-error{% endif %}" for="{{ field.id_for_label }}">
+                        {{ field }}
+                        <span>
+                            <strong>{{ field.label }}</strong>
+                            {% if field.name == 'is_featured' %}
+                            <small>Highlight this item in featured product areas.</small>
+                            {% else %}
+                            <small>Allow customers to view and purchase this item.</small>
+                            {% endif %}
+                        </span>
+                        {{ field.errors }}
+                    </label>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
         <div class="action-row">
             <button type="submit">{% if mode == 'create' %}Create Product{% else %}Save Changes{% endif %}</button>
             <a href="{% url 'admin_dashboard:products' %}" class="button-secondary">Cancel</a>

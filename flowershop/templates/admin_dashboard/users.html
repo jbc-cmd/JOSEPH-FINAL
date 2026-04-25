@@ -1,26 +1,41 @@
 {% extends "admin_dashboard/base.html" %}
 
 {% block admin_content %}
-<section class="panel">
-    <form class="toolbar" method="get">
-        <input type="search" name="search" value="{{ search }}" placeholder="Search users">
-        <select name="role">
-            <option value="">All roles</option>
-            <option value="admin_superuser" {% if role == 'admin_superuser' %}selected{% endif %}>Admin/Superuser</option>
-            <option value="staff" {% if role == 'staff' %}selected{% endif %}>Staff</option>
-            <option value="customer" {% if role == 'customer' %}selected{% endif %}>Customer</option>
-        </select>
-        <select name="account_status">
-            <option value="">All account states</option>
-            <option value="active" {% if account_status == 'active' %}selected{% endif %}>Active</option>
-            <option value="inactive" {% if account_status == 'inactive' %}selected{% endif %}>Inactive</option>
-        </select>
-        <input type="date" name="date" value="{{ date_filter }}">
-        <button type="submit">Filter</button>
-    </form>
+<section class="panel users-panel">
+    <div class="panel-head users-head">
+        <div>
+            <p class="admin-eyebrow">Customer Management</p>
+            <h3>Users and customers</h3>
+            <p class="panel-intro">Find customers, review account status, and open profiles for account support.</p>
+        </div>
+    </div>
+
+    <div class="users-toolbar">
+        <form class="toolbar users-filter-form" method="get">
+            <div class="users-search-field">
+                <span aria-hidden="true"></span>
+                <input type="search" name="search" value="{{ search }}" placeholder="Search users">
+            </div>
+            <div class="users-filter-grid">
+                <select name="role" aria-label="User role">
+                    <option value="">All roles</option>
+                    <option value="admin_superuser" {% if role == 'admin_superuser' %}selected{% endif %}>Admin/Superuser</option>
+                    <option value="staff" {% if role == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="customer" {% if role == 'customer' %}selected{% endif %}>Customer</option>
+                </select>
+                <select name="account_status" aria-label="Account state">
+                    <option value="">All account states</option>
+                    <option value="active" {% if account_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if account_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+                <input type="date" name="date" value="{{ date_filter }}" aria-label="Joined date">
+                <button type="submit">Filter</button>
+            </div>
+        </form>
+    </div>
 
     <div class="table-wrap">
-        <table class="data-table">
+        <table class="data-table users-table">
             <thead>
                 <tr>
                     <th>User</th>
@@ -36,8 +51,8 @@
                 {% for managed_user in user_page %}
                 <tr>
                     <td>
-                        <a href="{% url 'admin_dashboard:user_detail' managed_user.id %}">{{ managed_user.get_full_name|default:managed_user.username }}</a>
-                        <div class="muted">{{ managed_user.username }} • {{ managed_user.email }}</div>
+                        <a class="user-name-link" href="{% url 'admin_dashboard:user_detail' managed_user.id %}">{{ managed_user.get_full_name|default:managed_user.username }}</a>
+                        <div class="muted">{{ managed_user.username }} &bull; {{ managed_user.email }}</div>
                     </td>
                     <td>
                         {% if managed_user.is_superuser %}
@@ -49,10 +64,10 @@
                         {% endif %}
                     </td>
                     <td><span class="badge {% if not managed_user.is_active %}badge-danger{% endif %}">{% if managed_user.is_active %}Active{% else %}Suspended{% endif %}</span></td>
-                    <td>{{ managed_user.date_joined|date:"M d, Y" }}</td>
-                    <td>{{ managed_user.profile.last_active_at|date:"M d, Y H:i"|default:"Never tracked" }}</td>
-                    <td>{{ managed_user.order_count }}</td>
-                    <td>{{ managed_user.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+                    <td><span class="muted">{{ managed_user.date_joined|date:"M d, Y" }}</span></td>
+                    <td><span class="muted">{{ managed_user.profile.last_active_at|date:"M d, Y H:i"|default:"Never tracked" }}</span></td>
+                    <td><strong>{{ managed_user.order_count }}</strong></td>
+                    <td><span class="muted">{{ managed_user.last_login|date:"M d, Y H:i"|default:"Never" }}</span></td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="7" class="empty-state">No users match this filter.</td></tr>
