@@ -1,284 +1,240 @@
 {% extends "admin_dashboard/base.html" %}
 
 {% block admin_content %}
-<section class="stats-grid">
-    <article class="stat-card">
-        <span>Total Sales</span>
-        <strong>{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}</strong>
-        <p>All completed payments</p>
-    </article>
-    <article class="stat-card">
-        <span>Today</span>
-        <strong>{{ admin_settings.currency_symbol }}{{ metrics.daily_sales }}</strong>
-        <p>Revenue in the last 24 hours</p>
-    </article>
-    <article class="stat-card">
-        <span>This Week</span>
-        <strong>{{ admin_settings.currency_symbol }}{{ metrics.weekly_sales }}</strong>
-        <p>Rolling 7-day revenue</p>
-    </article>
-    <article class="stat-card">
-        <span>This Month</span>
-        <strong>{{ admin_settings.currency_symbol }}{{ metrics.monthly_sales }}</strong>
-        <p>Current monthly revenue</p>
-    </article>
-    <article class="stat-card">
-        <span>Orders</span>
-        <strong>{{ metrics.total_orders }}</strong>
-        <p>{{ metrics.pending_orders }} pending</p>
-    </article>
-    <article class="stat-card">
-        <span>Customers</span>
-        <strong>{{ metrics.total_customers }}</strong>
-        <p>{{ metrics.new_signups }} new today</p>
-    </article>
-    <article class="stat-card">
-        <span>Products</span>
-        <strong>{{ metrics.total_products }}</strong>
-        <p>Available catalog items</p>
-    </article>
-    <article class="stat-card">
-        <span>Refund Requests</span>
-        <strong>{{ metrics.refund_requests }}</strong>
-        <p>Need review</p>
-    </article>
-</section>
+{% firstof request.user.get_full_name "Joseph Admin" as admin_display_name %}
+<div class="mobile-admin-dashboard">
+    <section class="mobile-admin-welcome">
+        <div>
+            <h1>Hello, {{ admin_display_name }}</h1>
+            <p>Welcome back! Here's what's happening today.</p>
+        </div>
+        <div class="mobile-admin-date">
+            <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>
+            <span>{{ dashboard_date|date:"M d, Y" }}</span>
+        </div>
+    </section>
 
-<section class="grid-two">
-    <article class="panel">
-        <div class="panel-head">
+    <section class="mobile-profile-card" aria-label="Admin profile">
+        <div class="mobile-profile-main">
+            <div class="mobile-profile-avatar" aria-hidden="true">
+                {% if request.user.profile.profile_picture %}
+                <img src="{{ request.user.profile.profile_picture.url }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
+                {% else %}
+                <i class="fa-solid fa-user" aria-hidden="true"></i>
+                {% endif %}
+            </div>
             <div>
-                <p class="admin-eyebrow">Revenue</p>
-                <h3>Sales trend</h3>
+                <strong>{{ admin_display_name }}</strong>
+                <span>{{ request.user.email|default:"flowershopjoseph@gmail.com" }}</span>
             </div>
         </div>
-        {{ sales_chart_data|json_script:"sales-chart-data" }}
-        <canvas id="salesChart" height="110"></canvas>
-    </article>
+        <div class="mobile-profile-actions">
+            <a href="{% url 'admin_dashboard:settings' %}">
+                <i class="fa-regular fa-user" aria-hidden="true"></i>
+                <span>Edit Profile</span>
+            </a>
+            <a class="danger" href="{% url 'accounts:logout' %}">
+                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </section>
 
-    <article class="panel">
-        <div class="panel-head">
+    <section class="mobile-stats-grid" aria-label="Sales statistics">
+        <article class="mobile-stat-card">
+            <span class="stat-icon stat-pink"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span>
             <div>
-                <p class="admin-eyebrow">Security</p>
-                <h3>Login monitoring</h3>
+                <span>Total Sales</span>
+                <strong>{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}</strong>
+                <p>All completed payments</p>
             </div>
-        </div>
-        <div class="mini-metrics">
-            <div><strong>{{ security_snapshot.total_logins }}</strong><span>Successful logins</span></div>
-            <div><strong>{{ security_snapshot.failed_logins }}</strong><span>Failed attempts</span></div>
-            <div><strong>{{ security_snapshot.admin_actions }}</strong><span>Admin actions</span></div>
-        </div>
-        <div class="list-block">
-            {% for ip in security_snapshot.suspicious_ips %}
-            <div class="list-row">
-                <strong>{{ ip.ip }}</strong>
-                <span>{{ ip.count }} failed attempts</span>
+            <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
+        </article>
+        <article class="mobile-stat-card">
+            <span class="stat-icon stat-blue"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+            <div>
+                <span>Today</span>
+                <strong>{{ admin_settings.currency_symbol }}{{ metrics.daily_sales }}</strong>
+                <p>Revenue in last 24 hours</p>
             </div>
-            {% empty %}
-            <p class="empty-state">No suspicious IP clusters detected this week.</p>
-            {% endfor %}
-        </div>
-    </article>
-</section>
+            <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
+        </article>
+        <article class="mobile-stat-card">
+            <span class="stat-icon stat-green"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i></span>
+            <div>
+                <span>This Week</span>
+                <strong>{{ admin_settings.currency_symbol }}{{ metrics.weekly_sales }}</strong>
+                <p>Rolling 7-day revenue</p>
+            </div>
+            <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
+        </article>
+        <article class="mobile-stat-card">
+            <span class="stat-icon stat-gold"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
+            <div>
+                <span>This Month</span>
+                <strong>{{ admin_settings.currency_symbol }}{{ metrics.monthly_sales }}</strong>
+                <p>Current monthly revenue</p>
+            </div>
+            <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
+        </article>
+    </section>
 
-<section class="grid-two">
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Control Center</p>
-                <h3>Quick actions</h3>
-            </div>
+    <section class="mobile-dashboard-section">
+        <div class="mobile-section-heading">
+            <h2>Quick Actions</h2>
+            <a href="{% url 'admin_dashboard:products' %}">View all</a>
         </div>
-        <div class="list-block">
-            <div class="list-row"><strong>Catalog</strong><span><a href="{% url 'admin_dashboard:product_add' %}">Add product</a> • <a href="{% url 'admin_dashboard:category_add' %}">Add category</a></span></div>
-            <div class="list-row"><strong>Orders</strong><span><a href="{% url 'admin_dashboard:orders' %}?status=PENDING">Pending orders</a> • <a href="{% url 'admin_dashboard:orders' %}?payment_status=REFUNDED">Refunded</a></span></div>
-            <div class="list-row"><strong>People</strong><span><a href="{% url 'admin_dashboard:users' %}?role=customer">Customers</a> • <a href="{% url 'admin_dashboard:users' %}?role=admin_superuser">Admins</a></span></div>
-            <div class="list-row"><strong>Insights</strong><span><a href="{% url 'admin_dashboard:reports' %}">Reports</a> • <a href="{% url 'admin_dashboard:inventory' %}">Inventory</a></span></div>
+        <div class="quick-action-grid">
+            <a href="{% url 'admin_dashboard:product_add' %}">
+                <span class="action-pink"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span>
+                <strong>Add Product</strong>
+            </a>
+            <a href="{% url 'admin_dashboard:orders' %}">
+                <span class="action-purple"><i class="fa-regular fa-clipboard" aria-hidden="true"></i></span>
+                <strong>Orders</strong>
+            </a>
+            <a href="{% url 'admin_dashboard:users' %}?role=customer">
+                <span class="action-blue"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
+                <strong>Customers</strong>
+            </a>
+            <a href="{% url 'admin_dashboard:inventory' %}">
+                <span class="action-green"><i class="fa-solid fa-cubes-stacked" aria-hidden="true"></i></span>
+                <strong>Inventory</strong>
+            </a>
         </div>
-    </article>
+    </section>
 
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Attention Needed</p>
-                <h3>Low stock and refunds</h3>
+    <section class="mobile-dashboard-section">
+        <div class="mobile-section-heading">
+            <h2>Analytics Overview</h2>
+            <a href="{% url 'admin_dashboard:reports' %}">View full report</a>
+        </div>
+        <div class="analytics-overview-grid">
+            <article class="analytics-chart-card">
+                <div class="analytics-card-title">Sales Trend (7 Days)</div>
+                {{ sales_chart_data|json_script:"sales-chart-data" }}
+                <div class="sales-chart-frame">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </article>
+            <div class="analytics-side-cards">
+                <article>
+                    <span class="stat-pink"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i></span>
+                    <div>
+                        <p>Orders Today</p>
+                        <strong>{{ orders_today }}</strong>
+                        <small>{% if orders_today %}New today{% else %}No new orders{% endif %}</small>
+                    </div>
+                </article>
+                <article>
+                    <span class="stat-green"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span>
+                    <div>
+                        <p>Total Customers</p>
+                        <strong>{{ metrics.total_customers }}</strong>
+                        <small>All time</small>
+                    </div>
+                </article>
             </div>
         </div>
-        <div class="list-block">
-            {% for product in low_stock_products %}
-            <div class="list-row">
-                <strong>{{ product.name }}</strong>
-                <span>{{ product.stock_quantity }} left • <a href="{% url 'admin_dashboard:product_edit' product.id %}">Restock</a></span>
-            </div>
-            {% empty %}
-            <p class="empty-state">No low stock products right now.</p>
-            {% endfor %}
-            {% for refund in pending_refunds %}
-            <div class="list-row">
-                <strong>{{ refund.payment.order.order_number }}</strong>
-                <span>{{ refund.get_reason_display }} • <a href="{% url 'admin_dashboard:order_detail' refund.payment.order.id %}">Review refund</a></span>
-            </div>
-            {% empty %}
-            <p class="empty-state">No pending refund requests.</p>
-            {% endfor %}
-        </div>
-    </article>
-</section>
+    </section>
 
-<section class="grid-two">
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Users</p>
-                <h3>Recent accounts</h3>
-            </div>
-            <a href="{% url 'admin_dashboard:users' %}" class="text-link">Manage users</a>
+    <section class="mobile-dashboard-section">
+        <div class="mobile-section-heading">
+            <h2>Recent Activity</h2>
+            <a href="{% url 'admin_dashboard:audit_logs' %}">View all</a>
         </div>
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr><th>User</th><th>Role</th><th>Joined</th></tr>
-                </thead>
-                <tbody>
-                    {% for managed_user in recent_users %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'admin_dashboard:user_detail' managed_user.id %}">{{ managed_user.get_full_name|default:managed_user.username }}</a>
-                            <div class="muted">{{ managed_user.username }}</div>
-                        </td>
-                        <td>
-                            {% if managed_user.is_superuser %}
-                            <span class="badge">Admin/Superuser</span>
-                            {% elif managed_user.is_staff %}
-                            <span class="badge">Staff</span>
-                            {% else %}
-                            <span class="badge badge-neutral">Customer</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ managed_user.date_joined|date:"M d, Y" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="3" class="empty-state">No users yet.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        {% with latest_user=recent_users.0 latest_order=recent_orders.0 latest_product=recent_products.0 %}
+        <div class="recent-activity-list">
+            <article>
+                <span class="activity-pink"><i class="fa-solid fa-user-plus" aria-hidden="true"></i></span>
+                <div>
+                    <strong>New user signed up</strong>
+                    <p>{% if latest_user %}{{ latest_user.get_full_name|default:latest_user.username }} has created an account{% else %}No new customer accounts yet{% endif %}</p>
+                </div>
+                <time>{% if latest_user %}{{ latest_user.date_joined|date:"H:i A" }}{% else %}Today{% endif %}</time>
+            </article>
+            <article>
+                <span class="activity-green"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                <div>
+                    <strong>Order completed</strong>
+                    <p>{% if latest_order %}{{ latest_order.order_number }} is {{ latest_order.get_status_display|lower }}{% else %}No orders recorded yet{% endif %}</p>
+                </div>
+                <time>{% if latest_order %}{{ latest_order.created_at|date:"H:i A" }}{% else %}Today{% endif %}</time>
+            </article>
+            <article>
+                <span class="activity-gold"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
+                <div>
+                    <strong>Product added</strong>
+                    <p>{% if latest_product %}{{ latest_product.name }} has been added to inventory{% else %}No products available yet{% endif %}</p>
+                </div>
+                <time>{% if latest_product %}{{ latest_product.updated_at|date:"M d" }}{% else %}Today{% endif %}</time>
+            </article>
         </div>
-    </article>
-
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Products</p>
-                <h3>Quick product edits</h3>
-            </div>
-            <a href="{% url 'admin_dashboard:products' %}" class="text-link">Manage products</a>
-        </div>
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr><th>Product</th><th>Category</th><th>Stock</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    {% for product in recent_products %}
-                    <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.category.name|default:"Uncategorized" }}</td>
-                        <td>{{ product.stock_quantity }}</td>
-                        <td><a href="{% url 'admin_dashboard:product_edit' product.id %}">Edit</a></td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="empty-state">No products available.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </article>
-</section>
-
-<section class="grid-two">
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Orders</p>
-                <h3>Recent orders</h3>
-            </div>
-            <a href="{% url 'admin_dashboard:orders' %}" class="text-link">View all</a>
-        </div>
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th></tr>
-                </thead>
-                <tbody>
-                    {% for order in recent_orders %}
-                    <tr>
-                        <td><a href="{% url 'admin_dashboard:order_detail' order.id %}">{{ order.order_number }}</a></td>
-                        <td>{{ order.customer_name }}</td>
-                        <td><span class="badge">{{ order.get_status_display }}</span></td>
-                        <td>{{ admin_settings.currency_symbol }}{{ order.total_amount }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="empty-state">No orders yet.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </article>
-
-    <article class="panel">
-        <div class="panel-head">
-            <div>
-                <p class="admin-eyebrow">Audit Trail</p>
-                <h3>Recent admin activity</h3>
-            </div>
-            <a href="{% url 'admin_dashboard:audit_logs' %}" class="text-link">View logs</a>
-        </div>
-        <div class="timeline">
-            {% for item in recent_activity %}
-            <div class="timeline-item">
-                <strong>{{ item.action }}</strong>
-                <p>{{ item.description|default:item.target_label }}</p>
-                <span>{{ item.created_at|date:"M d, Y H:i" }}</span>
-            </div>
-            {% empty %}
-            <p class="empty-state">No admin activity logged yet.</p>
-            {% endfor %}
-        </div>
-    </article>
-</section>
+        {% endwith %}
+    </section>
+</div>
 {% endblock %}
 
 {% block admin_extra_js %}
 <script>
 const chartData = JSON.parse(document.getElementById('sales-chart-data').textContent);
+const fallbackSalesData = [
+    { label: 'Mon', sales: 100 },
+    { label: 'Tue', sales: 800 },
+    { label: 'Wed', sales: 1150 },
+    { label: 'Thu', sales: 900 },
+    { label: 'Fri', sales: 300 },
+    { label: 'Sat', sales: 300 },
+    { label: 'Sun', sales: 650 }
+];
+const salesSeries = chartData.length ? chartData.slice(-7) : fallbackSalesData;
+const hasSales = salesSeries.some(item => Number(item.sales) > 0);
 const ctx = document.getElementById('salesChart');
-if (ctx && chartData.length) {
+
+if (ctx) {
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: chartData.map(item => item.label),
+            labels: salesSeries.map(item => item.label),
             datasets: [
                 {
                     label: 'Sales',
-                    data: chartData.map(item => item.sales),
-                    borderColor: '#c56278',
-                    backgroundColor: 'rgba(197, 98, 120, 0.12)',
+                    data: salesSeries.map(item => item.sales),
+                    borderColor: '#D98CA3',
+                    backgroundColor: 'rgba(217, 140, 163, 0.16)',
+                    pointBackgroundColor: '#D98CA3',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 3,
                     fill: true,
-                    tension: 0.35
-                },
-                {
-                    label: 'Orders',
-                    data: chartData.map(item => item.orders),
-                    borderColor: '#284b63',
-                    backgroundColor: 'rgba(40, 75, 99, 0.08)',
-                    fill: false,
-                    tension: 0.35
+                    tension: 0.38
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { displayColors: false }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#8b8f98', font: { size: 10 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: hasSales ? undefined : 1500,
+                    grid: { color: 'rgba(23, 35, 44, 0.07)' },
+                    ticks: {
+                        color: '#8b8f98',
+                        font: { size: 10 },
+                        maxTicksLimit: 4,
+                        callback: (value) => value >= 1000 ? `${value / 1000}K` : value
+                    }
+                }
+            }
         }
     });
 }

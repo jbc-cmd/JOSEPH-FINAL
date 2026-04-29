@@ -91,6 +91,8 @@ def dashboard_home(request):
         ).order_by('stock_quantity', 'name')[:6],
         pending_refunds=RefundRequest.objects.select_related('payment__order').filter(status='PENDING').order_by('-created_at')[:6],
         sales_chart_data=get_sales_chart_data(),
+        dashboard_date=timezone.localdate(),
+        orders_today=Order.objects.filter(created_at__date=timezone.localdate()).count(),
         security_snapshot=get_security_snapshot(),
     )
     return render(request, 'admin_dashboard/dashboard.html', context)

@@ -77,23 +77,14 @@
             <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle menu" aria-controls="adminSidebar" aria-expanded="false">
                 <span></span><span></span><span></span>
             </button>
-            <div>
-                <p class="admin-eyebrow">Administrator Workspace</p>
-                <h2>{{ page_title }}</h2>
+            <div class="admin-topbar-title">
+                <h2>Admin Dashboard</h2>
+                <p class="admin-page-label">{{ page_title }}</p>
             </div>
-            <div class="admin-top-actions">
-                <a class="top-chip" href="{% url 'admin_dashboard:notifications' %}">
-                    Notifications
-                    <span>{{ notification_items|length }}</span>
-                </a>
-                <div class="top-profile">
-                    <div>
-                        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
-                        <p>{{ request.user.email|default:"Admin account" }}</p>
-                    </div>
-                </div>
-                <a class="logout-link" href="{% url 'accounts:logout' %}">Logout</a>
-            </div>
+            <a class="admin-bell-button" href="{% url 'admin_dashboard:notifications' %}" aria-label="Notifications">
+                <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                <span>{{ notification_items|length }}</span>
+            </a>
         </header>
 
         <section class="admin-content">
@@ -108,6 +99,25 @@
             {% block admin_content %}{% endblock %}
         </section>
     </div>
+
+    <nav class="admin-bottom-nav" aria-label="Admin navigation">
+        <a href="{% url 'admin_dashboard:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'admin_dashboard:products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_add' or request.resolver_match.url_name == 'product_edit' or request.resolver_match.url_name == 'categories' or request.resolver_match.url_name == 'category_add' or request.resolver_match.url_name == 'category_edit' or request.resolver_match.url_name == 'inventory' %}active{% endif %}">
+            <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+            <span>Products</span>
+        </a>
+        <a href="{% url 'admin_dashboard:orders' %}" class="{% if request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}">
+            <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+            <span>Orders</span>
+        </a>
+        <a href="{% url 'admin_dashboard:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
 </div>
 {% endblock %}
 
