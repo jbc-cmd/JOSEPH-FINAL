@@ -6,7 +6,7 @@
 
 {% block extra_css %}
 <meta name="turbo-cache-control" content="no-cache">
-<link rel="stylesheet" href="{% static 'admin_dashboard/css/admin_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'admin_dashboard/css/admin_dashboard.css' %}?v=dashboard-analytics-links">
 {% endblock %}
 
 {% block content %}
@@ -78,7 +78,7 @@
                 <span></span><span></span><span></span>
             </button>
             <div class="admin-topbar-title">
-                <h2>Admin Dashboard</h2>
+                <h2><a class="admin-dashboard-home-link" href="{% url 'admin_dashboard:home' %}">Admin Dashboard</a></h2>
                 <p class="admin-page-label">{{ page_title }}</p>
             </div>
             <a class="admin-bell-button" href="{% url 'admin_dashboard:notifications' %}" aria-label="Notifications">

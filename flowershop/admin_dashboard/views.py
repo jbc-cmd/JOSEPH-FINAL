@@ -443,6 +443,7 @@ def order_list(request):
     search = request.GET.get('search', '').strip()
     status = request.GET.get('status', '').strip()
     payment_status = request.GET.get('payment_status', '').strip()
+    date_filter = request.GET.get('date', '').strip()
     orders = Order.objects.select_related('user', 'payment').order_by('-created_at')
     if search:
         orders = orders.filter(
@@ -454,6 +455,8 @@ def order_list(request):
         orders = orders.filter(status=status)
     if payment_status:
         orders = orders.filter(payment_status=payment_status)
+    if date_filter:
+        orders = orders.filter(created_at__date=date_filter)
 
     context = _admin_context(
         request,
@@ -462,6 +465,7 @@ def order_list(request):
         search=search,
         status=status,
         payment_status=payment_status,
+        date_filter=date_filter,
     )
     return render(request, 'admin_dashboard/orders.html', context)
 

@@ -490,7 +490,7 @@ button:hover,
 
 .orders-filter-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(150px, 1fr)) auto;
+    grid-template-columns: repeat(3, minmax(140px, 1fr)) auto;
     gap: 12px;
 }
 
@@ -1225,27 +1225,44 @@ body.admin-dashboard-body {
 }
 
 .sidebar-toggle {
-    display: inline-grid;
-    place-items: center;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
     width: 42px;
     height: 42px;
     padding: 0;
-    border-radius: 10px;
-    background: #ffffff;
-    color: var(--admin-text);
-    box-shadow: 0 7px 18px rgba(23, 35, 44, 0.06), inset 0 0 0 1px rgba(23, 35, 44, 0.06);
+    border-radius: 14px;
+    background: #fff8fa;
+    color: var(--admin-accent-dark);
+    box-shadow: 0 10px 24px rgba(217, 140, 163, 0.16), inset 0 0 0 1px rgba(217, 140, 163, 0.22);
 }
 
 .sidebar-toggle:hover {
-    background: #fff8fa;
+    background: #ffffff;
+    box-shadow: 0 12px 28px rgba(217, 140, 163, 0.2), inset 0 0 0 1px rgba(217, 140, 163, 0.34);
 }
 
 .sidebar-toggle span {
-    width: 19px;
-    height: 2px;
-    margin: 2px 0;
+    display: block;
+    width: 22px;
+    height: 4px;
+    margin: 0;
     border-radius: 999px;
-    background: var(--admin-text);
+    background: linear-gradient(180deg, #d86aac 0%, #b9478e 100%);
+    box-shadow: inset 0 0 0 1px rgba(83, 44, 105, 0.42), 0 1px 1px rgba(23, 35, 44, 0.16);
+}
+
+body.admin-sidebar-open .sidebar-toggle {
+    background: var(--admin-accent);
+    color: #ffffff;
+    box-shadow: 0 12px 28px rgba(217, 140, 163, 0.26);
+}
+
+body.admin-sidebar-open .sidebar-toggle span {
+    background: #ffffff;
+    box-shadow: none;
 }
 
 .admin-topbar-title {
@@ -1258,6 +1275,21 @@ body.admin-dashboard-body {
     font-family: "Playfair Display", serif;
     font-size: 1.35rem;
     line-height: 1.1;
+}
+
+.admin-dashboard-home-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.admin-dashboard-home-link:hover {
+    color: var(--admin-accent-dark);
+}
+
+.admin-dashboard-home-link:focus-visible {
+    outline: 3px solid rgba(217, 140, 163, 0.28);
+    outline-offset: 4px;
+    border-radius: 8px;
 }
 
 .admin-page-label {
@@ -1350,6 +1382,7 @@ body.admin-dashboard-body {
 .quick-action-grid,
 .analytics-chart-card,
 .analytics-side-cards article,
+.analytics-link-card,
 .recent-activity-list {
     background: var(--admin-panel);
     border: 1px solid rgba(255, 255, 255, 0.84);
@@ -1458,6 +1491,27 @@ body.admin-dashboard-body {
     border-radius: 18px;
 }
 
+.sales-summary-card {
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.sales-summary-card:hover,
+.sales-summary-card:focus-visible,
+.sales-summary-card.is-selected {
+    box-shadow: 0 16px 34px rgba(217, 140, 163, 0.16), inset 0 0 0 1px rgba(217, 140, 163, 0.28);
+}
+
+.sales-summary-card:hover,
+.sales-summary-card.is-selected {
+    transform: translateY(-1px);
+}
+
+.sales-summary-card:focus-visible {
+    outline: 3px solid rgba(217, 140, 163, 0.28);
+    outline-offset: 3px;
+}
+
 .mobile-stat-card > div {
     min-width: 0;
 }
@@ -1465,6 +1519,7 @@ body.admin-dashboard-body {
 .stat-icon,
 .quick-action-grid a span,
 .analytics-side-cards article > span,
+.analytics-link-card > span,
 .recent-activity-list article > span {
     display: grid;
     place-items: center;
@@ -1553,6 +1608,65 @@ body.admin-dashboard-body {
 .mobile-stat-card:nth-child(4) small {
     color: #c17640;
     background: rgba(193, 118, 64, 0.11);
+}
+
+.sales-summary-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: var(--admin-shadow-soft), inset 0 0 0 1px rgba(217, 140, 163, 0.16);
+}
+
+.sales-summary-panel[hidden] {
+    display: none;
+}
+
+.sales-summary-panel div {
+    min-width: 0;
+}
+
+.sales-summary-panel span,
+.sales-summary-panel strong,
+.sales-summary-panel p {
+    display: block;
+}
+
+.sales-summary-panel span {
+    color: var(--admin-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.sales-summary-panel strong {
+    margin-top: 4px;
+    color: var(--admin-text);
+    font-size: 1.08rem;
+}
+
+.sales-summary-panel p {
+    margin: 5px 0 0;
+    color: #3c434c;
+    font-size: 0.76rem;
+    line-height: 1.35;
+}
+
+.sales-summary-panel a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 10px 13px;
+    color: var(--admin-accent-dark);
+    text-decoration: none;
+    border-radius: 10px;
+    background: rgba(217, 140, 163, 0.1);
+    font-size: 0.74rem;
+    font-weight: 800;
+    white-space: nowrap;
 }
 
 .mobile-dashboard-section {
@@ -1649,12 +1763,48 @@ body.admin-dashboard-body {
     height: 100% !important;
 }
 
+.sales-insight-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.sales-insight-row div {
+    min-width: 0;
+    padding: 8px 7px;
+    border-radius: 12px;
+    background: rgba(217, 140, 163, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(217, 140, 163, 0.14);
+}
+
+.sales-insight-row span,
+.sales-insight-row strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sales-insight-row span {
+    color: var(--admin-muted);
+    font-size: 0.62rem;
+    font-weight: 700;
+}
+
+.sales-insight-row strong {
+    margin-top: 3px;
+    color: var(--admin-text);
+    font-size: 0.72rem;
+}
+
 .analytics-side-cards {
     display: grid;
     gap: 12px;
 }
 
-.analytics-side-cards article {
+.analytics-side-cards article,
+.analytics-link-card {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr);
     gap: 10px;
@@ -1664,20 +1814,46 @@ body.admin-dashboard-body {
     border-radius: 18px;
 }
 
-.analytics-side-cards article > span {
+.analytics-link-card {
+    color: inherit;
+    text-decoration: none;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.analytics-link-card:hover,
+.analytics-link-card:focus-visible {
+    box-shadow: 0 16px 34px rgba(217, 140, 163, 0.16), inset 0 0 0 1px rgba(217, 140, 163, 0.28);
+    transform: translateY(-1px);
+}
+
+.analytics-link-card:focus-visible {
+    outline: 3px solid rgba(217, 140, 163, 0.28);
+    outline-offset: 3px;
+}
+
+.analytics-side-cards article > span,
+.analytics-link-card > span {
     width: 44px;
     height: 44px;
     font-size: 1rem;
 }
 
 .analytics-side-cards p,
+.analytics-link-card p,
 .analytics-side-cards small {
     margin: 0;
     color: var(--admin-muted);
     font-size: 0.72rem;
 }
 
-.analytics-side-cards strong {
+.analytics-link-card small {
+    margin: 0;
+    color: var(--admin-muted);
+    font-size: 0.72rem;
+}
+
+.analytics-side-cards strong,
+.analytics-link-card strong {
     display: block;
     margin: 4px 0 3px;
     color: var(--admin-text);
@@ -1734,6 +1910,44 @@ body.admin-dashboard-body {
 
 .admin-bottom-nav {
     display: none;
+}
+
+@media (min-width: 861px) {
+    .admin-main {
+        padding: 20px 28px 32px;
+    }
+
+    .admin-topbar,
+    .mobile-admin-dashboard {
+        max-width: min(1120px, 100%);
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .admin-topbar {
+        position: static;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        margin-bottom: 16px;
+        padding: 4px 0 10px;
+        background: transparent;
+        backdrop-filter: none;
+    }
+
+    .sidebar-toggle {
+        display: none;
+    }
+
+    .admin-bell-button {
+        justify-self: end;
+        background: #ffffff;
+        box-shadow: inset 0 0 0 1px var(--admin-border);
+    }
+}
+
+@media (min-width: 1280px) {
+    .mobile-stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 860px) {
@@ -1866,18 +2080,28 @@ body.admin-dashboard-body {
         font-size: 1.08rem;
     }
 
+    .sales-summary-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-summary-panel a {
+        width: 100%;
+    }
+
     .analytics-overview-grid {
         grid-template-columns: minmax(0, 1.35fr) minmax(118px, 0.75fr);
         gap: 10px;
     }
 
-    .analytics-side-cards article {
+    .analytics-side-cards article,
+    .analytics-link-card {
         grid-template-columns: 36px minmax(0, 1fr);
         min-height: 86px;
         padding: 11px;
     }
 
-    .analytics-side-cards article > span {
+    .analytics-side-cards article > span,
+    .analytics-link-card > span {
         width: 36px;
         height: 36px;
     }

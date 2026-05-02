@@ -33,6 +33,7 @@
                     <option value="{{ code }}" {% if payment_status == code %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
+                <input type="date" name="date" value="{{ date_filter }}" aria-label="Order date">
                 <button type="submit">Filter</button>
             </div>
         </form>

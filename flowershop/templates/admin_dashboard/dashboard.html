@@ -41,7 +41,7 @@
     </section>
 
     <section class="mobile-stats-grid" aria-label="Sales statistics">
-        <article class="mobile-stat-card">
+        <article class="mobile-stat-card sales-summary-card is-selected" role="button" tabindex="0" aria-pressed="true" data-summary-title="Total Sales" data-summary-value="{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}" data-summary-detail="Completed revenue from all paid orders." data-summary-url="{% url 'admin_dashboard:reports' %}">
             <span class="stat-icon stat-pink"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span>
             <div>
                 <span>Total Sales</span>
@@ -50,7 +50,7 @@
             </div>
             <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
         </article>
-        <article class="mobile-stat-card">
+        <article class="mobile-stat-card sales-summary-card" role="button" tabindex="0" aria-pressed="false" data-summary-title="Today" data-summary-value="{{ admin_settings.currency_symbol }}{{ metrics.daily_sales }}" data-summary-detail="Revenue collected in the last 24 hours." data-summary-url="{% url 'admin_dashboard:reports' %}">
             <span class="stat-icon stat-blue"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
             <div>
                 <span>Today</span>
@@ -59,7 +59,7 @@
             </div>
             <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
         </article>
-        <article class="mobile-stat-card">
+        <article class="mobile-stat-card sales-summary-card" role="button" tabindex="0" aria-pressed="false" data-summary-title="This Week" data-summary-value="{{ admin_settings.currency_symbol }}{{ metrics.weekly_sales }}" data-summary-detail="Rolling 7-day revenue from completed payments." data-summary-url="{% url 'admin_dashboard:reports' %}">
             <span class="stat-icon stat-green"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i></span>
             <div>
                 <span>This Week</span>
@@ -68,7 +68,7 @@
             </div>
             <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
         </article>
-        <article class="mobile-stat-card">
+        <article class="mobile-stat-card sales-summary-card" role="button" tabindex="0" aria-pressed="false" data-summary-title="This Month" data-summary-value="{{ admin_settings.currency_symbol }}{{ metrics.monthly_sales }}" data-summary-detail="Current month revenue from completed payments." data-summary-url="{% url 'admin_dashboard:reports' %}">
             <span class="stat-icon stat-gold"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span>
             <div>
                 <span>This Month</span>
@@ -77,6 +77,15 @@
             </div>
             <small><i class="fa-solid fa-chart-line" aria-hidden="true"></i></small>
         </article>
+    </section>
+
+    <section class="sales-summary-panel" id="salesSummaryPanel" aria-live="polite">
+        <div>
+            <span id="salesSummaryLabel">Total Sales</span>
+            <strong id="salesSummaryValue">{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}</strong>
+            <p id="salesSummaryDetail">Completed revenue from all paid orders.</p>
+        </div>
+        <a id="salesSummaryLink" href="{% url 'admin_dashboard:reports' %}">View report</a>
     </section>
 
     <section class="mobile-dashboard-section">
@@ -116,24 +125,38 @@
                 <div class="sales-chart-frame">
                     <canvas id="salesChart"></canvas>
                 </div>
+                <div class="sales-insight-row" aria-label="7-day sales insights">
+                    <div>
+                        <span>7-day total</span>
+                        <strong id="salesWeekTotal">{{ admin_settings.currency_symbol }}0</strong>
+                    </div>
+                    <div>
+                        <span>Best day</span>
+                        <strong id="salesBestDay">-</strong>
+                    </div>
+                    <div>
+                        <span>Daily avg.</span>
+                        <strong id="salesDailyAverage">{{ admin_settings.currency_symbol }}0</strong>
+                    </div>
+                </div>
             </article>
             <div class="analytics-side-cards">
-                <article>
+                <a class="analytics-link-card" href="{% url 'admin_dashboard:orders' %}?date={{ dashboard_date|date:'Y-m-d' }}" aria-label="View today's orders">
                     <span class="stat-pink"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i></span>
                     <div>
                         <p>Orders Today</p>
                         <strong>{{ orders_today }}</strong>
                         <small>{% if orders_today %}New today{% else %}No new orders{% endif %}</small>
                     </div>
-                </article>
-                <article>
+                </a>
+                <a class="analytics-link-card" href="{% url 'admin_dashboard:users' %}?role=customer" aria-label="View customer list">
                     <span class="stat-green"><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i></span>
                     <div>
                         <p>Total Customers</p>
                         <strong>{{ metrics.total_customers }}</strong>
                         <small>All time</small>
                     </div>
-                </article>
+                </a>
             </div>
         </div>
     </section>
@@ -190,6 +213,48 @@ const fallbackSalesData = [
 const salesSeries = chartData.length ? chartData.slice(-7) : fallbackSalesData;
 const hasSales = salesSeries.some(item => Number(item.sales) > 0);
 const ctx = document.getElementById('salesChart');
+const currencySymbol = '{{ admin_settings.currency_symbol|escapejs }}';
+const formatSalesValue = (value) => `${currencySymbol}${Math.round(Number(value) || 0).toLocaleString()}`;
+const weekTotal = salesSeries.reduce((total, item) => total + (Number(item.sales) || 0), 0);
+const bestSalesDay = salesSeries.reduce((best, item) => {
+    return (Number(item.sales) || 0) > (Number(best.sales) || 0) ? item : best;
+}, salesSeries[0] || { label: '-', sales: 0 });
+const dailyAverage = salesSeries.length ? weekTotal / salesSeries.length : 0;
+
+document.getElementById('salesWeekTotal').textContent = formatSalesValue(weekTotal);
+document.getElementById('salesBestDay').textContent = hasSales ? bestSalesDay.label : '-';
+document.getElementById('salesDailyAverage').textContent = formatSalesValue(dailyAverage);
+
+const summaryPanel = document.getElementById('salesSummaryPanel');
+const summaryLabel = document.getElementById('salesSummaryLabel');
+const summaryValue = document.getElementById('salesSummaryValue');
+const summaryDetail = document.getElementById('salesSummaryDetail');
+const summaryLink = document.getElementById('salesSummaryLink');
+const summaryCards = document.querySelectorAll('.sales-summary-card');
+
+const showSalesSummary = (card) => {
+    summaryCards.forEach((item) => {
+        const isSelected = item === card;
+        item.classList.toggle('is-selected', isSelected);
+        item.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+
+    summaryLabel.textContent = card.dataset.summaryTitle || 'Sales metric';
+    summaryValue.textContent = card.dataset.summaryValue || `${currencySymbol}0`;
+    summaryDetail.textContent = card.dataset.summaryDetail || 'No details available.';
+    summaryLink.href = card.dataset.summaryUrl || summaryLink.href;
+    summaryPanel.hidden = false;
+};
+
+summaryCards.forEach((card) => {
+    card.addEventListener('click', () => showSalesSummary(card));
+    card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            showSalesSummary(card);
+        }
+    });
+});
 
 if (ctx) {
     new Chart(ctx, {
