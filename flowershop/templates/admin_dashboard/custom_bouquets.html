@@ -1,0 +1,503 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_extra_css %}
+<style>
+    .custom-bouquet-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 18px;
+        padding: 24px;
+        overflow: hidden;
+    }
+
+    .custom-bouquet-hero .admin-eyebrow,
+    .custom-bouquet-panel .admin-eyebrow {
+        color: var(--admin-accent);
+    }
+
+    .custom-bouquet-hero h3 {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.4vw, 2.05rem);
+    }
+
+    .custom-bouquet-status-row,
+    .custom-bouquet-hero-actions,
+    .custom-bouquet-filter-actions,
+    .custom-bouquet-active-filters,
+    .bouquet-chip-list,
+    .custom-bouquet-empty-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .custom-bouquet-status-row {
+        margin-top: 16px;
+    }
+
+    .custom-bouquet-status-row span,
+    .custom-bouquet-active-filters span,
+    .bouquet-request-id,
+    .bouquet-request-total span,
+    .bouquet-chip-list span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        background: rgba(197, 98, 120, 0.1);
+        color: var(--admin-accent);
+        padding: 7px 11px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .custom-bouquet-hero-actions {
+        justify-content: flex-end;
+    }
+
+    .custom-bouquet-hero-actions a,
+    .custom-bouquet-filter-actions button,
+    .custom-bouquet-filter-actions a,
+    .custom-bouquet-empty-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+    }
+
+    .bouquet-stat-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .custom-bouquet-stat span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .custom-bouquet-stat i {
+        color: var(--admin-accent);
+        width: 1rem;
+        text-align: center;
+    }
+
+    .custom-bouquet-panel {
+        overflow: hidden;
+    }
+
+    .custom-bouquet-filter-form {
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) minmax(360px, 1fr);
+        gap: 12px;
+        width: 100%;
+    }
+
+    .custom-bouquet-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) auto;
+        gap: 12px;
+    }
+
+    .custom-bouquet-toolbar {
+        display: grid;
+        gap: 12px;
+    }
+
+    .custom-bouquet-active-filters span:first-child,
+    .bouquet-chip-list span {
+        background: rgba(40, 75, 99, 0.08);
+        color: #284b63;
+    }
+
+    .custom-bouquet-board {
+        display: grid;
+        gap: 16px;
+    }
+
+    .bouquet-request-card {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 12px 28px rgba(17, 26, 33, 0.04);
+    }
+
+    .bouquet-request-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .bouquet-request-main {
+        display: grid;
+        grid-template-columns: 74px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .bouquet-request-main img {
+        width: 74px;
+        height: 74px;
+        border-radius: 16px;
+        object-fit: cover;
+        background: rgba(217, 140, 163, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(217, 140, 163, 0.14);
+    }
+
+    .bouquet-request-main h4 {
+        margin: 6px 0 4px;
+        color: var(--admin-text);
+        font-size: 1.05rem;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .bouquet-request-main p,
+    .bouquet-request-notes p {
+        margin: 0;
+        color: var(--admin-muted);
+        line-height: 1.5;
+    }
+
+    .bouquet-request-total {
+        display: grid;
+        justify-items: end;
+        gap: 8px;
+        flex: 0 0 auto;
+    }
+
+    .bouquet-request-total strong {
+        color: var(--admin-text);
+        font-size: 1.25rem;
+        white-space: nowrap;
+    }
+
+    .bouquet-request-meta,
+    .bouquet-request-details,
+    .bouquet-request-notes {
+        display: grid;
+        gap: 12px;
+    }
+
+    .bouquet-request-meta {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .bouquet-request-details,
+    .bouquet-request-notes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .bouquet-request-meta > div,
+    .bouquet-request-details section,
+    .bouquet-request-notes > div {
+        min-width: 0;
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(24, 39, 50, 0.06);
+    }
+
+    .bouquet-request-meta span,
+    .bouquet-request-notes span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--admin-muted);
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .bouquet-request-meta strong,
+    .bouquet-request-notes p {
+        overflow-wrap: anywhere;
+    }
+
+    .bouquet-request-details h5 {
+        margin: 0 0 10px;
+        color: var(--admin-text);
+        font-size: 0.92rem;
+    }
+
+    .bouquet-chip-list {
+        align-items: flex-start;
+    }
+
+    .bouquet-chip-list .muted {
+        background: rgba(103, 117, 127, 0.08);
+        color: var(--admin-muted);
+    }
+
+    .custom-bouquet-empty {
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        padding: 34px 20px;
+        text-align: center;
+        border: 1px dashed rgba(197, 98, 120, 0.28);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.62);
+    }
+
+    .custom-bouquet-empty > div:first-child {
+        display: grid;
+        place-items: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        color: var(--admin-accent);
+        background: rgba(197, 98, 120, 0.1);
+        font-size: 1.25rem;
+    }
+
+    .custom-bouquet-empty h4,
+    .custom-bouquet-empty p {
+        margin: 0;
+    }
+
+    .custom-bouquet-empty p {
+        max-width: 440px;
+        color: var(--admin-muted);
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1100px) {
+        .bouquet-stat-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .custom-bouquet-hero,
+        .custom-bouquet-filter-form,
+        .custom-bouquet-filter-grid,
+        .bouquet-request-meta,
+        .bouquet-request-details,
+        .bouquet-request-notes {
+            grid-template-columns: 1fr;
+        }
+
+        .custom-bouquet-hero-actions,
+        .bouquet-request-total {
+            justify-content: flex-start;
+            justify-items: start;
+        }
+
+        .bouquet-request-card-head {
+            display: grid;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .custom-bouquet-hero-actions,
+        .custom-bouquet-filter-actions,
+        .custom-bouquet-empty-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+
+        .custom-bouquet-hero-actions a,
+        .custom-bouquet-filter-actions button,
+        .custom-bouquet-filter-actions a,
+        .custom-bouquet-empty-actions a {
+            width: 100%;
+        }
+
+        .bouquet-request-main {
+            grid-template-columns: 58px minmax(0, 1fr);
+        }
+
+        .bouquet-request-main img {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<section class="panel custom-bouquet-hero">
+    <div>
+        <p class="admin-eyebrow">Custom Bouquets</p>
+        <h3>Custom bouquet requests</h3>
+        <p class="panel-intro">Track saved customer builds, review stems and add-ons, and jump back into the builder when a florist needs to recreate a bouquet.</p>
+        <div class="custom-bouquet-status-row" aria-label="Bouquet request summary">
+            <span><i class="fa-solid fa-list-check" aria-hidden="true"></i>{{ bouquet_summary.total }} total saved</span>
+            <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ bouquet_summary.today }} today</span>
+            <span><i class="fa-solid fa-seedling" aria-hidden="true"></i>{{ bouquet_summary.custom_size }} custom sizes</span>
+        </div>
+    </div>
+    <div class="custom-bouquet-hero-actions">
+        <a class="button-link" href="{% url 'custom_bouquet:builder' %}">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+            Open builder
+        </a>
+        <a class="button-secondary" href="{% url 'admin_dashboard:custom_bouquets' %}?date={{ today|date:'Y-m-d' }}">
+            <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+            Today
+        </a>
+        {% if search or size_filter or date_filter %}
+        <a class="button-secondary" href="{% url 'admin_dashboard:custom_bouquets' %}">
+            <i class="fa-solid fa-list" aria-hidden="true"></i>
+            All requests
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="stats-grid stats-grid-compact bouquet-stat-grid">
+    <article class="stat-card custom-bouquet-stat"><span><i class="fa-solid fa-layer-group" aria-hidden="true"></i>Total Bouquets</span><strong>{{ bouquet_summary.total }}</strong><p>Saved custom builds</p></article>
+    <article class="stat-card custom-bouquet-stat"><span><i class="fa-regular fa-clock" aria-hidden="true"></i>Created Today</span><strong>{{ bouquet_summary.today }}</strong><p>New bouquet requests</p></article>
+    <article class="stat-card custom-bouquet-stat"><span><i class="fa-solid fa-ruler-combined" aria-hidden="true"></i>Custom Sizes</span><strong>{{ bouquet_summary.custom_size }}</strong><p>Exact stem count builds</p></article>
+    <article class="stat-card custom-bouquet-stat"><span><i class="fa-solid fa-receipt" aria-hidden="true"></i>Total Value</span><strong>{{ admin_settings.currency_symbol }}{{ bouquet_summary.total_value }}</strong><p>All custom bouquet value</p></article>
+</section>
+
+<section class="panel custom-bouquet-panel">
+    <div class="panel-head custom-bouquet-head">
+        <div>
+            <p class="admin-eyebrow">Request Board</p>
+            <h3>Bouquet request board</h3>
+            <p class="panel-intro">Use the filters to narrow requests by flower, extra, size, or creation date. Each card keeps the bouquet details readable without opening another screen.</p>
+        </div>
+    </div>
+
+    <div class="orders-toolbar custom-bouquet-toolbar">
+        <form class="toolbar custom-bouquet-filter-form" method="get">
+            <div class="orders-search-field">
+                <span aria-hidden="true"></span>
+                <input type="search" name="q" value="{{ search }}" placeholder="Search bouquet, flowers, extras, or message" aria-label="Search custom bouquets">
+            </div>
+            <div class="custom-bouquet-filter-grid">
+                <select name="size" aria-label="Bouquet size">
+                    <option value="">All sizes</option>
+                    <option value="custom" {% if size_filter == 'custom' %}selected{% endif %}>Custom size</option>
+                    {% for size in bouquet_sizes %}
+                    <option value="{{ size.id }}" {% if size_filter == size.id|stringformat:"s" %}selected{% endif %}>{{ size.get_size_display }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="date" value="{{ date_filter }}" aria-label="Created date">
+                <div class="custom-bouquet-filter-actions">
+                    <button type="submit" data-loading-text="Filtering...">
+                        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    {% if search or size_filter or date_filter %}
+                    <a class="button-secondary" href="{% url 'admin_dashboard:custom_bouquets' %}">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        {% if search or size_filter or date_filter %}
+        <div class="custom-bouquet-active-filters">
+            <span>{{ bouquet_page.paginator.count }} matching request{{ bouquet_page.paginator.count|pluralize }}</span>
+            {% if search %}<span>Search: {{ search }}</span>{% endif %}
+            {% if size_filter %}<span>Size filter active</span>{% endif %}
+            {% if date_filter %}<span>Date: {{ date_filter }}</span>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="custom-bouquet-board">
+        {% for bouquet in bouquet_page %}
+        <article class="bouquet-request-card">
+            <header class="bouquet-request-card-head">
+                <div class="bouquet-request-main">
+                    <img src="{{ bouquet.get_image_url }}" alt="{{ bouquet.name }}">
+                    <div>
+                        <span class="bouquet-request-id">Request #{{ bouquet.id }}</span>
+                        <h4>{{ bouquet.name }}</h4>
+                        <p>Created {{ bouquet.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+                <div class="bouquet-request-total">
+                    <span>{{ bouquet.size_label }}</span>
+                    <strong>{{ admin_settings.currency_symbol }}{{ bouquet.total_price }}</strong>
+                </div>
+            </header>
+
+            <div class="bouquet-request-meta">
+                <div>
+                    <span>Stem count</span>
+                    <strong>{{ bouquet.stem_count|default:0 }} stems</strong>
+                </div>
+                <div>
+                    <span>Wrapping</span>
+                    <strong>{{ bouquet.wrapping.get_style_display }}</strong>
+                </div>
+                <div>
+                    <span>Ribbon</span>
+                    <strong>{{ bouquet.ribbon_color.name }}</strong>
+                </div>
+            </div>
+
+            <div class="bouquet-request-details">
+                <section>
+                    <h5>Flowers</h5>
+                    <div class="bouquet-chip-list">
+                        {% for item in bouquet.items.all %}
+                        <span>{{ item.flower.get_name_display }} x{{ item.quantity }}</span>
+                        {% empty %}
+                        <span class="muted">No flowers listed</span>
+                        {% endfor %}
+                    </div>
+                </section>
+                <section>
+                    <h5>Extras</h5>
+                    <div class="bouquet-chip-list">
+                        {% for extra in bouquet.extras.all %}
+                        <span>{{ extra.extra.get_name_display }} x{{ extra.quantity }}</span>
+                        {% empty %}
+                        <span class="muted">No extras selected</span>
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            <div class="bouquet-request-notes">
+                <div>
+                    <span>Customer message</span>
+                    <p>{{ bouquet.personal_message|default:"No message added." }}</p>
+                </div>
+                {% if bouquet.description %}
+                <div>
+                    <span>Florist instructions</span>
+                    <p>{{ bouquet.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <div class="custom-bouquet-empty">
+            <div>
+                <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+            </div>
+            <h4>No custom bouquets match this filter.</h4>
+            <p>Try clearing the filters or open the builder to create a new custom bouquet.</p>
+            <div class="custom-bouquet-empty-actions">
+                <a class="button-link" href="{% url 'custom_bouquet:builder' %}">Open builder</a>
+                {% if search or size_filter or date_filter %}
+                <a class="button-secondary" href="{% url 'admin_dashboard:custom_bouquets' %}">Clear filters</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% include "admin_dashboard/partials/pagination.html" with page_obj=bouquet_page %}
+</section>
+{% endblock %}

@@ -183,6 +183,8 @@ def get_inventory_snapshot():
     return {
         'low_stock': Product.objects.filter(stock_quantity__lte=threshold, stock_quantity__gt=0).order_by('stock_quantity', 'name'),
         'out_of_stock': Product.objects.filter(stock_quantity=0).order_by('name'),
+        'total_products': Product.objects.count(),
+        'healthy_stock': Product.objects.filter(stock_quantity__gt=threshold).count(),
         'threshold': threshold,
     }
 

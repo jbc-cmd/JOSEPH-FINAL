@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const submit = form.querySelector('button[type="submit"]');
             if (submit) {
                 submit.dataset.originalText = submit.textContent;
-                submit.textContent = 'Saving...';
+                submit.textContent = submit.dataset.loadingText || 'Saving...';
                 submit.disabled = true;
             }
         });

@@ -5,6 +5,7 @@ from django import forms
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 from accounts.models import UserProfile
 from configurations.models import GeneralConfig, ServiceConfig
@@ -22,10 +23,43 @@ class ProductAdminForm(forms.ModelForm):
             'name', 'slug', 'description', 'composition', 'product_type', 'category',
             'price', 'image', 'stock_quantity', 'size', 'is_featured', 'is_available',
         ]
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
-            'composition': forms.Textarea(attrs={'rows': 4}),
+        labels = {
+            'is_available': 'Available in shop',
+            'is_featured': 'Feature this product',
         }
+        help_texts = {
+            'slug': 'Leave blank to create it from the product name.',
+            'composition': 'Optional JSON for bouquet contents, for example {"roses": 6, "wrapper": "pink"}.',
+            'image': 'Use a clear square or portrait product photo.',
+            'stock_quantity': 'Set to 0 when the item is out of stock.',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'e.g. Pink Rose Bouquet'}),
+            'slug': forms.TextInput(attrs={'placeholder': 'Auto-created from product name'}),
+            'description': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Describe the occasion, style, and what customers will receive.'}),
+            'composition': forms.Textarea(attrs={'rows': 5, 'placeholder': '{"roses": 6, "baby_breath": 3}'}),
+            'price': forms.NumberInput(attrs={'min': '0', 'step': '0.01', 'placeholder': '0.00'}),
+            'image': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
+            'stock_quantity': forms.NumberInput(attrs={'min': '0', 'step': '1'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['slug'].required = False
+
+    def clean_slug(self):
+        name = self.cleaned_data.get('name', '')
+        slug = self.cleaned_data.get('slug') or slugify(name)
+
+        if not slug:
+            return slug
+
+        existing = Product.objects.filter(slug=slug)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise forms.ValidationError('This URL slug is already used. Choose a different slug or product name.')
+        return slug
 
 
 class CategoryAdminForm(forms.ModelForm):

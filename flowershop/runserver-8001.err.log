@@ -1,0 +1,63 @@
+Exception in thread django-main-thread:
+Traceback (most recent call last):
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\utils.py", line 87, in _execute
+    return self.cursor.execute(sql)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 324, in execute
+    return super().execute(query)
+           ^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: disk I/O error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\user\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Users\user\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\utils\autoreload.py", line 64, in wrapper
+    fn(*args, **kwargs)
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\core\management\commands\runserver.py", line 136, in inner_run
+    self.check_migrations()
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\core\management\base.py", line 574, in check_migrations
+    executor = MigrationExecutor(connections[DEFAULT_DB_ALIAS])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\migrations\executor.py", line 18, in __init__
+    self.loader = MigrationLoader(self.connection)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\migrations\loader.py", line 58, in __init__
+    self.build_graph()
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\migrations\loader.py", line 235, in build_graph
+    self.applied_migrations = recorder.applied_migrations()
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\migrations\recorder.py", line 81, in applied_migrations
+    if self.has_table():
+       ^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\migrations\recorder.py", line 58, in has_table
+    tables = self.connection.introspection.table_names(cursor)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\base\introspection.py", line 58, in table_names
+    return get_names(cursor)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\base\introspection.py", line 51, in get_names
+    for ti in self.get_table_list(cursor)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\sqlite3\introspection.py", line 80, in get_table_list
+    cursor.execute(
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\utils.py", line 87, in _execute
+    return self.cursor.execute(sql)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\JOSEPH FINAL\venv\Lib\site-packages\django\db\backends\sqlite3\base.py", line 324, in execute
+    return super().execute(query)
+           ^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: disk I/O error

@@ -1,0 +1,583 @@
+{% extends "admin_dashboard/base.html" %}
+
+{% block admin_extra_css %}
+<style>
+    .delivery-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 18px;
+        padding: 24px;
+        overflow: hidden;
+    }
+
+    .delivery-hero .admin-eyebrow,
+    .delivery-schedule-panel .admin-eyebrow {
+        color: var(--admin-accent);
+    }
+
+    .delivery-hero h3 {
+        margin: 0;
+        font-size: clamp(1.55rem, 2.4vw, 2.05rem);
+    }
+
+    .delivery-status-row,
+    .delivery-hero-actions,
+    .delivery-filter-actions,
+    .delivery-active-filters,
+    .delivery-chip-list,
+    .delivery-empty-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .delivery-status-row {
+        margin-top: 16px;
+    }
+
+    .delivery-status-row span,
+    .delivery-active-filters span,
+    .delivery-id-chip,
+    .delivery-window-chip,
+    .delivery-chip-list span {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        background: rgba(197, 98, 120, 0.1);
+        color: var(--admin-accent);
+        padding: 7px 11px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .delivery-hero-actions {
+        justify-content: flex-end;
+    }
+
+    .delivery-hero-actions a,
+    .delivery-filter-actions button,
+    .delivery-filter-actions a,
+    .delivery-empty-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px;
+    }
+
+    .delivery-stat-card {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .delivery-stat-card span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .delivery-stat-card i {
+        color: var(--admin-accent);
+        width: 1rem;
+        text-align: center;
+    }
+
+    .delivery-schedule-panel {
+        overflow: hidden;
+    }
+
+    .delivery-filter-form {
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) minmax(520px, 1.45fr);
+        gap: 12px;
+        width: 100%;
+    }
+
+    .delivery-filter-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(130px, 1fr)) auto;
+        gap: 12px;
+    }
+
+    .delivery-toolbar {
+        display: grid;
+        gap: 12px;
+    }
+
+    .delivery-filter-actions {
+        align-items: stretch;
+    }
+
+    .delivery-filter-actions button,
+    .delivery-filter-actions .button-secondary {
+        white-space: nowrap;
+    }
+
+    .delivery-active-filters span:first-child,
+    .delivery-chip-list span {
+        background: rgba(40, 75, 99, 0.08);
+        color: #284b63;
+    }
+
+    .delivery-board {
+        display: grid;
+        gap: 16px;
+    }
+
+    .delivery-card {
+        display: grid;
+        gap: 16px;
+        padding: 18px;
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 12px 28px rgba(17, 26, 33, 0.04);
+    }
+
+    .delivery-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .delivery-card-title h4 {
+        margin: 8px 0 4px;
+        color: var(--admin-text);
+        font-size: 1.05rem;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .delivery-card-title p,
+    .delivery-card-note p,
+    .delivery-card-detail p {
+        margin: 0;
+        color: var(--admin-muted);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .delivery-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        padding: 8px 11px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        white-space: nowrap;
+        background: rgba(40, 75, 99, 0.1);
+        color: #284b63;
+    }
+
+    .delivery-status-badge.is-success {
+        background: rgba(34, 116, 95, 0.12);
+        color: var(--admin-success);
+    }
+
+    .delivery-status-badge.is-danger {
+        background: rgba(196, 73, 73, 0.11);
+        color: var(--admin-danger);
+    }
+
+    .delivery-status-badge.is-moving {
+        background: rgba(70, 122, 165, 0.13);
+        color: #467aa5;
+    }
+
+    .delivery-status-badge.is-waiting {
+        background: rgba(193, 118, 64, 0.13);
+        color: #9b5b2e;
+    }
+
+    .delivery-card-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+        gap: 12px;
+    }
+
+    .delivery-card-detail,
+    .delivery-card-note {
+        min-width: 0;
+        padding: 14px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(24, 39, 50, 0.06);
+    }
+
+    .delivery-card-detail span,
+    .delivery-card-note span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--admin-muted);
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .delivery-card-detail strong {
+        display: block;
+        color: var(--admin-text);
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .delivery-card-note {
+        display: grid;
+        gap: 12px;
+    }
+
+    .delivery-card-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 2px;
+    }
+
+    .delivery-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .delivery-action-row form {
+        margin: 0;
+    }
+
+    .delivery-action-row button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 38px;
+        padding: 9px 12px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    .delivery-action-row .button-secondary {
+        background: #fff;
+        color: var(--admin-text);
+        box-shadow: inset 0 0 0 1px var(--admin-border);
+    }
+
+    .delivery-action-row .button-danger {
+        background: rgba(196, 73, 73, 0.1);
+        color: var(--admin-danger);
+    }
+
+    .delivery-proof-link {
+        color: var(--admin-accent);
+        font-size: 0.86rem;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .delivery-proof-link:hover {
+        text-decoration: underline;
+    }
+
+    .delivery-empty {
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        padding: 34px 20px;
+        text-align: center;
+        border: 1px dashed rgba(197, 98, 120, 0.28);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.62);
+    }
+
+    .delivery-empty > div:first-child {
+        display: grid;
+        place-items: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        color: var(--admin-accent);
+        background: rgba(197, 98, 120, 0.1);
+        font-size: 1.25rem;
+    }
+
+    .delivery-empty h4,
+    .delivery-empty p {
+        margin: 0;
+    }
+
+    .delivery-empty p {
+        max-width: 460px;
+        color: var(--admin-muted);
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1100px) {
+        .delivery-filter-form,
+        .delivery-filter-grid,
+        .delivery-card-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .delivery-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .delivery-hero-actions {
+            justify-content: flex-start;
+        }
+
+        .delivery-card-head {
+            display: grid;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .delivery-hero-actions,
+        .delivery-filter-actions,
+        .delivery-action-row,
+        .delivery-empty-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+
+        .delivery-hero-actions a,
+        .delivery-filter-actions button,
+        .delivery-filter-actions a,
+        .delivery-action-row button,
+        .delivery-empty-actions a {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<section class="panel delivery-hero">
+    <div>
+        <p class="admin-eyebrow">Delivery Schedule</p>
+        <h3>Flower delivery board</h3>
+        <p class="panel-intro">Track recipients, delivery windows, assignments, and delivery status in one florist-friendly workspace.</p>
+        <div class="delivery-status-row" aria-label="Delivery summary">
+            <span><i class="fa-solid fa-truck-fast" aria-hidden="true"></i>{{ delivery_summary.total }} total deliveries</span>
+            <span><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ delivery_summary.today }} today</span>
+            <span><i class="fa-regular fa-clock" aria-hidden="true"></i>{{ delivery_summary.pending }} pending</span>
+        </div>
+    </div>
+    <div class="delivery-hero-actions">
+        <a class="button-link" href="{% url 'admin_dashboard:delivery_schedule' %}?date={{ today|date:'Y-m-d' }}">
+            <i class="fa-regular fa-calendar-check" aria-hidden="true"></i>
+            Today
+        </a>
+        <a class="button-secondary" href="{% url 'admin_dashboard:delivery_schedule' %}?status=PENDING">
+            <i class="fa-regular fa-clock" aria-hidden="true"></i>
+            Pending
+        </a>
+        {% if search or status or date_filter or window_filter %}
+        <a class="button-secondary" href="{% url 'admin_dashboard:delivery_schedule' %}">
+            <i class="fa-solid fa-list" aria-hidden="true"></i>
+            All deliveries
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="stats-grid delivery-stat-grid">
+    <a class="stat-card delivery-stat-card" href="{% url 'admin_dashboard:delivery_schedule' %}?date={{ today|date:'Y-m-d' }}"><span><i class="fa-regular fa-calendar" aria-hidden="true"></i>Today</span><strong>{{ delivery_summary.today }}</strong><p>Scheduled deliveries</p></a>
+    <a class="stat-card delivery-stat-card" href="{% url 'admin_dashboard:delivery_schedule' %}?status=PENDING"><span><i class="fa-regular fa-clock" aria-hidden="true"></i>Pending</span><strong>{{ delivery_summary.pending }}</strong><p>Need confirmation</p></a>
+    <a class="stat-card delivery-stat-card" href="{% url 'admin_dashboard:delivery_schedule' %}?status=OUT_FOR_DELIVERY"><span><i class="fa-solid fa-route" aria-hidden="true"></i>Out for Delivery</span><strong>{{ delivery_summary.out_for_delivery }}</strong><p>Currently on the way</p></a>
+    <a class="stat-card delivery-stat-card" href="{% url 'admin_dashboard:delivery_schedule' %}?status=DELIVERED&date={{ today|date:'Y-m-d' }}"><span><i class="fa-solid fa-check-double" aria-hidden="true"></i>Completed Today</span><strong>{{ delivery_summary.completed_today }}</strong><p>Delivered orders</p></a>
+</section>
+
+<section class="panel delivery-schedule-panel">
+    <div class="panel-head delivery-schedule-head">
+        <div>
+            <p class="admin-eyebrow">Dispatch Board</p>
+            <h3>Delivery schedule</h3>
+            <p class="panel-intro">Use the filters to find recipients, routes, windows, or driver assignments. Cards below stay tied to the live delivery database.</p>
+        </div>
+    </div>
+
+    <div class="orders-toolbar delivery-toolbar">
+        <form class="toolbar delivery-filter-form" method="get">
+            <div class="orders-search-field">
+                <span aria-hidden="true"></span>
+                <input type="search" name="q" value="{{ search }}" placeholder="Search recipient, phone, address, or driver" aria-label="Search deliveries">
+            </div>
+            <div class="delivery-filter-grid">
+                <select name="status" aria-label="Delivery status">
+                    <option value="">All statuses</option>
+                    {% for code, label in delivery_statuses %}
+                    <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <input type="date" name="date" value="{{ date_filter }}" aria-label="Delivery date">
+                <select name="window" aria-label="Delivery time window">
+                    <option value="">All windows</option>
+                    {% for window in delivery_windows %}
+                    <option value="{{ window.id }}" {% if window_filter == window.id|stringformat:"s" %}selected{% endif %}>{{ window }}</option>
+                    {% endfor %}
+                </select>
+                <div class="delivery-filter-actions">
+                    <button type="submit" data-loading-text="Filtering...">
+                        <i class="fa-solid fa-filter" aria-hidden="true"></i>
+                        Filter
+                    </button>
+                    {% if search or status or date_filter or window_filter %}
+                    <a class="button-secondary" href="{% url 'admin_dashboard:delivery_schedule' %}">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        Clear
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        {% if search or status or date_filter or window_filter %}
+        <div class="delivery-active-filters">
+            <span>{{ delivery_page.paginator.count }} matching deliver{{ delivery_page.paginator.count|pluralize:"y,ies" }}</span>
+            {% if search %}<span>Search: {{ search }}</span>{% endif %}
+            {% if status %}<span>Status: {{ status }}</span>{% endif %}
+            {% if date_filter %}<span>Date: {{ date_filter }}</span>{% endif %}
+            {% if window_filter %}<span>Window filter active</span>{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="delivery-board">
+        {% for delivery in delivery_page %}
+        <article class="delivery-card">
+            <header class="delivery-card-head">
+                <div class="delivery-card-title">
+                    <span class="delivery-id-chip"><i class="fa-solid fa-truck" aria-hidden="true"></i>{{ delivery.delivery_number }}</span>
+                    <h4>{{ delivery.recipient_name }}</h4>
+                    <p>Updated {{ delivery.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+                <span class="delivery-status-badge {% if delivery.status == 'DELIVERED' %}is-success{% elif delivery.status == 'FAILED' %}is-danger{% elif delivery.status == 'OUT_FOR_DELIVERY' %}is-moving{% elif delivery.status == 'PENDING' or delivery.status == 'RESCHEDULED' %}is-waiting{% endif %}">
+                    {% if delivery.status == 'DELIVERED' %}
+                    <i class="fa-solid fa-check" aria-hidden="true"></i>
+                    {% elif delivery.status == 'FAILED' %}
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    {% elif delivery.status == 'OUT_FOR_DELIVERY' %}
+                    <i class="fa-solid fa-route" aria-hidden="true"></i>
+                    {% else %}
+                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                    {% endif %}
+                    {{ delivery.get_status_display }}
+                </span>
+            </header>
+
+            <div class="delivery-card-grid">
+                <section class="delivery-card-detail">
+                    <span>Recipient</span>
+                    <strong>{{ delivery.recipient_phone }}</strong>
+                    <p>{{ delivery.delivery_address }}</p>
+                </section>
+                <section class="delivery-card-detail">
+                    <span>Schedule</span>
+                    <strong>{{ delivery.delivery_date|date:"M d, Y" }}</strong>
+                    <p>{{ delivery.delivery_time_window|default:"No time window" }}</p>
+                </section>
+                <section class="delivery-card-detail">
+                    <span>Assigned to</span>
+                    <strong>{{ delivery.assigned_to|default:"Unassigned" }}</strong>
+                    <p>{{ delivery.current_location|default:"No current location logged" }}</p>
+                </section>
+            </div>
+
+            <footer class="delivery-card-foot">
+                <div class="delivery-chip-list">
+                    <span><i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>Created {{ delivery.created_at|date:"M d, Y" }}</span>
+                    {% if delivery.delivered_at %}
+                    <span><i class="fa-solid fa-check-double" aria-hidden="true"></i>Delivered {{ delivery.delivered_at|date:"M d, Y H:i" }}</span>
+                    {% endif %}
+                </div>
+                {% if delivery.proof_of_delivery %}
+                <a class="delivery-proof-link" href="{{ delivery.proof_of_delivery.url }}" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-regular fa-image" aria-hidden="true"></i>
+                    View proof
+                </a>
+                {% endif %}
+            </footer>
+
+            <div class="delivery-action-row" aria-label="Delivery actions for {{ delivery.delivery_number }}">
+                {% if delivery.status == 'PENDING' or delivery.status == 'RESCHEDULED' %}
+                <form method="post" action="{% url 'admin_dashboard:delivery_quick_status' delivery.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="status" value="CONFIRMED">
+                    <button type="submit" data-loading-text="Confirming..."><i class="fa-solid fa-check" aria-hidden="true"></i>Confirm</button>
+                </form>
+                {% endif %}
+                {% if delivery.status == 'CONFIRMED' %}
+                <form method="post" action="{% url 'admin_dashboard:delivery_quick_status' delivery.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="status" value="OUT_FOR_DELIVERY">
+                    <button type="submit" data-loading-text="Updating..."><i class="fa-solid fa-route" aria-hidden="true"></i>Send out</button>
+                </form>
+                {% endif %}
+                {% if delivery.status == 'OUT_FOR_DELIVERY' %}
+                <form method="post" action="{% url 'admin_dashboard:delivery_quick_status' delivery.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="status" value="DELIVERED">
+                    <button type="submit" data-loading-text="Completing..."><i class="fa-solid fa-check-double" aria-hidden="true"></i>Delivered</button>
+                </form>
+                {% endif %}
+                {% if delivery.status != 'DELIVERED' and delivery.status != 'FAILED' %}
+                <form method="post" action="{% url 'admin_dashboard:delivery_quick_status' delivery.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="status" value="FAILED">
+                    <button type="submit" class="button-danger" data-loading-text="Updating..."><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>Failed</button>
+                </form>
+                {% endif %}
+                {% if delivery.status == 'FAILED' %}
+                <form method="post" action="{% url 'admin_dashboard:delivery_quick_status' delivery.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="status" value="RESCHEDULED">
+                    <button type="submit" class="button-secondary" data-loading-text="Rescheduling..."><i class="fa-regular fa-calendar-plus" aria-hidden="true"></i>Reschedule</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <section class="delivery-card-note">
+                <div>
+                    <span>Notes</span>
+                    <p>{{ delivery.delivery_notes|default:"No notes added." }}</p>
+                </div>
+            </section>
+        </article>
+        {% empty %}
+        <div class="delivery-empty">
+            <div>
+                <i class="fa-regular fa-calendar-xmark" aria-hidden="true"></i>
+            </div>
+            <h4>No deliveries match this schedule.</h4>
+            <p>Try clearing the filters or choose another status, date, or delivery window.</p>
+            <div class="delivery-empty-actions">
+                <a class="button-link" href="{% url 'admin_dashboard:delivery_schedule' %}?date={{ today|date:'Y-m-d' }}">View today</a>
+                {% if search or status or date_filter or window_filter %}
+                <a class="button-secondary" href="{% url 'admin_dashboard:delivery_schedule' %}">Clear filters</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% include "admin_dashboard/partials/pagination.html" with page_obj=delivery_page %}
+</section>
+{% endblock %}

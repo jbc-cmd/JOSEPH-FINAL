@@ -6,7 +6,8 @@
 
 {% block extra_css %}
 <meta name="turbo-cache-control" content="no-cache">
-<link rel="stylesheet" href="{% static 'admin_dashboard/css/admin_dashboard.css' %}?v=dashboard-analytics-links">
+<link rel="stylesheet" href="{% static 'admin_dashboard/css/admin_dashboard.css' %}?v=product-form-redesign">
+{% block admin_extra_css %}{% endblock %}
 {% endblock %}
 
 {% block content %}
@@ -29,8 +30,10 @@
             <a href="{% url 'admin_dashboard:products' %}" class="{% if request.resolver_match.url_name == 'products' or request.resolver_match.url_name == 'product_add' or request.resolver_match.url_name == 'product_edit' %}active{% endif %}">Products</a>
             <a href="{% url 'admin_dashboard:categories' %}" class="{% if request.resolver_match.url_name == 'categories' or request.resolver_match.url_name == 'category_add' or request.resolver_match.url_name == 'category_edit' %}active{% endif %}">Categories</a>
             <a href="{% url 'admin_dashboard:orders' %}" class="{% if request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'order_detail' %}active{% endif %}">Orders</a>
+            <a href="/dashboard/custom-bouquets/" class="{% if request.resolver_match.url_name == 'custom_bouquets' %}active{% endif %}">Custom Bouquets</a>
             <a href="{% url 'admin_dashboard:reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">Reports</a>
             <a href="{% url 'admin_dashboard:inventory' %}" class="{% if request.resolver_match.url_name == 'inventory' %}active{% endif %}">Inventory</a>
+            <a href="{% url 'admin_dashboard:delivery_schedule' %}" class="{% if request.resolver_match.url_name == 'delivery_schedule' %}active{% endif %}">Deliveries</a>
             <p class="admin-nav-label">System</p>
             <a href="{% url 'admin_dashboard:notifications' %}" class="{% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">Notifications</a>
             <a href="{% url 'admin_dashboard:settings' %}" class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">Settings</a>
@@ -64,7 +67,8 @@
             <div class="sidebar-links">
                 <a href="{% url 'admin_dashboard:product_add' %}">Add product</a>
                 <a href="{% url 'admin_dashboard:orders' %}?status=PENDING">Pending orders</a>
-                <a href="{% url 'admin_dashboard:users' %}?role=customer">Customers</a>
+                <a href="/dashboard/custom-bouquets/">Custom bouquets</a>
+                <a href="{% url 'admin_dashboard:delivery_schedule' %}">Delivery schedule</a>
                 <a href="{% url 'admin_dashboard:inventory' %}">Stock alerts</a>
             </div>
         </section>

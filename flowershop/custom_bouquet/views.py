@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Bouquet, BouquetItem, BouquetSize, WrappingStyle, RibbonColor, Extra, BouquetExtra
@@ -8,6 +9,19 @@ from cart.views import get_or_create_cart
 from cart.models import CartItem
 import json
 import uuid
+
+
+def _positive_int(value, field_name):
+    """Parse a positive integer from submitted builder data."""
+    try:
+        quantity = int(value)
+    except (TypeError, ValueError):
+        raise ValueError(f'{field_name} must be a whole number.')
+
+    if quantity < 1:
+        raise ValueError(f'{field_name} must be at least 1.')
+
+    return quantity
 
 
 def _resolve_selected_size(size_id, total_stems, custom_stem_count=None):
@@ -79,13 +93,17 @@ def get_bouquet_pricing(request):
 
         wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
         ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
+        if not wrapping or not ribbon:
+            raise ValueError('Bouquet wrapping and ribbon options need to be configured first.')
 
         flowers_price = 0
         total_stems = 0
         flower_breakdown = []
         for index, flower_id in enumerate(flower_ids):
             flower = Flower.objects.get(id=flower_id)
-            quantity = int(flower_quantities[index]) if index < len(flower_quantities) else 1
+            if not flower.is_available():
+                raise ValueError(f'{flower.get_name_display()} is currently out of stock.')
+            quantity = _positive_int(flower_quantities[index] if index < len(flower_quantities) else 1, 'Flower quantity')
             subtotal = float(flower.price) * quantity
             flowers_price += subtotal
             total_stems += quantity
@@ -100,7 +118,9 @@ def get_bouquet_pricing(request):
         extras_breakdown = []
         for index, extra_id in enumerate(extra_ids):
             extra = Extra.objects.get(id=extra_id)
-            quantity = int(extra_quantities[index]) if index < len(extra_quantities) else 1
+            quantity = _positive_int(extra_quantities[index] if index < len(extra_quantities) else 1, 'Extra quantity')
+            if extra.stock_quantity < quantity:
+                raise ValueError(f'{extra.get_name_display()} does not have enough stock.')
             subtotal = float(extra.price) * quantity
             extras_price += subtotal
             extras_breakdown.append({
@@ -110,7 +130,7 @@ def get_bouquet_pricing(request):
                 'subtotal': subtotal,
             })
 
-        custom_stem_count = int(custom_stem_count_raw) if custom_stem_count_raw not in (None, '') else None
+        custom_stem_count = _positive_int(custom_stem_count_raw, 'Custom stem count') if custom_stem_count_raw not in (None, '') else None
         size, is_custom_size, resolved_custom_count = _resolve_selected_size(size_id, total_stems, custom_stem_count)
         
         total = float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
@@ -147,75 +167,85 @@ def save_custom_bouquet(request):
         personal_message = data.get('personal_message', '')
         florist_instructions = data.get('florist_instructions', '')
         
-        wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
-        ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
+        if not isinstance(flowers_data, list):
+            raise ValueError('Please choose at least one flower.')
+        if not isinstance(extras_data, list):
+            extras_data = []
 
-        if not wrapping or not ribbon:
-            raise ValueError('Bouquet configuration is incomplete. Please configure wrapping defaults in admin.')
-        
-        # Calculate total price
-        flowers_price = 0
-        extras_price = 0
-        total_stems = 0
+        with transaction.atomic():
+            wrapping = WrappingStyle.objects.get(id=wrapping_id) if wrapping_id else WrappingStyle.objects.first()
+            ribbon = RibbonColor.objects.get(id=ribbon_id) if ribbon_id else RibbonColor.objects.first()
 
-        for flower_data in flowers_data:
-            quantity = int(flower_data.get('quantity', 1))
-            total_stems += quantity
+            if not wrapping or not ribbon:
+                raise ValueError('Bouquet configuration is incomplete. Please configure wrapping and ribbon defaults in admin.')
 
-        custom_stem_count = int(custom_stem_count_raw) if custom_stem_count_raw not in (None, '') else None
-        size, is_custom_size, resolved_custom_count = _resolve_selected_size(size_id, total_stems, custom_stem_count)
-        
-        bouquet = Bouquet.objects.create(
-            name=name,
-            description=florist_instructions,
-            size=size,
-            is_custom_size=is_custom_size,
-            custom_flower_count=resolved_custom_count,
-            wrapping=wrapping,
-            ribbon_color=ribbon,
-            personal_message=personal_message,
-            base_price=0,
-            total_price=0,  # Will be calculated below
-        )
-        
-        # Add flowers to bouquet
-        for flower_data in flowers_data:
-            flower = Flower.objects.get(id=flower_data['flower_id'])
-            quantity = int(flower_data.get('quantity', 1))
-            
-            BouquetItem.objects.create(
-                bouquet=bouquet,
-                flower=flower,
-                quantity=quantity,
-                price_per_unit=flower.price
+            total_stems = 0
+            flower_lines = []
+            for flower_data in flowers_data:
+                if not isinstance(flower_data, dict):
+                    raise ValueError('Flower selection is invalid.')
+                flower = Flower.objects.get(id=flower_data['flower_id'])
+                if not flower.is_available():
+                    raise ValueError(f'{flower.get_name_display()} is currently out of stock.')
+                quantity = _positive_int(flower_data.get('quantity', 1), 'Flower quantity')
+                total_stems += quantity
+                flower_lines.append((flower, quantity))
+
+            if not flower_lines:
+                raise ValueError('Please choose at least one flower.')
+
+            custom_stem_count = _positive_int(custom_stem_count_raw, 'Custom stem count') if custom_stem_count_raw not in (None, '') else None
+            size, is_custom_size, resolved_custom_count = _resolve_selected_size(size_id, total_stems, custom_stem_count)
+
+            extra_lines = []
+            for extra_data in extras_data:
+                if not isinstance(extra_data, dict):
+                    raise ValueError('Extra selection is invalid.')
+                extra = Extra.objects.get(id=extra_data['extra_id'])
+                quantity = _positive_int(extra_data.get('quantity', 1), 'Extra quantity')
+                if extra.stock_quantity < quantity:
+                    raise ValueError(f'{extra.get_name_display()} does not have enough stock.')
+                extra_lines.append((extra, quantity))
+
+            flowers_price = sum(flower.price * quantity for flower, quantity in flower_lines)
+            extras_price = sum(extra.price * quantity for extra, quantity in extra_lines)
+            total = wrapping.price + ribbon.price + flowers_price + extras_price
+
+            bouquet = Bouquet.objects.create(
+                name=name,
+                description=florist_instructions,
+                size=size,
+                is_custom_size=is_custom_size,
+                custom_flower_count=resolved_custom_count,
+                wrapping=wrapping,
+                ribbon_color=ribbon,
+                personal_message=personal_message,
+                base_price=0,
+                total_price=total,
             )
-            flowers_price += float(flower.price) * quantity
-        
-        # Add extras to bouquet
-        for extra_data in extras_data:
-            extra = Extra.objects.get(id=extra_data['extra_id'])
-            quantity = int(extra_data.get('quantity', 1))
-            
-            BouquetExtra.objects.create(
+
+            for flower, quantity in flower_lines:
+                BouquetItem.objects.create(
+                    bouquet=bouquet,
+                    flower=flower,
+                    quantity=quantity,
+                    price_per_unit=flower.price
+                )
+
+            for extra, quantity in extra_lines:
+                BouquetExtra.objects.create(
+                    bouquet=bouquet,
+                    extra=extra,
+                    quantity=quantity
+                )
+
+            cart = get_or_create_cart(request)
+            CartItem.objects.create(
+                cart=cart,
                 bouquet=bouquet,
-                extra=extra,
-                quantity=quantity
+                quantity=1,
+                price_at_purchase=bouquet.total_price
             )
-            extras_price += float(extra.price) * quantity
-        
-        # Calculate final total
-        total = float(wrapping.price) + float(ribbon.price) + flowers_price + extras_price
-        bouquet.total_price = total
-        bouquet.save()
-        
-        # Add to cart
-        cart = get_or_create_cart(request)
-        CartItem.objects.create(
-            cart=cart,
-            bouquet=bouquet,
-            quantity=1,
-            price_at_purchase=bouquet.total_price
-        )
         
         return JsonResponse({
             'success': True,

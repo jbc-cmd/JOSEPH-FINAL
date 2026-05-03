@@ -4,15 +4,20 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import DisallowedHost
 from django.core.paginator import Paginator
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_date
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from accounts.models import UserProfile
 from configurations.models import GeneralConfig, ServiceConfig
+from custom_bouquet.models import Bouquet, BouquetSize
+from delivery.models import Delivery, DeliveryStatusHistory, DeliveryTimeWindow
 from orders.models import Order
 from payments.models import RefundRequest
 from products.models import Category, Product
@@ -73,6 +78,21 @@ def _admin_context(request, **extra):
 def _paginate(request, queryset, per_page=10):
     paginator = Paginator(queryset, per_page)
     return paginator.get_page(request.GET.get('page'))
+
+
+def _safe_next_url(request, fallback):
+    next_url = request.POST.get('next', '').strip()
+    try:
+        allowed_hosts = {request.get_host()}
+    except DisallowedHost:
+        return fallback
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts=allowed_hosts,
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return fallback
 
 
 @admin_required
@@ -537,6 +557,165 @@ def report_list(request):
 @admin_required
 def inventory_dashboard(request):
     return render(request, 'admin_dashboard/inventory.html', _admin_context(request, page_title='Inventory', snapshot=get_inventory_snapshot()))
+
+
+@admin_required
+def custom_bouquet_list(request):
+    search = request.GET.get('q', '').strip()
+    size_filter = request.GET.get('size', '').strip()
+    date_filter = request.GET.get('date', '').strip()
+
+    bouquets = (
+        Bouquet.objects
+        .select_related('size', 'wrapping', 'ribbon_color')
+        .prefetch_related('items__flower', 'extras__extra')
+        .annotate(stem_count=Sum('items__quantity'))
+        .order_by('-created_at')
+    )
+
+    if search:
+        bouquets = bouquets.filter(
+            Q(name__icontains=search) |
+            Q(description__icontains=search) |
+            Q(personal_message__icontains=search) |
+            Q(items__flower__name__icontains=search) |
+            Q(extras__extra__name__icontains=search)
+        ).distinct()
+    if size_filter == 'custom':
+        bouquets = bouquets.filter(is_custom_size=True)
+    elif size_filter:
+        if size_filter.isdigit():
+            bouquets = bouquets.filter(size_id=size_filter)
+        else:
+            size_filter = ''
+    if date_filter:
+        parsed_date = parse_date(date_filter)
+        if parsed_date:
+            bouquets = bouquets.filter(created_at__date=parsed_date)
+        else:
+            date_filter = ''
+
+    today = timezone.localdate()
+    bouquet_summary = {
+        'total': Bouquet.objects.count(),
+        'today': Bouquet.objects.filter(created_at__date=today).count(),
+        'custom_size': Bouquet.objects.filter(is_custom_size=True).count(),
+        'total_value': Bouquet.objects.aggregate(total=Sum('total_price'))['total'] or 0,
+    }
+
+    context = _admin_context(
+        request,
+        page_title='Custom Bouquets',
+        bouquet_page=_paginate(request, bouquets, per_page=12),
+        bouquet_summary=bouquet_summary,
+        bouquet_sizes=BouquetSize.objects.order_by('base_price'),
+        search=search,
+        size_filter=size_filter,
+        date_filter=date_filter,
+        today=today,
+    )
+    return render(request, 'admin_dashboard/custom_bouquets.html', context)
+
+
+@admin_required
+def delivery_schedule(request):
+    search = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+    date_filter = request.GET.get('date', '').strip()
+    window_filter = request.GET.get('window', '').strip()
+    today = timezone.localdate()
+
+    deliveries = Delivery.objects.select_related('delivery_time_window').order_by(
+        'delivery_date',
+        'delivery_time_window__start_time',
+        'recipient_name',
+    )
+
+    if search:
+        deliveries = deliveries.filter(
+            Q(delivery_number__icontains=search) |
+            Q(recipient_name__icontains=search) |
+            Q(recipient_phone__icontains=search) |
+            Q(delivery_address__icontains=search) |
+            Q(assigned_to__icontains=search)
+        )
+    if status:
+        valid_statuses = {code for code, _ in Delivery.DELIVERY_STATUS}
+        if status in valid_statuses:
+            deliveries = deliveries.filter(status=status)
+        else:
+            status = ''
+    if date_filter:
+        parsed_date = parse_date(date_filter)
+        if parsed_date:
+            deliveries = deliveries.filter(delivery_date=parsed_date)
+        else:
+            date_filter = ''
+    if window_filter:
+        if window_filter.isdigit():
+            deliveries = deliveries.filter(delivery_time_window_id=window_filter)
+        else:
+            window_filter = ''
+
+    delivery_summary = {
+        'total': Delivery.objects.count(),
+        'today': Delivery.objects.filter(delivery_date=today).count(),
+        'pending': Delivery.objects.filter(status='PENDING').count(),
+        'out_for_delivery': Delivery.objects.filter(status='OUT_FOR_DELIVERY').count(),
+        'completed_today': Delivery.objects.filter(delivery_date=today, status='DELIVERED').count(),
+    }
+
+    context = _admin_context(
+        request,
+        page_title='Delivery Schedule',
+        delivery_page=_paginate(request, deliveries, per_page=15),
+        delivery_summary=delivery_summary,
+        delivery_statuses=Delivery.DELIVERY_STATUS,
+        delivery_windows=DeliveryTimeWindow.objects.order_by('start_time'),
+        search=search,
+        status=status,
+        date_filter=date_filter,
+        window_filter=window_filter,
+        today=today,
+    )
+    return render(request, 'admin_dashboard/delivery_schedule.html', context)
+
+
+@admin_required
+@require_POST
+def update_delivery_quick_status(request, delivery_id):
+    delivery = get_object_or_404(Delivery, pk=delivery_id)
+    next_status = request.POST.get('status', '').strip()
+    valid_statuses = {code for code, _ in Delivery.DELIVERY_STATUS}
+
+    if next_status not in valid_statuses:
+        messages.error(request, 'Please choose a valid delivery status.')
+        return redirect(_safe_next_url(request, 'admin_dashboard:delivery_schedule'))
+
+    delivery.status = next_status
+    if next_status == 'DELIVERED':
+        delivery.delivered_at = timezone.now()
+    elif next_status != 'DELIVERED':
+        delivery.delivered_at = None
+    delivery.save(update_fields=['status', 'delivered_at', 'updated_at'])
+
+    DeliveryStatusHistory.objects.create(
+        delivery=delivery,
+        status=next_status,
+        notes='Updated from delivery schedule board.',
+        updated_by=request.user.get_full_name() or request.user.username,
+    )
+    log_admin_activity(
+        request,
+        category='ORDER',
+        action='Updated delivery status',
+        description=f'Updated {delivery.delivery_number} to {delivery.get_status_display()}.',
+        target_type='Delivery',
+        target_id=delivery.pk,
+        target_label=delivery.delivery_number,
+    )
+    messages.success(request, f'{delivery.delivery_number} is now {delivery.get_status_display()}.')
+    return redirect(_safe_next_url(request, 'admin_dashboard:delivery_schedule'))
 
 
 @admin_required

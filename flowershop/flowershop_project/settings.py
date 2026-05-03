@@ -44,6 +44,15 @@ def derive_csrf_trusted_origins(hosts):
     return origins
 
 
+def resolve_sqlite_name(name):
+    """Keep local SQLite paths anchored to the Django project directory."""
+    db_name = str(name)
+    if db_name in {':memory:', ''} or db_name.startswith('file:'):
+        return db_name
+    path = Path(db_name)
+    return path if path.is_absolute() else BASE_DIR / path
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-change-in-production')
 
@@ -153,10 +162,12 @@ if DATABASE_URL:
         )
     }
 else:
+    DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
+    DB_NAME = config('DB_NAME', default=BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
-            'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-            'NAME': config('DB_NAME', default=BASE_DIR / 'db.sqlite3'),
+            'ENGINE': DB_ENGINE,
+            'NAME': resolve_sqlite_name(DB_NAME) if DB_ENGINE == 'django.db.backends.sqlite3' else DB_NAME,
             'USER': config('DB_USER', default=''),
             'PASSWORD': config('DB_PASSWORD', default=''),
             'HOST': config('DB_HOST', default=''),
