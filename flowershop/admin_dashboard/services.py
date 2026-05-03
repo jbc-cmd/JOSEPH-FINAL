@@ -22,8 +22,7 @@ INTEGER_ZERO = Value(0, output_field=IntegerField())
 
 
 def get_overview_metrics():
-    now = timezone.now()
-    today = now.date()
+    today = timezone.localdate()
     week_start = today - timedelta(days=6)
     month_start = today.replace(day=1)
 
@@ -47,23 +46,29 @@ def get_overview_metrics():
     }
 
 
-def get_sales_chart_data(days=14):
-    since = timezone.now() - timedelta(days=days - 1)
+def get_sales_chart_data(days=7):
+    today = timezone.localdate()
+    start_date = today - timedelta(days=days - 1)
     series = (
-        Order.objects.filter(created_at__gte=since, payment_status='COMPLETED')
-        .annotate(day=TruncDate('created_at'))
+        Order.objects.filter(created_at__date__gte=start_date, created_at__date__lte=today, payment_status='COMPLETED')
+        .annotate(day=TruncDate('created_at', tzinfo=timezone.get_current_timezone()))
         .values('day')
         .annotate(total=Coalesce(Sum('total_amount'), MONEY_ZERO), count=Count('id'))
         .order_by('day')
     )
-    return [
-        {
-            'label': item['day'].strftime('%b %d'),
-            'sales': float(item['total']),
-            'orders': item['count'],
-        }
-        for item in series
-    ]
+    series_by_day = {item['day']: item for item in series}
+
+    chart_data = []
+    for offset in range(days):
+        day = start_date + timedelta(days=offset)
+        item = series_by_day.get(day, {})
+        chart_data.append({
+            'label': day.strftime('%a'),
+            'date': day.isoformat(),
+            'sales': float(item.get('total') or 0),
+            'orders': item.get('count') or 0,
+        })
+    return chart_data
 
 
 def get_monthly_trends(limit=6):

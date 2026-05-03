@@ -498,8 +498,8 @@ button:hover,
     transform: rotate(45deg);
 }
 
-.orders-search-field input {
-    padding-left: 38px;
+.toolbar .orders-search-field input {
+    padding-left: 40px;
 }
 
 .orders-filter-grid {
@@ -960,8 +960,8 @@ button:hover,
     transform: rotate(45deg);
 }
 
-.users-search-field input {
-    padding-left: 38px;
+.toolbar .users-search-field input {
+    padding-left: 40px;
 }
 
 .users-filter-grid {

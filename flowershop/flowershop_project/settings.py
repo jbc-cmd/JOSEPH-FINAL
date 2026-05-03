@@ -10,6 +10,23 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def local_env_value(key):
+    """Read a value from the project .env before broad system environment variables."""
+    env_path = BASE_DIR / '.env'
+    if not env_path.exists():
+        return None
+
+    for raw_line in env_path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+
+        name, value = line.split('=', 1)
+        if name.strip() == key:
+            return value.strip().strip('"').strip("'")
+    return None
+
+
 def env_bool(value):
     """Parse deployment booleans defensively across local and hosted envs."""
     if isinstance(value, bool):
@@ -57,7 +74,8 @@ def resolve_sqlite_name(name):
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default='True', cast=env_bool)
+LOCAL_DEBUG = local_env_value('DEBUG')
+DEBUG = env_bool(LOCAL_DEBUG if LOCAL_DEBUG is not None else config('DEBUG', default='True'))
 
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
@@ -195,7 +213,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = config('TIME_ZONE', default='Asia/Manila')
 USE_I18N = True
 USE_TZ = True
 

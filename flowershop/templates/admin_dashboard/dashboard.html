@@ -14,32 +14,6 @@
         </div>
     </section>
 
-    <section class="mobile-profile-card" aria-label="Admin profile">
-        <div class="mobile-profile-main">
-            <div class="mobile-profile-avatar" aria-hidden="true">
-                {% if request.user.profile.profile_picture %}
-                <img src="{{ request.user.profile.profile_picture.url }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
-                {% else %}
-                <i class="fa-solid fa-user" aria-hidden="true"></i>
-                {% endif %}
-            </div>
-            <div>
-                <strong>{{ admin_display_name }}</strong>
-                <span>{{ request.user.email|default:"flowershopjoseph@gmail.com" }}</span>
-            </div>
-        </div>
-        <div class="mobile-profile-actions">
-            <a href="{% url 'admin_dashboard:settings' %}">
-                <i class="fa-regular fa-user" aria-hidden="true"></i>
-                <span>Edit Profile</span>
-            </a>
-            <a class="danger" href="{% url 'accounts:logout' %}">
-                <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </section>
-
     <section class="mobile-stats-grid" aria-label="Sales statistics">
         <article class="mobile-stat-card sales-summary-card is-selected" role="button" tabindex="0" aria-pressed="true" data-summary-title="Total Sales" data-summary-value="{{ admin_settings.currency_symbol }}{{ metrics.total_sales }}" data-summary-detail="Completed revenue from all paid orders." data-summary-url="{% url 'admin_dashboard:reports' %}">
             <span class="stat-icon stat-pink"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span>
@@ -201,16 +175,7 @@
 {% block admin_extra_js %}
 <script>
 const chartData = JSON.parse(document.getElementById('sales-chart-data').textContent);
-const fallbackSalesData = [
-    { label: 'Mon', sales: 100 },
-    { label: 'Tue', sales: 800 },
-    { label: 'Wed', sales: 1150 },
-    { label: 'Thu', sales: 900 },
-    { label: 'Fri', sales: 300 },
-    { label: 'Sat', sales: 300 },
-    { label: 'Sun', sales: 650 }
-];
-const salesSeries = chartData.length ? chartData.slice(-7) : fallbackSalesData;
+const salesSeries = chartData.slice(-7);
 const hasSales = salesSeries.some(item => Number(item.sales) > 0);
 const ctx = document.getElementById('salesChart');
 const currencySymbol = '{{ admin_settings.currency_symbol|escapejs }}';
@@ -290,7 +255,7 @@ if (ctx) {
                 },
                 y: {
                     beginAtZero: true,
-                    suggestedMax: hasSales ? undefined : 1500,
+                    suggestedMax: hasSales ? undefined : 100,
                     grid: { color: 'rgba(23, 35, 44, 0.07)' },
                     ticks: {
                         color: '#8b8f98',
