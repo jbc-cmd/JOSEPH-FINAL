@@ -140,34 +140,27 @@
             <h2>Recent Activity</h2>
             <a href="{% url 'admin_dashboard:audit_logs' %}">View all</a>
         </div>
-        {% with latest_user=recent_users.0 latest_order=recent_orders.0 latest_product=recent_products.0 %}
         <div class="recent-activity-list">
+            {% for activity in recent_activity %}
             <article>
-                <span class="activity-pink"><i class="fa-solid fa-user-plus" aria-hidden="true"></i></span>
+                <span class="{{ activity.icon_class }}"><i class="{{ activity.icon }}" aria-hidden="true"></i></span>
                 <div>
-                    <strong>New user signed up</strong>
-                    <p>{% if latest_user %}{{ latest_user.get_full_name|default:latest_user.username }} has created an account{% else %}No new customer accounts yet{% endif %}</p>
+                    <strong>{{ activity.title }}</strong>
+                    <p>{{ activity.message }}</p>
                 </div>
-                <time>{% if latest_user %}{{ latest_user.date_joined|date:"H:i A" }}{% else %}Today{% endif %}</time>
+                <time datetime="{{ activity.timestamp|date:'c' }}">{{ activity.time_label }}</time>
             </article>
+            {% empty %}
             <article>
-                <span class="activity-green"><i class="fa-regular fa-circle-check" aria-hidden="true"></i></span>
+                <span class="activity-gold"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
                 <div>
-                    <strong>Order completed</strong>
-                    <p>{% if latest_order %}{{ latest_order.order_number }} is {{ latest_order.get_status_display|lower }}{% else %}No orders recorded yet{% endif %}</p>
+                    <strong>No recent activity</strong>
+                    <p>New customers, order updates, and added products will appear here.</p>
                 </div>
-                <time>{% if latest_order %}{{ latest_order.created_at|date:"H:i A" }}{% else %}Today{% endif %}</time>
+                <time>Today</time>
             </article>
-            <article>
-                <span class="activity-gold"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
-                <div>
-                    <strong>Product added</strong>
-                    <p>{% if latest_product %}{{ latest_product.name }} has been added to inventory{% else %}No products available yet{% endif %}</p>
-                </div>
-                <time>{% if latest_product %}{{ latest_product.updated_at|date:"M d" }}{% else %}Today{% endif %}</time>
-            </article>
+            {% endfor %}
         </div>
-        {% endwith %}
     </section>
 </div>
 {% endblock %}

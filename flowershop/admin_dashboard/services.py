@@ -89,8 +89,68 @@ def get_monthly_trends(limit=6):
     ]))
 
 
-def get_recent_activity(limit=12):
-    return AdminActivityLog.objects.select_related('admin_user')[:limit]
+def _activity_time_label(value):
+    local_value = timezone.localtime(value)
+    today = timezone.localdate()
+
+    if local_value.date() == today:
+        return local_value.strftime('%I:%M %p').lstrip('0')
+    if local_value.year == today.year:
+        return local_value.strftime('%b %d').replace(' 0', ' ')
+    return local_value.strftime('%b %d, %Y').replace(' 0', ' ')
+
+
+def _order_activity_title(order):
+    status = order.get_status_display()
+    if order.status == 'DELIVERED':
+        return 'Order delivered'
+    if order.status == 'CANCELLED':
+        return 'Order cancelled'
+    return f'Order {status.lower()}'
+
+
+def _order_activity_message(order):
+    status = order.get_status_display().lower()
+    payment_status = order.get_payment_status_display().lower()
+    return f'{order.order_number} is {status}; payment is {payment_status}.'
+
+
+def get_recent_activity(limit=3):
+    activity = []
+
+    for user in User.objects.filter(is_staff=False, is_superuser=False).order_by('-date_joined')[:limit]:
+        display_name = user.get_full_name() or user.username
+        activity.append({
+            'timestamp': user.date_joined,
+            'time_label': _activity_time_label(user.date_joined),
+            'icon_class': 'activity-pink',
+            'icon': 'fa-solid fa-user-plus',
+            'title': 'New user signed up',
+            'message': f'{display_name} created an account.',
+        })
+
+    for order in Order.objects.order_by('-updated_at')[:limit]:
+        activity.append({
+            'timestamp': order.updated_at,
+            'time_label': _activity_time_label(order.updated_at),
+            'icon_class': 'activity-green' if order.status == 'DELIVERED' else 'activity-gold',
+            'icon': 'fa-regular fa-circle-check' if order.status == 'DELIVERED' else 'fa-regular fa-clock',
+            'title': _order_activity_title(order),
+            'message': _order_activity_message(order),
+        })
+
+    for product in Product.objects.order_by('-created_at')[:limit]:
+        activity.append({
+            'timestamp': product.created_at,
+            'time_label': _activity_time_label(product.created_at),
+            'icon_class': 'activity-gold',
+            'icon': 'fa-solid fa-box-open',
+            'title': 'Product added',
+            'message': f'{product.name} was added to inventory.',
+        })
+
+    activity.sort(key=lambda item: item['timestamp'], reverse=True)
+    return activity[:limit]
 
 
 def get_recent_orders(limit=8):

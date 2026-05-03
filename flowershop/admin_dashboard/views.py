@@ -42,7 +42,6 @@ from .services import (
     get_overview_metrics,
     get_product_performance,
     get_recent_activity,
-    get_recent_orders,
     get_report_context,
     get_sales_chart_data,
     get_security_snapshot,
@@ -102,9 +101,6 @@ def dashboard_home(request):
         page_title='Overview',
         metrics=get_overview_metrics(),
         recent_activity=get_recent_activity(),
-        recent_orders=get_recent_orders(),
-        recent_users=User.objects.order_by('-date_joined')[:6],
-        recent_products=Product.objects.select_related('category').order_by('-updated_at')[:6],
         low_stock_products=Product.objects.filter(
             stock_quantity__lte=get_admin_settings().low_stock_threshold,
             stock_quantity__gt=0,
