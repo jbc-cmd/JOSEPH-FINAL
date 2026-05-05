@@ -18,18 +18,19 @@
     .builder-page .builder-hero {
         overflow: hidden;
         border: 1px solid rgba(231, 199, 188, 0.72);
-        background: rgba(255, 250, 246, 0.78);
+        background:
+            linear-gradient(90deg, rgba(255, 250, 246, 0.97) 0%, rgba(255, 250, 246, 0.92) 44%, rgba(255, 250, 246, 0.56) 72%, rgba(255, 250, 246, 0.22) 100%),
+            url("{% static 'images/custom-bouquet.png' %}"),
+            rgba(255, 250, 246, 0.78);
+        background-position: center, right center;
+        background-repeat: no-repeat;
+        background-size: 100% 100%, clamp(25rem, 43vw, 36rem) auto;
         box-shadow: 0 20px 50px rgba(145, 89, 97, 0.08);
     }
 
     .builder-page .builder-hero__image {
         min-height: 15rem;
-        background:
-            linear-gradient(180deg, rgba(255, 250, 246, 0.25), rgba(251, 241, 243, 0.9)),
-            url("{% static 'images/custom-bouquet.png' %}");
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+        background: transparent;
     }
 
     .builder-page .builder-hero__eyebrow {
@@ -291,6 +292,16 @@
     }
 
     @media (max-width: 639px) {
+        .builder-page .builder-hero {
+            background:
+                linear-gradient(90deg, rgba(255, 250, 246, 0.97), rgba(255, 250, 246, 0.84)),
+                url("{% static 'images/custom-bouquet.png' %}"),
+                rgba(255, 250, 246, 0.78);
+            background-position: center, calc(100% + 7rem) center;
+            background-repeat: no-repeat;
+            background-size: 100% 100%, 24rem auto;
+        }
+
         .builder-page .builder-trust-strip {
             grid-template-columns: 1fr;
         }
@@ -298,6 +309,12 @@
         .builder-page .builder-option-badge {
             padding-left: 0.625rem;
             padding-right: 0.625rem;
+        }
+    }
+
+    @media (max-width: 1023px) {
+        .builder-page .builder-hero__image {
+            display: none;
         }
     }
 </style>

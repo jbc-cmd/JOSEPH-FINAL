@@ -20,6 +20,7 @@ from django.utils import timezone
 import uuid
 import re
 import logging
+import requests
 from payments.services import PayMongoError, create_checkout_session, paymongo_is_configured
 
 
@@ -37,7 +38,11 @@ ORDER_TIMELINE = [
 def _send_order_receipt_email(order):
     """Send a simple order receipt email to the customer."""
     subject = f'Order Confirmation - {order.order_number}'
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '') or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
+    from_email = (
+        getattr(settings, 'CONTACT_FROM_EMAIL', '')
+        if getattr(settings, 'RESEND_API_KEY', '')
+        else getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    ) or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
     recipient_list = [order.customer_email]
 
     item_lines = []
@@ -79,6 +84,26 @@ def _send_order_receipt_email(order):
         <p>Thank you for choosing Joseph Flowershop.</p>
     </div>
     """
+
+    if getattr(settings, 'RESEND_API_KEY', ''):
+        response = requests.post(
+            'https://api.resend.com/emails',
+            headers={
+                'Authorization': f"Bearer {settings.RESEND_API_KEY}",
+                'Content-Type': 'application/json',
+                'User-Agent': 'joseph-flowershop/1.0',
+            },
+            json={
+                'from': from_email,
+                'to': recipient_list,
+                'subject': subject,
+                'text': text_body,
+                'html': html_body,
+            },
+            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
+        )
+        response.raise_for_status()
+        return
 
     message = EmailMultiAlternatives(subject, text_body, from_email, recipient_list)
     message.attach_alternative(html_body, 'text/html')
@@ -477,6 +502,11 @@ def create_order(request):
             checkout_data = session_payload.get('data', {})
             checkout_attributes = checkout_data.get('attributes', {})
             checkout_url = checkout_attributes.get('checkout_url', '')
+            if not checkout_url:
+                if order.delivery_id:
+                    order.delivery.delete()
+                order.delete()
+                return error_response('PayMongo did not return a GCash checkout URL. Please try again.')
             payment.transaction_id = checkout_data.get('id', '')[:255]
             payment.payment_gateway = 'PAYMONGO'
             payment.reference_number = order.order_number
@@ -496,6 +526,10 @@ def create_order(request):
 
         # Store order in session for confirmation page
         request.session['order_id'] = order.id
+        try:
+            _send_order_receipt_email(order)
+        except Exception:
+            logger.exception('Failed to send receipt email for order %s', order.order_number)
 
         redirect_url = reverse('orders:order_confirmation', kwargs={'order_id': order.id})
         if expects_json:
