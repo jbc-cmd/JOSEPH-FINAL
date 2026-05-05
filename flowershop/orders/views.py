@@ -26,6 +26,12 @@ from payments.services import PayMongoError, create_checkout_session, paymongo_i
 
 logger = logging.getLogger(__name__)
 
+SMTP_PASSWORD_PLACEHOLDERS = {
+    '',
+    'replace-with-email-app-password',
+    'your-app-password',
+}
+
 ORDER_TIMELINE = [
     ('PENDING', 'Order Placed', 'Your order has been received and queued for our team.', 'fa-receipt'),
     ('PROCESSING', 'Processing', 'We are confirming your order details and delivery schedule.', 'fa-credit-card'),
@@ -35,14 +41,31 @@ ORDER_TIMELINE = [
 ]
 
 
+def _email_timeout():
+    return min(getattr(settings, 'EMAIL_TIMEOUT', 10), 5)
+
+
+def _django_email_backend_can_send():
+    email_backend = getattr(settings, 'EMAIL_BACKEND', '')
+    if email_backend != 'django.core.mail.backends.smtp.EmailBackend':
+        return True
+
+    host_user = str(getattr(settings, 'EMAIL_HOST_USER', '')).strip()
+    host_password = str(getattr(settings, 'EMAIL_HOST_PASSWORD', '')).strip()
+    return bool(host_user) and 'your-email' not in host_user and host_password not in SMTP_PASSWORD_PLACEHOLDERS
+
+
+def _send_receipt_with_django_email(subject, text_body, html_body, from_email, recipient_list):
+    message = EmailMultiAlternatives(subject, text_body, from_email, recipient_list)
+    message.attach_alternative(html_body, 'text/html')
+    message.send(fail_silently=False)
+
+
 def _send_order_receipt_email(order):
     """Send a simple order receipt email to the customer."""
     subject = f'Order Confirmation - {order.order_number}'
-    from_email = (
-        getattr(settings, 'CONTACT_FROM_EMAIL', '')
-        if getattr(settings, 'RESEND_API_KEY', '')
-        else getattr(settings, 'DEFAULT_FROM_EMAIL', '')
-    ) or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
+    resend_from_email = getattr(settings, 'CONTACT_FROM_EMAIL', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+    django_from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '') or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
     recipient_list = [order.customer_email]
 
     item_lines = []
@@ -86,28 +109,31 @@ def _send_order_receipt_email(order):
     """
 
     if getattr(settings, 'RESEND_API_KEY', ''):
-        response = requests.post(
-            'https://api.resend.com/emails',
-            headers={
-                'Authorization': f"Bearer {settings.RESEND_API_KEY}",
-                'Content-Type': 'application/json',
-                'User-Agent': 'joseph-flowershop/1.0',
-            },
-            json={
-                'from': from_email,
-                'to': recipient_list,
-                'subject': subject,
-                'text': text_body,
-                'html': html_body,
-            },
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10),
-        )
-        response.raise_for_status()
-        return
+        try:
+            response = requests.post(
+                'https://api.resend.com/emails',
+                headers={
+                    'Authorization': f"Bearer {settings.RESEND_API_KEY}",
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'joseph-flowershop/1.0',
+                },
+                json={
+                    'from': resend_from_email,
+                    'to': recipient_list,
+                    'subject': subject,
+                    'text': text_body,
+                    'html': html_body,
+                },
+                timeout=_email_timeout(),
+            )
+            response.raise_for_status()
+            return
+        except requests.RequestException:
+            if not _django_email_backend_can_send():
+                raise
+            logger.warning('Resend receipt email failed; falling back to Django email backend.', exc_info=True)
 
-    message = EmailMultiAlternatives(subject, text_body, from_email, recipient_list)
-    message.attach_alternative(html_body, 'text/html')
-    message.send(fail_silently=False)
+    _send_receipt_with_django_email(subject, text_body, html_body, django_from_email, recipient_list)
 
 
 def _normalize_order_number(raw_value):

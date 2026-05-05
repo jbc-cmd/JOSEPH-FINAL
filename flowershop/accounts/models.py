@@ -81,5 +81,9 @@ def sync_profile_delivery_address_on_save(sender, instance, **kwargs):
 
 @receiver(post_delete, sender=DeliveryAddress)
 def sync_profile_delivery_address_on_delete(sender, instance, **kwargs):
-    profile, _ = UserProfile.objects.get_or_create(user=instance.user)
+    origin = kwargs.get('origin')
+    if isinstance(origin, User) or getattr(origin, 'model', None) is User:
+        return
+
+    profile, _ = UserProfile.objects.get_or_create(user_id=instance.user_id)
     profile.sync_default_delivery_address()

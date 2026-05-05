@@ -41,6 +41,7 @@ NAME_PATTERN = re.compile(r"^[A-Za-z]+(?:[ -][A-Za-z]+)*$")
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.]{4,30}$")
 PHONE_SANITIZE_PATTERN = re.compile(r"[\s\-()]")
 PHONE_PATTERN = re.compile(r"^\+?\d{10,15}$")
+PH_REGISTRATION_PHONE_PATTERN = re.compile(r"^09\d{9}$")
 RESERVED_USERNAMES = {
     'admin', 'administrator', 'root', 'system', 'support', 'help',
     'owner', 'staff', 'null', 'none', 'me', 'account', 'login', 'signup',
@@ -81,7 +82,7 @@ def register(request):
         first_name = _normalize_name(request.POST.get('first_name', ''))
         last_name = _normalize_name(request.POST.get('last_name', ''))
         raw_phone_number = request.POST.get('phone_number', '').strip()
-        phone_number = _normalize_phone_number(raw_phone_number)
+        phone_number = raw_phone_number
         agreed_to_terms = request.POST.get('agree') == 'on'
 
         form_data = {
@@ -132,8 +133,8 @@ def register(request):
 
         if not phone_number:
             errors['phone_number'] = 'Phone number is required.'
-        elif not PHONE_PATTERN.fullmatch(phone_number):
-            errors['phone_number'] = 'Enter a valid phone number using 10 to 15 digits.'
+        elif not PH_REGISTRATION_PHONE_PATTERN.fullmatch(phone_number):
+            errors['phone_number'] = 'Enter a valid Philippine mobile number with 11 digits.'
 
         if not password1:
             errors['password1'] = 'Password is required.'
@@ -305,15 +306,18 @@ def logout_view(request):
 def _update_profile(request, redirect_name):
     """Handle profile form updates and avatar changes."""
     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    first_name = request.POST.get('first_name')
-    last_name = request.POST.get('last_name')
-    email = request.POST.get('email')
-    raw_phone_number = request.POST.get('phone_number', '').strip()
-    phone_number = _normalize_phone_number(raw_phone_number) if raw_phone_number else ''
+    first_name = request.POST.get('first_name', request.user.first_name)
+    last_name = request.POST.get('last_name', request.user.last_name)
+    email = request.POST.get('email', request.user.email)
+    raw_phone_number = request.POST.get('phone_number')
+    phone_number = None
+    if raw_phone_number is not None:
+        raw_phone_number = raw_phone_number.strip()
+        phone_number = _normalize_phone_number(raw_phone_number) if raw_phone_number else ''
     profile_picture = request.FILES.get('profile_picture')
     avatar_choice = request.POST.get('avatar_choice', '').strip()
 
-    if phone_number and not PHONE_PATTERN.fullmatch(phone_number):
+    if phone_number is not None and phone_number and not PHONE_PATTERN.fullmatch(phone_number):
         messages.error(request, 'Enter a valid phone number using 10 to 15 digits.')
         return redirect(redirect_name)
 
@@ -324,7 +328,8 @@ def _update_profile(request, redirect_name):
             request.user.email = email
             request.user.save()
 
-            user_profile.phone_number = phone_number
+            if phone_number is not None:
+                user_profile.phone_number = phone_number
             if profile_picture:
                 user_profile.profile_picture = profile_picture
             elif avatar_choice.startswith('data:image/'):

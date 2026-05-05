@@ -64,9 +64,9 @@
                 <div>
                     <label class="block text-gray-800 font-semibold mb-2">Phone Number</label>
                     <input type="tel" name="phone_number" required value="{{ form_data.phone_number|default:'' }}"
-                           minlength="10" maxlength="20" autocomplete="tel"
+                           minlength="11" maxlength="11" inputmode="numeric" pattern="09[0-9]{9}" autocomplete="tel"
                            class="w-full px-4 py-3 border-2 rounded-2xl text-gray-700 placeholder-gray-400 transition focus:outline-none {% if register_errors.phone_number %}border-red-300 bg-red-50/50 focus:border-red-400 focus:ring-2 focus:ring-red-100{% else %}border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100{% endif %}"
-                               placeholder="09XXXXXXXXX">
+                                placeholder="09XXXXXXXXX">
                     <p class="mt-2 min-h-[1rem] text-xs {% if register_errors.phone_number %}rounded-xl bg-red-50 px-3 py-2 text-red-600 shadow-sm{% else %}text-red-600{% endif %}" data-error-for="phone_number">{{ register_errors.phone_number }}</p>
                 </div>
 
@@ -155,7 +155,7 @@
         const submitButton = form.querySelector('[data-submit-button]');
         const namePattern = /^[A-Za-z]+(?:[ -][A-Za-z]+)*$/;
         const usernamePattern = /^[A-Za-z0-9_.]{4,30}$/;
-        const phonePattern = /^\+?\d{10,15}$/;
+        const phonePattern = /^09\d{9}$/;
 
         function setFieldError(fieldName, message) {
             const errorEl = form.querySelector(`[data-error-for="${fieldName}"]`);
@@ -206,9 +206,8 @@
             }
 
             if (field.name === 'phone_number') {
-                const normalizedPhone = value.replace(/[\s\-()]/g, '');
-                if (!normalizedPhone) return 'Phone number is required.';
-                if (!phonePattern.test(normalizedPhone)) return 'Enter a valid phone number using 10 to 15 digits.';
+                if (!value) return 'Phone number is required.';
+                if (!phonePattern.test(value)) return 'Enter a valid Philippine mobile number with 11 digits.';
             }
 
             if (field.name === 'password1') {

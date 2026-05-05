@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
 from django.core.paginator import Paginator
@@ -92,6 +92,8 @@ class ContactView(TemplateView):
             return self.render_to_response(self.get_context_data(form_data=form_data))
 
         full_message = f"Name: {form_data['name']}\nEmail: {form_data['email']}\n\n{form_data['message']}"
+        contact_to_email = getattr(settings, 'CONTACT_TO_EMAIL', '') or settings.DEFAULT_FROM_EMAIL
+        email_timeout = min(getattr(settings, 'EMAIL_TIMEOUT', 10), 5)
         try:
             if getattr(settings, 'RESEND_API_KEY', ''):
                 response = requests.post(
@@ -103,22 +105,27 @@ class ContactView(TemplateView):
                     },
                     json={
                         'from': settings.CONTACT_FROM_EMAIL,
-                        'to': [settings.CONTACT_TO_EMAIL],
+                        'to': [contact_to_email],
                         'subject': form_data['subject'],
                         'text': full_message,
-                        'reply_to': form_data['email'],
+                        'headers': {
+                            'Reply-To': form_data['email'],
+                        },
                     },
-                    timeout=15,
+                    timeout=email_timeout,
                 )
                 response.raise_for_status()
-            else:
-                send_mail(
-                    form_data['subject'],
-                    full_message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.DEFAULT_FROM_EMAIL],
-                    fail_silently=False,
-                )
+                messages.success(request, 'Thanks! Your message has been sent.')
+                return redirect('products:contact')
+
+            email = EmailMessage(
+                form_data['subject'],
+                full_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [contact_to_email],
+                reply_to=[form_data['email']],
+            )
+            email.send(fail_silently=False)
         except Exception:
             messages.error(request, 'We could not send your message right now. Please try again later or contact us directly.')
             return self.render_to_response(self.get_context_data(form_data=form_data))
