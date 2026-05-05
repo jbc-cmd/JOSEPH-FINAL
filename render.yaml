@@ -42,7 +42,7 @@ services:
       - key: ADMIN_URL
         sync: false
       - key: DEFAULT_FROM_EMAIL
-        sync: false
+        value: Joseph Flowershop <flowershopjoseph@gmail.com>
       - key: EMAIL_BACKEND
         value: django.core.mail.backends.smtp.EmailBackend
       - key: EMAIL_HOST
@@ -52,7 +52,7 @@ services:
       - key: EMAIL_USE_TLS
         value: "True"
       - key: EMAIL_HOST_USER
-        sync: false
+        value: flowershopjoseph@gmail.com
       - key: EMAIL_HOST_PASSWORD
         sync: false
       - key: EMAIL_TIMEOUT
@@ -60,9 +60,9 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: CONTACT_FROM_EMAIL
-        sync: false
+        value: Joseph Flowershop <flowershopjoseph@gmail.com>
       - key: CONTACT_TO_EMAIL
-        sync: false
+        value: flowershopjoseph@gmail.com
       - key: STRIPE_PUBLIC_KEY
         sync: false
       - key: STRIPE_SECRET_KEY

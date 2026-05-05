@@ -27,6 +27,35 @@
             width: 100%;
         }
     }
+
+    .delivery-date-field {
+        position: relative;
+    }
+
+    .delivery-date-field .delivery-date-picker {
+        color-scheme: light;
+    }
+
+    .delivery-date-field .delivery-date-picker:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    .delivery-date-field .delivery-date-picker:valid::-webkit-datetime-edit {
+        color: #1f2937;
+    }
+
+    .delivery-date-field .delivery-date-placeholder {
+        pointer-events: none;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+    }
+
+    .delivery-date-field .delivery-date-picker:valid + .delivery-date-placeholder {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -119,7 +148,10 @@
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
                         <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Date *</label>
-                        <input type="date" name="delivery_date" required class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                        <div class="delivery-date-field">
+                            <input type="date" name="delivery_date" required aria-label="Delivery date" class="delivery-date-picker w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                            <span class="delivery-date-placeholder">Select delivery date</span>
+                        </div>
                     </div>
                     <div>
                         <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Time Window *</label>

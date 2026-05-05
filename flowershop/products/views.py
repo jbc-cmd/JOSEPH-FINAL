@@ -8,9 +8,18 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
 from django.core.paginator import Paginator
+import logging
 import re
 import requests
 
+
+logger = logging.getLogger(__name__)
+
+SMTP_PASSWORD_PLACEHOLDERS = {
+    '',
+    'replace-with-email-app-password',
+    'your-app-password',
+}
 
 INAPPROPRIATE_REVIEW_WORDS = {
     'bitch',
@@ -22,6 +31,51 @@ INAPPROPRIATE_REVIEW_WORDS = {
     'slut',
     'whore',
 }
+
+
+def _contact_email_timeout():
+    return min(getattr(settings, 'EMAIL_TIMEOUT', 10), 5)
+
+
+def _django_email_backend_can_send():
+    email_backend = getattr(settings, 'EMAIL_BACKEND', '')
+    if email_backend != 'django.core.mail.backends.smtp.EmailBackend':
+        return True
+
+    host_user = str(getattr(settings, 'EMAIL_HOST_USER', '')).strip()
+    host_password = str(getattr(settings, 'EMAIL_HOST_PASSWORD', '')).strip()
+    return bool(host_user) and 'your-email' not in host_user and host_password not in SMTP_PASSWORD_PLACEHOLDERS
+
+
+def _send_contact_with_django_email(form_data, full_message, from_email, to_email):
+    email = EmailMessage(
+        form_data['subject'],
+        full_message,
+        from_email,
+        [to_email],
+        reply_to=[form_data['email']],
+    )
+    email.send(fail_silently=False)
+
+
+def _send_contact_with_resend(form_data, full_message, from_email, to_email):
+    response = requests.post(
+        'https://api.resend.com/emails',
+        headers={
+            'Authorization': f"Bearer {settings.RESEND_API_KEY}",
+            'Content-Type': 'application/json',
+            'User-Agent': 'joseph-flowershop/1.0',
+        },
+        json={
+            'from': from_email,
+            'to': [to_email],
+            'subject': form_data['subject'],
+            'text': full_message,
+            'reply_to': form_data['email'],
+        },
+        timeout=_contact_email_timeout(),
+    )
+    response.raise_for_status()
 
 
 def _mask_inappropriate_review_words(comment):
@@ -92,41 +146,32 @@ class ContactView(TemplateView):
             return self.render_to_response(self.get_context_data(form_data=form_data))
 
         full_message = f"Name: {form_data['name']}\nEmail: {form_data['email']}\n\n{form_data['message']}"
-        contact_to_email = getattr(settings, 'CONTACT_TO_EMAIL', '') or settings.DEFAULT_FROM_EMAIL
-        email_timeout = min(getattr(settings, 'EMAIL_TIMEOUT', 10), 5)
+        contact_from_email = (
+            getattr(settings, 'CONTACT_FROM_EMAIL', '')
+            or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+            or getattr(settings, 'EMAIL_HOST_USER', '')
+        )
+        contact_to_email = (
+            getattr(settings, 'CONTACT_TO_EMAIL', '')
+            or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
+            or getattr(settings, 'EMAIL_HOST_USER', '')
+        )
         try:
             if getattr(settings, 'RESEND_API_KEY', ''):
-                response = requests.post(
-                    'https://api.resend.com/emails',
-                    headers={
-                        'Authorization': f"Bearer {settings.RESEND_API_KEY}",
-                        'Content-Type': 'application/json',
-                        'User-Agent': 'joseph-flowershop/1.0',
-                    },
-                    json={
-                        'from': settings.CONTACT_FROM_EMAIL,
-                        'to': [contact_to_email],
-                        'subject': form_data['subject'],
-                        'text': full_message,
-                        'headers': {
-                            'Reply-To': form_data['email'],
-                        },
-                    },
-                    timeout=email_timeout,
-                )
-                response.raise_for_status()
-                messages.success(request, 'Thanks! Your message has been sent.')
-                return redirect('products:contact')
+                try:
+                    _send_contact_with_resend(form_data, full_message, contact_from_email, contact_to_email)
+                    messages.success(request, 'Thanks! Your message has been sent.')
+                    return redirect('products:contact')
+                except requests.RequestException:
+                    logger.warning('Resend contact email failed; falling back to Django email backend.', exc_info=True)
 
-            email = EmailMessage(
-                form_data['subject'],
-                full_message,
-                settings.DEFAULT_FROM_EMAIL,
-                [contact_to_email],
-                reply_to=[form_data['email']],
-            )
-            email.send(fail_silently=False)
+            if not contact_to_email or not contact_from_email or not _django_email_backend_can_send():
+                logger.error('Contact email is not configured for production delivery.')
+                raise RuntimeError('Contact email is not configured.')
+
+            _send_contact_with_django_email(form_data, full_message, contact_from_email, contact_to_email)
         except Exception:
+            logger.exception('Contact form email failed.')
             messages.error(request, 'We could not send your message right now. Please try again later or contact us directly.')
             return self.render_to_response(self.get_context_data(form_data=form_data))
 

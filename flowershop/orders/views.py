@@ -597,6 +597,7 @@ def track_order(request):
     """Order tracking page."""
     entered_order_number = ''
     entered_email = request.user.email if request.user.is_authenticated else ''
+    track_error = ''
 
     if request.method == 'POST':
         order_number = _normalize_order_number(request.POST.get('order_number'))
@@ -608,11 +609,12 @@ def track_order(request):
             order = Order.objects.get(order_number=order_number, customer_email=email)
             return redirect('orders:order_detail', order_id=order.id)
         except Order.DoesNotExist:
-            messages.error(request, 'Order not found. Please check your order number and email.')
+            track_error = 'Order not found. Please check your order number and email.'
 
     context = {
         'entered_order_number': entered_order_number,
         'entered_email': entered_email,
+        'track_error': track_error,
     }
     return render(request, 'orders/track_order.html', context)
 
