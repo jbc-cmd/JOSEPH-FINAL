@@ -78,7 +78,7 @@
                             <span class="font-medium text-gray-900">&#8369;{{ order.subtotal|floatformat:2 }}</span>
                         </div>
                         <div class="flex items-center justify-between text-gray-600">
-                            <span>Delivery Fee</span>
+                            <span>Shipping Fee</span>
                             <span class="font-medium text-gray-900">&#8369;{{ order.delivery_fee|floatformat:2 }}</span>
                         </div>
                         <div class="flex items-center justify-between border-t border-gray-100 pt-4 text-base font-semibold text-gray-900">
@@ -140,8 +140,8 @@
                             <i class="fas fa-route"></i>
                         </span>
                         <div>
-                            <h2 class="text-2xl font-semibold text-gray-900">Delivery timeline</h2>
-                            <p class="mt-1 text-sm text-gray-600">Follow your bouquet from order confirmation to final delivery.</p>
+                            <h2 class="text-2xl font-semibold text-gray-900">{% if order.is_pickup %}Pickup timeline{% else %}Delivery timeline{% endif %}</h2>
+                            <p class="mt-1 text-sm text-gray-600">{% if order.is_pickup %}Follow your bouquet from order confirmation to pickup readiness.{% else %}Follow your bouquet from order confirmation to final delivery.{% endif %}</p>
                         </div>
                     </div>
 
@@ -192,21 +192,21 @@
                                 <i class="fas fa-calendar-check"></i>
                             </span>
                             <div>
-                                <h2 class="text-xl font-semibold text-gray-900">Scheduled Delivery</h2>
-                                <p class="mt-1 text-sm text-gray-600">Delivery and payment snapshot</p>
+                                <h2 class="text-xl font-semibold text-gray-900">{% if order.is_pickup %}Scheduled Pickup{% else %}Scheduled Delivery{% endif %}</h2>
+                                <p class="mt-1 text-sm text-gray-600">{% if order.is_pickup %}Pickup and payment snapshot{% else %}Delivery and payment snapshot{% endif %}</p>
                             </div>
                         </div>
                         <div class="space-y-5">
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Delivery Date</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">{% if order.is_pickup %}Pickup Date{% else %}Delivery Date{% endif %}</p>
                                 <p class="mt-2 text-sm font-medium text-gray-900">{{ order.delivery_date|date:"F d, Y" }} ({{ order.delivery_date|date:"l" }})</p>
                             </div>
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Delivery Window</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">{% if order.is_pickup %}Pickup Window{% else %}Delivery Window{% endif %}</p>
                                 <p class="mt-2 text-sm font-medium text-gray-900">{{ delivery_window_text }}</p>
                             </div>
                             <div>
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Estimated Arrival</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">{% if order.is_pickup %}Pickup Note{% else %}Estimated Arrival{% endif %}</p>
                                 <p class="mt-2 text-sm font-medium text-gray-900">{{ estimated_arrival }}</p>
                             </div>
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

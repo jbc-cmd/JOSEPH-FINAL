@@ -45,7 +45,7 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=255)
     customer_email = models.EmailField()
     customer_phone = models.CharField(max_length=20)
-    
+
     # Delivery information
     delivery_address = models.TextField()
     delivery_city = models.CharField(max_length=100)
@@ -178,6 +178,9 @@ class Order(models.Model):
 
     def can_customer_delete(self):
         return self.status in ['CANCELLED', 'DELIVERED']
+
+    def is_pickup(self):
+        return self.delivery_id is None and self.delivery_fee == 0
     
     def mark_as_delivered(self):
         """Mark order as delivered."""

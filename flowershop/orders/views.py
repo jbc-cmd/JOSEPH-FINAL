@@ -17,6 +17,7 @@ from custom_bouquet.models import Bouquet
 from delivery.models import DeliveryTimeWindow, Delivery
 from payments.models import Payment
 from django.utils import timezone
+from decimal import Decimal, InvalidOperation, ROUND_CEILING
 import uuid
 import re
 import logging
@@ -39,6 +40,29 @@ ORDER_TIMELINE = [
     ('OUT_FOR_DELIVERY', 'Out for Delivery', 'Your bouquet is on the way to the delivery address.', 'fa-truck'),
     ('DELIVERED', 'Delivered', 'Your flowers have arrived at their destination.', 'fa-heart'),
 ]
+
+PICKUP_ORDER_TIMELINE = [
+    ('PENDING', 'Order Placed', 'Your order has been received and queued for our team.', 'fa-receipt'),
+    ('PROCESSING', 'Processing', 'We are confirming your pickup schedule.', 'fa-credit-card'),
+    ('PREPARING', 'Preparing Bouquet', 'Your flowers are currently being arranged by our florist.', 'fa-spa'),
+    ('OUT_FOR_DELIVERY', 'Ready for Pickup', 'Your bouquet is ready for pickup at the shop.', 'fa-store'),
+    ('DELIVERED', 'Picked Up', 'Your flowers have been picked up.', 'fa-heart'),
+]
+
+DELIVERY_DISTANCE_OPTIONS = [
+    {'value': '3', 'label': 'Central Surigao City / up to 3 km', 'distance_km': Decimal('3')},
+    {'value': '6', 'label': 'Nearby barangays / up to 6 km', 'distance_km': Decimal('6')},
+    {'value': '10', 'label': 'Outer city barangays / up to 10 km', 'distance_km': Decimal('10')},
+    {'value': '15', 'label': 'Far Surigao City address / up to 15 km', 'distance_km': Decimal('15')},
+]
+
+PICKUP_ADDRESS_FALLBACK = 'Joseph Flowershop pickup counter'
+PICKUP_CITY_FALLBACK = 'Surigao City'
+SURIGAO_BASE_DELIVERY_FEE = Decimal('50.00')
+SURIGAO_BASE_DISTANCE_KM = Decimal('3')
+SURIGAO_EXTRA_KM_RATE = Decimal('10.00')
+EXTRA_FLOWER_ITEM_THRESHOLD = 3
+EXTRA_FLOWER_ITEM_FEE = Decimal('15.00')
 
 
 def _email_timeout():
@@ -64,6 +88,7 @@ def _send_receipt_with_django_email(subject, text_body, html_body, from_email, r
 def _send_order_receipt_email(order):
     """Send a simple order receipt email to the customer."""
     subject = f'Order Confirmation - {order.order_number}'
+    fulfillment_label = 'Pickup' if order.is_pickup() else 'Delivery'
     resend_from_email = getattr(settings, 'CONTACT_FROM_EMAIL', '') or getattr(settings, 'DEFAULT_FROM_EMAIL', '')
     django_from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', '') or settings.EMAIL_HOST_USER or 'no-reply@josephflowershop.com'
     recipient_list = [order.customer_email]
@@ -75,11 +100,11 @@ def _send_order_receipt_email(order):
     text_body = (
         f"Thank you for your order, {order.customer_name}.\n\n"
         f"Your order number is {order.order_number}.\n"
-        f"Delivery date: {order.delivery_date}\n"
-        f"Delivery window: {_format_delivery_window(order.delivery_time_window)}\n\n"
+        f"{fulfillment_label} date: {order.delivery_date}\n"
+        f"{fulfillment_label} window: {_format_delivery_window(order.delivery_time_window)}\n\n"
         f"Items:\n" + "\n".join(item_lines) + "\n\n"
         f"Subtotal: PHP {float(order.subtotal):.2f}\n"
-        f"Delivery fee: PHP {float(order.delivery_fee):.2f}\n"
+        f"Shipping fee: PHP {float(order.delivery_fee):.2f}\n"
         f"Total: PHP {float(order.total_amount):.2f}\n\n"
         "You can use your order number and email address to track your order.\n"
         "Thank you for choosing Joseph Flowershop."
@@ -91,8 +116,8 @@ def _send_order_receipt_email(order):
         <p>Thank you for your order, <strong>{order.customer_name}</strong>.</p>
         <p>Your order number is <strong>{order.order_number}</strong>.</p>
         <p>
-            <strong>Delivery date:</strong> {order.delivery_date}<br>
-            <strong>Delivery window:</strong> {_format_delivery_window(order.delivery_time_window)}
+            <strong>{fulfillment_label} date:</strong> {order.delivery_date}<br>
+            <strong>{fulfillment_label} window:</strong> {_format_delivery_window(order.delivery_time_window)}
         </p>
         <h3 style="margin-top: 24px; margin-bottom: 8px;">Items</h3>
         <ul>
@@ -100,7 +125,7 @@ def _send_order_receipt_email(order):
         </ul>
         <p>
             <strong>Subtotal:</strong> PHP {float(order.subtotal):.2f}<br>
-            <strong>Delivery fee:</strong> PHP {float(order.delivery_fee):.2f}<br>
+            <strong>Shipping fee:</strong> PHP {float(order.delivery_fee):.2f}<br>
             <strong>Total:</strong> PHP {float(order.total_amount):.2f}
         </p>
         <p>You can use your order number and email address to track your order.</p>
@@ -197,11 +222,12 @@ def _status_theme(status):
 
 
 def _build_timeline(order):
-    status_order = [step[0] for step in ORDER_TIMELINE]
+    timeline_steps = PICKUP_ORDER_TIMELINE if order.is_pickup() else ORDER_TIMELINE
+    status_order = [step[0] for step in timeline_steps]
     current_index = status_order.index(order.status) if order.status in status_order else 0
     timeline = []
 
-    for index, (code, title, description, icon) in enumerate(ORDER_TIMELINE):
+    for index, (code, title, description, icon) in enumerate(timeline_steps):
         if order.status == 'CANCELLED':
             state = 'completed' if code == 'PENDING' else 'upcoming'
         elif order.status == 'DELIVERED':
@@ -219,7 +245,7 @@ def _build_timeline(order):
             'description': description,
             'icon': icon,
             'state': state,
-            'is_last': index == len(ORDER_TIMELINE) - 1,
+            'is_last': index == len(timeline_steps) - 1,
         })
 
     return timeline
@@ -233,10 +259,14 @@ def _format_delivery_window(time_window):
 
 def _estimated_arrival_text(order):
     if not order.delivery_time_window:
-        return 'Delivery timing will be confirmed soon.'
+        return 'Schedule timing will be confirmed soon.'
 
     window_text = _format_delivery_window(order.delivery_time_window)
     today = timezone.localdate()
+    if order.is_pickup():
+        if order.delivery_date == today:
+            return f"Ready for pickup today between {window_text}."
+        return f"Scheduled for pickup on {order.delivery_date.strftime('%B %d, %Y')} between {window_text}."
     if order.status == 'DELIVERED':
         return f"Delivered on {order.delivery_date.strftime('%B %d, %Y')}."
     if order.delivery_date == today:
@@ -255,6 +285,55 @@ def _get_checkout_delivery_address(user):
     if not user.is_authenticated:
         return None
     return user.delivery_addresses.filter(is_default=True).first() or user.delivery_addresses.first()
+
+
+def _decimal_from_post(value, default):
+    try:
+        return Decimal(str(value or default))
+    except (InvalidOperation, TypeError, ValueError):
+        return Decimal(str(default))
+
+
+def _get_delivery_distance_option(value):
+    requested_distance = _decimal_from_post(value, DELIVERY_DISTANCE_OPTIONS[0]['distance_km'])
+    for option in DELIVERY_DISTANCE_OPTIONS:
+        if requested_distance == option['distance_km']:
+            return option
+    return DELIVERY_DISTANCE_OPTIONS[0]
+
+
+def _calculate_shipping_fee(fulfillment_method, distance_km, item_count):
+    if fulfillment_method == 'PICKUP':
+        return Decimal('0.00')
+
+    distance_km = Decimal(str(distance_km or SURIGAO_BASE_DISTANCE_KM))
+    extra_distance = max(distance_km - SURIGAO_BASE_DISTANCE_KM, Decimal('0'))
+    distance_fee = extra_distance.to_integral_value(rounding=ROUND_CEILING) * SURIGAO_EXTRA_KM_RATE
+    quantity_fee = max(int(item_count or 0) - EXTRA_FLOWER_ITEM_THRESHOLD, 0) * EXTRA_FLOWER_ITEM_FEE
+    return SURIGAO_BASE_DELIVERY_FEE + distance_fee + quantity_fee
+
+
+def _get_direct_purchase_quantity(direct_purchase):
+    return int(direct_purchase.get('quantity') or 0)
+
+
+def _get_pickup_contact_details(user, saved_address=None):
+    profile = getattr(user, 'profile', None)
+    customer_name = user.get_full_name() or user.username
+    customer_phone = getattr(profile, 'phone_number', '') if profile else ''
+
+    if saved_address:
+        customer_phone = customer_phone or saved_address.phone_number
+
+    return customer_name, customer_phone
+
+
+def _get_shop_pickup_address():
+    from configurations.views import get_general_config
+    config = get_general_config()
+    if config and config.shop_address:
+        return config.shop_address
+    return getattr(settings, 'SHOP_PICKUP_ADDRESS', '') or PICKUP_ADDRESS_FALLBACK
 
 
 def checkout(request):
@@ -300,22 +379,23 @@ def checkout(request):
 
         items = list(cart.items.all())
         subtotal = cart.get_total_price()
+        item_count = cart.get_total_items()
+
+    if direct_purchase:
+        item_count = _get_direct_purchase_quantity(direct_purchase)
+    subtotal = Decimal(str(subtotal))
 
     if not request.user.is_authenticated:
         messages.error(request, 'Please sign in before proceeding to checkout.')
         return redirect(f"{reverse('accounts:login')}?next={request.path}")
 
     saved_address = _get_checkout_delivery_address(request.user)
-    if not saved_address:
-        messages.error(request, 'Please add or update your delivery address in your profile before checkout.')
-        return redirect('accounts:profile')
 
     delivery_windows = DeliveryTimeWindow.objects.filter(is_available=True)
 
-    # Create a temporary cart for calculating fees
-    temp_cart = Cart(id=0)
-    temp_cart.items_total = subtotal
-    delivery_fee = temp_cart.get_delivery_fee()
+    delivery_distance_option = DELIVERY_DISTANCE_OPTIONS[0]
+    default_fulfillment_method = 'DELIVERY' if saved_address else 'PICKUP'
+    delivery_fee = _calculate_shipping_fee(default_fulfillment_method, delivery_distance_option['distance_km'], item_count)
     total = subtotal + delivery_fee
 
     context = {
@@ -324,7 +404,13 @@ def checkout(request):
         'subtotal': subtotal,
         'delivery_fee': delivery_fee,
         'total': total,
+        'item_count': item_count,
         'saved_address': saved_address,
+        'default_fulfillment_method': default_fulfillment_method,
+        'delivery_distance_options': DELIVERY_DISTANCE_OPTIONS,
+        'selected_delivery_distance_km': delivery_distance_option['value'],
+        'extra_flower_item_threshold': EXTRA_FLOWER_ITEM_THRESHOLD,
+        'extra_flower_item_fee': EXTRA_FLOWER_ITEM_FEE,
         'is_direct_purchase': bool(direct_purchase),
         'static_qrph_image_url': getattr(settings, 'STATIC_QRPH_IMAGE_URL', ''),
         'static_qrph_merchant_name': getattr(settings, 'STATIC_QRPH_MERCHANT_NAME', 'Joseph Flowershop'),
@@ -371,6 +457,11 @@ def create_order(request):
             return error_response('Cart is empty', reverse('cart:cart'))
 
         subtotal = cart.get_total_price()
+        item_count = cart.get_total_items()
+
+    if direct_purchase:
+        item_count = _get_direct_purchase_quantity(direct_purchase)
+    subtotal = Decimal(str(subtotal))
 
     if not request.user.is_authenticated:
         return error_response(
@@ -380,19 +471,33 @@ def create_order(request):
 
     try:
         saved_address = _get_checkout_delivery_address(request.user)
-        if not saved_address:
+
+        # Get form data
+        fulfillment_method = (request.POST.get('fulfillment_method') or 'DELIVERY').strip().upper()
+        if fulfillment_method not in {'DELIVERY', 'PICKUP'}:
+            return error_response('Please choose delivery or self pickup.')
+
+        if fulfillment_method == 'DELIVERY' and not saved_address:
             return error_response(
-                'Please add or update your delivery address in your profile before checkout.',
+                'Please add or update your delivery address in your profile before choosing delivery.',
                 reverse('accounts:profile')
             )
 
-        # Get form data
-        customer_name = saved_address.recipient_name
+        if fulfillment_method == 'DELIVERY':
+            customer_name = saved_address.recipient_name
+            customer_phone = saved_address.phone_number
+            delivery_address = saved_address.address
+            delivery_city = saved_address.city
+            delivery_postal_code = saved_address.postal_code or ''
+        else:
+            customer_name, customer_phone = _get_pickup_contact_details(request.user, saved_address)
+            if not customer_phone:
+                return error_response('Please add a phone number to your profile before choosing self pickup.')
+            delivery_address = _get_shop_pickup_address()
+            delivery_city = PICKUP_CITY_FALLBACK
+            delivery_postal_code = ''
+
         customer_email = request.POST.get('customer_email', '').strip() or request.user.email
-        customer_phone = saved_address.phone_number
-        delivery_address = saved_address.address
-        delivery_city = saved_address.city
-        delivery_postal_code = saved_address.postal_code or ''
         delivery_date_str = request.POST.get('delivery_date')
         delivery_time_window_id = request.POST.get('delivery_time_window')
         gift_message = request.POST.get('gift_message', '')
@@ -425,10 +530,10 @@ def create_order(request):
         # Get delivery time window
         delivery_time_window = get_object_or_404(DeliveryTimeWindow, id=delivery_time_window_id)
 
-        # Calculate delivery fee and total
-        temp_cart = Cart(id=0)
-        temp_cart.items_total = subtotal
-        delivery_fee = temp_cart.get_delivery_fee()
+        # Calculate shipping from the selected fulfillment option, Surigao City distance band, and item count.
+        delivery_distance_option = _get_delivery_distance_option(request.POST.get('delivery_distance_km'))
+        delivery_distance_km = delivery_distance_option['distance_km'] if fulfillment_method == 'DELIVERY' else None
+        delivery_fee = _calculate_shipping_fee(fulfillment_method, delivery_distance_km, item_count)
         total_amount = subtotal + delivery_fee
 
         # Create order
@@ -483,18 +588,19 @@ def create_order(request):
                     subtotal=cart_item.get_subtotal()
                 )
 
-        # Create delivery record
-        delivery = Delivery.objects.create(
-            delivery_number=f"DEL-{uuid.uuid4().hex[:10].upper()}",
-            status='PENDING',
-            delivery_address=delivery_address,
-            recipient_name=customer_name,
-            recipient_phone=customer_phone,
-            delivery_date=delivery_date,
-            delivery_time_window=delivery_time_window,
-        )
-        order.delivery = delivery
-        order.save()
+        # Create delivery record only for orders that should be delivered.
+        if fulfillment_method == 'DELIVERY':
+            delivery = Delivery.objects.create(
+                delivery_number=f"DEL-{uuid.uuid4().hex[:10].upper()}",
+                status='PENDING',
+                delivery_address=delivery_address,
+                recipient_name=customer_name,
+                recipient_phone=customer_phone,
+                delivery_date=delivery_date,
+                delivery_time_window=delivery_time_window,
+            )
+            order.delivery = delivery
+            order.save()
 
         # Create order tracking
         OrderTracking.objects.create(

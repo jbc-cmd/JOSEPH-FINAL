@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import dj_database_url
 from decouple import config
+from django.db.backends.signals import connection_created
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -192,6 +193,18 @@ else:
             'PORT': config('DB_PORT', default=''),
         }
     }
+
+
+def configure_local_sqlite(sender, connection, **kwargs):
+    """Avoid commit failures on Windows folders that block journal deletion."""
+    if connection.vendor != 'sqlite':
+        return
+
+    connection.connection.execute('PRAGMA journal_mode=TRUNCATE')
+    connection.connection.execute('PRAGMA busy_timeout=5000')
+
+
+connection_created.connect(configure_local_sqlite)
 
 
 # Password validation

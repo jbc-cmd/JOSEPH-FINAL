@@ -8,6 +8,15 @@ from .models import Cart, CartItem
 from products.models import Product
 from custom_bouquet.models import Bouquet
 import uuid
+from urllib.parse import urlparse
+
+
+def _is_cart_page_url(url):
+    """Return True when a URL points to the full cart page."""
+    if not url:
+        return False
+
+    return urlparse(url).path == reverse('cart:cart')
 
 
 def _redirect_to_cart_drawer(request):
@@ -151,13 +160,15 @@ def add_to_cart(request):
 @require_POST
 def remove_from_cart(request, item_id):
     """Remove item from cart."""
-    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart = get_or_create_cart(request)
+    cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
     cart_item.delete()
     messages.success(request, 'Item removed from cart')
 
     # Check if coming from cart page
+    next_url = request.POST.get('next', '')
     referer = request.META.get('HTTP_REFERER', '')
-    if 'cart' in referer:
+    if _is_cart_page_url(next_url) or _is_cart_page_url(referer):
         return redirect('cart:cart')
 
     return _redirect_to_cart_drawer(request)
@@ -166,7 +177,8 @@ def remove_from_cart(request, item_id):
 @require_POST
 def update_cart_item(request, item_id):
     """Update quantity of cart item."""
-    cart_item = get_object_or_404(CartItem, id=item_id)
+    cart = get_or_create_cart(request)
+    cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
     quantity = int(request.POST.get('quantity', 1))
 
     if quantity > 0:
@@ -178,7 +190,6 @@ def update_cart_item(request, item_id):
         messages.success(request, 'Item removed from cart')
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        cart = cart_item.cart
         return JsonResponse({
             'success': True,
             'cart_total': float(cart.get_total_price()),
@@ -187,8 +198,9 @@ def update_cart_item(request, item_id):
         })
 
     # Check if coming from cart page
+    next_url = request.POST.get('next', '')
     referer = request.META.get('HTTP_REFERER', '')
-    if 'cart' in referer:
+    if _is_cart_page_url(next_url) or _is_cart_page_url(referer):
         return redirect('cart:cart')
 
     return _redirect_to_cart_drawer(request)

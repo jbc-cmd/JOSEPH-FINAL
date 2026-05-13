@@ -36,10 +36,11 @@
         color-scheme: light;
     }
 
-    .delivery-date-field .delivery-date-picker:invalid::-webkit-datetime-edit {
+    .delivery-date-field .delivery-date-picker:invalid:not(:focus)::-webkit-datetime-edit {
         color: transparent;
     }
 
+    .delivery-date-field .delivery-date-picker:focus::-webkit-datetime-edit,
     .delivery-date-field .delivery-date-picker:valid::-webkit-datetime-edit {
         color: #1f2937;
     }
@@ -53,6 +54,7 @@
         color: #9ca3af;
     }
 
+    .delivery-date-field .delivery-date-picker:focus + .delivery-date-placeholder,
     .delivery-date-field .delivery-date-picker:valid + .delivery-date-placeholder {
         display: none;
     }
@@ -63,17 +65,17 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8">Checkout</h1>
     
-    <form id="checkout-form" method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8" data-turbo="false">
+    <form id="checkout-form" method="post" action="{% url 'orders:create_order' %}" class="grid md:grid-cols-3 gap-8" data-turbo="false" data-has-delivery-address="{% if saved_address %}true{% else %}false{% endif %}" data-subtotal="{{ subtotal }}" data-item-count="{{ item_count }}" data-base-delivery-fee="50" data-base-distance-km="3" data-extra-km-rate="10" data-extra-item-threshold="{{ extra_flower_item_threshold }}" data-extra-item-fee="{{ extra_flower_item_fee }}">
         {% csrf_token %}
         
         <!-- Checkout Form -->
         <div class="md:col-span-2 space-y-8">
             <!-- Delivery Information -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Delivery Information</h2>
+                <h2 class="text-2xl font-bold mb-6">Customer Information</h2>
 
                 {% if saved_address %}
-                <div class="checkout-saved-address-card rounded-2xl border border-pink-100 bg-pink-50/60 p-5">
+                <div id="delivery-address-panel" class="checkout-saved-address-card rounded-2xl border border-pink-100 bg-pink-50/60 p-5">
                     <div class="checkout-saved-address-header flex items-start justify-between gap-4">
                         <div class="min-w-0 flex-1">
                             <p class="checkout-saved-address-label text-sm font-semibold uppercase tracking-wide text-pink-600">Saved Address</p>
@@ -98,39 +100,60 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="grid md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Full Name *</label>
-                        <input type="text" name="customer_name" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="John Doe">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Email *</label>
-                        <input type="email" name="customer_email" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="john@example.com">
-                    </div>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Phone Number *</label>
-                        <input type="tel" name="customer_phone" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="09124169887">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">City *</label>
-                        <input type="text" name="delivery_city" required class="w-full border border-gray-300 rounded px-4 py-2" placeholder="Manila">
-                    </div>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Delivery Address *</label>
-                        <textarea name="delivery_address" required class="w-full border border-gray-300 rounded px-4 py-2" rows="3" placeholder="Street address, Barangay, District"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Postal Code</label>
-                        <input type="text" name="delivery_postal_code" class="w-full border border-gray-300 rounded px-4 py-2" placeholder="1000">
+                <div id="delivery-address-panel" class="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                    <p class="text-sm font-semibold text-amber-800">No saved delivery address yet.</p>
+                    <p class="mt-2 text-sm leading-6 text-amber-700">Self pickup is available now. Add a saved address in your profile if you want this order delivered.</p>
+                    <a href="{% url 'accounts:profile' %}" class="mt-4 inline-flex items-center justify-center rounded-lg border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-50">
+                        Add Delivery Address
+                    </a>
+                    <div class="mt-5">
+                        <label class="block text-gray-700 font-bold mb-2">Receipt Email *</label>
+                        <input type="email" name="customer_email" required value="{{ user.email }}" class="w-full border border-gray-300 rounded px-4 py-2 bg-white" placeholder="you@example.com">
+                        <p class="mt-2 text-xs text-gray-500">Order confirmation and receipt will be sent to this email address.</p>
                     </div>
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- Shipping Option -->
+            <div class="rounded-[28px] border border-pink-100 bg-white/95 p-6 shadow-[0_20px_50px_rgba(204,160,177,0.16)] sm:p-8">
+                <div class="mb-6 flex items-center gap-3">
+                    <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 ring-1 ring-pink-100">
+                        <i class="fas fa-truck"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-900">Shipping Option</h2>
+                        <p class="mt-1 text-sm text-gray-600">Choose delivery to your saved address or self pickup with no shipping fee.</p>
+                    </div>
+                </div>
+
+                <fieldset class="grid gap-4 md:grid-cols-2">
+                    <legend class="sr-only">Select shipping option</legend>
+                    <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
+                        <input type="radio" name="fulfillment_method" value="DELIVERY" {% if default_fulfillment_method == 'DELIVERY' %}checked{% endif %} class="mt-1 h-4 w-4 border-pink-300 text-pink-600 focus:ring-pink-300" data-fulfillment-method>
+                        <span>
+                            <span class="block text-base font-semibold text-gray-900">Deliver to me</span>
+                            <span class="mt-1 block text-sm text-gray-500">Fee is based on Surigao City distance and order quantity.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
+                        <input type="radio" name="fulfillment_method" value="PICKUP" {% if default_fulfillment_method == 'PICKUP' %}checked{% endif %} class="mt-1 h-4 w-4 border-pink-300 text-pink-600 focus:ring-pink-300" data-fulfillment-method>
+                        <span>
+                            <span class="block text-base font-semibold text-gray-900">Self pickup</span>
+                            <span class="mt-1 block text-sm text-gray-500">Pick up at the shop. Shipping fee is free.</span>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <div id="delivery-distance-panel" class="mt-5 rounded-[24px] border border-pink-100 bg-[#fffafb] p-4">
+                    <label for="delivery-distance-km" class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Distance *</label>
+                    <select id="delivery-distance-km" name="delivery_distance_km" class="w-full rounded-2xl border border-pink-100 bg-white px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                        {% for option in delivery_distance_options %}
+                        <option value="{{ option.value }}" {% if option.value == selected_delivery_distance_km %}selected{% endif %}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-2 text-xs leading-5 text-gray-500">Rate uses ₱50 for the first 3 km, ₱10 per km after that, plus ₱{{ extra_flower_item_fee|floatformat:0 }} for each flower item after {{ extra_flower_item_threshold }}.</p>
+                </div>
             </div>
             
             <!-- Delivery Date & Time -->
@@ -140,21 +163,21 @@
                         <i class="fas fa-calendar-check"></i>
                     </span>
                     <div>
-                        <h2 class="text-2xl font-semibold text-gray-900">Delivery Schedule</h2>
-                        <p class="mt-1 text-sm text-gray-600">Choose the day and time window for your bouquet delivery.</p>
+                        <h2 class="text-2xl font-semibold text-gray-900">Schedule</h2>
+                        <p class="mt-1 text-sm text-gray-600">Choose the day and time window for delivery or pickup.</p>
                     </div>
                 </div>
                 
                 <div class="grid md:grid-cols-2 gap-4">
                     <div>
-                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Date *</label>
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Date *</label>
                         <div class="delivery-date-field">
-                            <input type="date" name="delivery_date" required aria-label="Delivery date" class="delivery-date-picker w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
-                            <span class="delivery-date-placeholder">Select delivery date</span>
+                            <input type="date" name="delivery_date" required aria-label="Schedule date" class="delivery-date-picker w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
+                            <span class="delivery-date-placeholder">Select date</span>
                         </div>
                     </div>
                     <div>
-                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Delivery Time Window *</label>
+                        <label class="mb-2 block text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Time Window *</label>
                         <select name="delivery_time_window" required class="w-full rounded-2xl border border-pink-100 bg-[#fffafb] px-4 py-3 text-gray-800 shadow-sm focus:border-pink-300 focus:outline-none focus:ring-4 focus:ring-pink-100">
                             <option value="" selected disabled hidden>Select time window</option>
                             {% for window in delivery_windows %}
@@ -219,8 +242,8 @@
                     <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
                         <input type="radio" name="payment_method" value="COD" checked class="mt-1 h-4 w-4 border-pink-300 text-pink-600 focus:ring-pink-300" data-payment-method>
                         <span>
-                            <span class="block text-base font-semibold text-gray-900">Cash on Delivery (COD)</span>
-                            <span class="mt-1 block text-sm text-gray-500">Pay once your bouquet arrives at the delivery address.</span>
+                            <span class="block text-base font-semibold text-gray-900">Cash on Delivery / Pickup (COD)</span>
+                            <span class="mt-1 block text-sm text-gray-500">Pay when your bouquet is delivered or picked up.</span>
                         </span>
                     </label>
                     <label class="flex items-start gap-4 rounded-[24px] border border-pink-100 bg-white/85 px-4 py-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)] transition hover:border-pink-200">
@@ -232,7 +255,7 @@
                     </label>
                 </fieldset>
                 <div id="payment-method-note" class="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                    Cash on Delivery is ready to use for secure checkout right now.
+                    Cash payment is ready to use for secure checkout right now.
                 </div>
                 <div id="qrph-payment-panel" class="hidden mt-5 rounded-[28px] border border-emerald-200 bg-emerald-50/80 p-5 shadow-[0_12px_30px_rgba(16,185,129,0.08)]">
                     <div class="flex items-start gap-4">
@@ -305,7 +328,7 @@
                         <p class="text-sm font-semibold text-gray-900">{{ item.get_item_name }}</p>
                         <p class="mt-1 text-xs uppercase tracking-[0.16em] text-gray-500">Qty: {{ item.quantity }}</p>
                     </div>
-                    <span class="font-bold">₱{{ item.get_subtotal }}</span>
+                    <span class="font-bold">&#8369;{{ item.get_subtotal }}</span>
                 </div>
                 {% endfor %}
             </div>
@@ -313,17 +336,17 @@
             <div class="mb-6 rounded-[24px] border border-pink-100/90 bg-white/85 p-4 shadow-[0_12px_30px_rgba(204,160,177,0.08)]">
                 <div class="flex justify-between gap-4 text-sm text-gray-700">
                     <span>Subtotal</span>
-                    <span class="font-bold">₱{{ subtotal }}</span>
+                    <span class="font-bold">&#8369;{{ subtotal }}</span>
                 </div>
                 <div class="flex justify-between gap-4 text-sm text-gray-700">
-                    <span>Delivery Fee</span>
-                    <span class="font-bold">₱{{ delivery_fee }}</span>
+                    <span>Shipping Fee</span>
+                    <span id="shipping-fee-amount" class="font-bold">&#8369;{{ delivery_fee }}</span>
                 </div>
             </div>
             
             <div class="mb-6 flex justify-between gap-4 border-t border-pink-100 pt-5 text-xl font-bold">
                 <span class="text-xl font-semibold text-gray-900">Total</span>
-                <span class="text-pink-600">₱{{ total }}</span>
+                <span id="checkout-total-amount" class="text-pink-600">&#8369;{{ total }}</span>
             </div>
             
             <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 py-3.5 font-semibold text-white shadow-[0_18px_30px_rgba(219,39,119,0.25)] transition hover:brightness-105">
@@ -350,6 +373,19 @@ function initializeCheckoutForm() {
     const paymentMethodNote = document.getElementById('payment-method-note');
     const qrphPaymentPanel = document.getElementById('qrph-payment-panel');
     const qrphReferenceNumber = document.getElementById('qrph-reference-number');
+    const fulfillmentInputs = Array.from(form.querySelectorAll('[data-fulfillment-method]'));
+    const deliveryDistancePanel = document.getElementById('delivery-distance-panel');
+    const deliveryDistanceSelect = document.getElementById('delivery-distance-km');
+    const shippingFeeAmount = document.getElementById('shipping-fee-amount');
+    const checkoutTotalAmount = document.getElementById('checkout-total-amount');
+    const hasDeliveryAddress = form.dataset.hasDeliveryAddress === 'true';
+    const subtotal = Number.parseFloat(form.dataset.subtotal || '0');
+    const itemCount = Number.parseInt(form.dataset.itemCount || '0', 10);
+    const baseDeliveryFee = Number.parseFloat(form.dataset.baseDeliveryFee || '50');
+    const baseDistanceKm = Number.parseFloat(form.dataset.baseDistanceKm || '3');
+    const extraKmRate = Number.parseFloat(form.dataset.extraKmRate || '10');
+    const extraItemThreshold = Number.parseInt(form.dataset.extraItemThreshold || '3', 10);
+    const extraItemFee = Number.parseFloat(form.dataset.extraItemFee || '15');
 
     function setStatus(message, tone) {
         statusBox.textContent = message;
@@ -363,6 +399,50 @@ function initializeCheckoutForm() {
             return;
         }
         statusBox.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-700');
+    }
+
+    function formatMoney(amount) {
+        return '\u20b1' + amount.toLocaleString('en-PH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function getSelectedFulfillmentMethod() {
+        return form.querySelector('input[name="fulfillment_method"]:checked')?.value || 'DELIVERY';
+    }
+
+    function calculateShippingFee(fulfillmentMethod) {
+        if (fulfillmentMethod === 'PICKUP') {
+            return 0;
+        }
+
+        const distanceKm = Number.parseFloat(deliveryDistanceSelect?.value || String(baseDistanceKm));
+        const extraDistance = Math.max(distanceKm - baseDistanceKm, 0);
+        const distanceFee = Math.ceil(extraDistance) * extraKmRate;
+        const quantityFee = Math.max(itemCount - extraItemThreshold, 0) * extraItemFee;
+        return baseDeliveryFee + distanceFee + quantityFee;
+    }
+
+    function updateShippingSummary() {
+        const fulfillmentMethod = getSelectedFulfillmentMethod();
+        const isDelivery = fulfillmentMethod === 'DELIVERY';
+
+        if (deliveryDistancePanel) {
+            deliveryDistancePanel.classList.toggle('hidden', !isDelivery);
+        }
+        if (deliveryDistanceSelect) {
+            deliveryDistanceSelect.disabled = !isDelivery;
+            deliveryDistanceSelect.required = isDelivery;
+        }
+
+        const shippingFee = calculateShippingFee(fulfillmentMethod);
+        if (shippingFeeAmount) {
+            shippingFeeAmount.textContent = formatMoney(shippingFee);
+        }
+        if (checkoutTotalAmount) {
+            checkoutTotalAmount.textContent = formatMoney(subtotal + shippingFee);
+        }
     }
 
     function updatePaymentMethodNote() {
@@ -396,12 +476,17 @@ function initializeCheckoutForm() {
             return;
         }
 
-        paymentMethodNote.textContent = 'Cash on Delivery is ready to use for secure checkout right now.';
+        paymentMethodNote.textContent = 'Cash payment is ready to use for secure checkout right now.';
         paymentMethodNote.classList.add('border-blue-200', 'bg-blue-50', 'text-blue-700');
     }
 
     paymentMethodInputs.forEach(input => input.addEventListener('change', updatePaymentMethodNote));
+    fulfillmentInputs.forEach(input => input.addEventListener('change', updateShippingSummary));
+    if (deliveryDistanceSelect) {
+        deliveryDistanceSelect.addEventListener('change', updateShippingSummary);
+    }
     updatePaymentMethodNote();
+    updateShippingSummary();
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -412,6 +497,12 @@ function initializeCheckoutForm() {
         }
 
         const selectedMethod = form.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
+        const fulfillmentMethod = getSelectedFulfillmentMethod();
+        if (fulfillmentMethod === 'DELIVERY' && !hasDeliveryAddress) {
+            setStatus('Please add a saved delivery address before choosing delivery, or switch to self pickup.', 'error');
+            return;
+        }
+
         if (selectedMethod === 'QRPH' && qrphReferenceNumber && !qrphReferenceNumber.value.trim()) {
             setStatus('Please enter the QRPh payment reference number before placing your order.', 'error');
             qrphReferenceNumber.focus();

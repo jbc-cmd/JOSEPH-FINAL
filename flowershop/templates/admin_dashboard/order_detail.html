@@ -9,7 +9,8 @@
             <div><span>Email</span><strong>{{ order.customer_email }}</strong></div>
             <div><span>Phone</span><strong>{{ order.customer_phone }}</strong></div>
             <div><span>Total</span><strong>{{ admin_settings.currency_symbol }}{{ order.total_amount }}</strong></div>
-            <div><span>Delivery date</span><strong>{{ order.delivery_date }}</strong></div>
+            <div><span>Fulfillment</span><strong>{% if order.is_pickup %}Self pickup{% else %}Delivery{% endif %}</strong></div>
+            <div><span>{% if order.is_pickup %}Pickup date{% else %}Delivery date{% endif %}</span><strong>{{ order.delivery_date }}</strong></div>
             <div><span>Address</span><strong>{{ order.delivery_address }}, {{ order.delivery_city }}</strong></div>
         </div>
 
