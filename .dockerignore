@@ -1,0 +1,12 @@
+.git
+.history
+venv
+__pycache__
+*.pyc
+
+flowershop/.env
+flowershop/db.sqlite3
+flowershop/db.sqlite3-journal
+flowershop/*.log
+flowershop/media
+flowershop/staticfiles
