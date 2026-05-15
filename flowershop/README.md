@@ -27,7 +27,7 @@ A complete, fully functional flower shop web application built with Django, feat
 - **Backend**: Django 4.2
 - **Database**: SQLite (Development) / PostgreSQL (Production)
 - **Frontend**: HTML5, TailwindCSS, JavaScript
-- **Payment**: Integrated payment gateway support (Stripe, PayPal)
+- **Payment**: Integrated payment gateway support (Stripe, Gcash/Qrph)
 - **Email**: Email notifications support
 
 ## Project Structure
@@ -63,7 +63,7 @@ flowershop/
 ```bash
 cd flowershop
 python -m venv venv
-source venv/Scripts/activate  # On Windows
+source venv/Scripts/activate  
 ```
 
 2. **Install dependencies**:

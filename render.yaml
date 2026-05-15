@@ -67,6 +67,18 @@ services:
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
+      - key: PAYMONGO_PUBLIC_KEY
+        sync: false
+      - key: PAYMONGO_SECRET_KEY
+        sync: false
+      - key: PAYMONGO_WEBHOOK_SECRET
+        sync: false
+      - key: STATIC_QRPH_IMAGE_URL
+        sync: false
+      - key: STATIC_QRPH_MERCHANT_NAME
+        value: Joseph Flowershop
+      - key: STATIC_QRPH_CONTACT_NUMBER
+        sync: false
       - key: CLOUDINARY_URL
         sync: false
       - key: ADMIN_USERNAME

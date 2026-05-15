@@ -4,8 +4,6 @@ Your complete flower shop web application is ready!
 
 ---
 
-## 📋 What I've Created For You
-
 ### 1. **Setup Files**
 - ✅ `setup.bat` - One-click automated setup (Windows)
 - ✅ `init_data.py` - Populates database with flowers & categories
@@ -262,23 +260,6 @@ See `SETUP.md` for more troubleshooting!
 Your complete flower shop web application is ready to launch.
 
 **Pick a starting point:**
-
-👉 **Read README.md first** (5 minutes)
-👉 **Then choose QUICKSTART.md** (5 minutes) or **SETUP.md** (20 minutes)
-👉 **Run setup** (depends on method)
-👉 **Test it** (5 minutes)
-👉 **You're done!** ✅
-
----
-
-## 📞 Everything You Need
-
-**Setup Issues?** → SETUP.md (Troubleshooting section)
-**Feature Questions?** → PROJECT_SUMMARY.md (Features section)
-**Launching?** → CHECKLIST.md (Pre-launch verification)
-**Technical Details?** → flowershop/README.md
-
----
 
 **Start with README.md and you'll be browsing flowers in 30 minutes!** 🌹🌻💐
 
