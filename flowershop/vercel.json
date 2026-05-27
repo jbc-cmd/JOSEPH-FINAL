@@ -1,0 +1,5 @@
+{
+  "framework": null,
+  "installCommand": "pip install -r requirements.txt",
+  "buildCommand": "python scripts/vercel_build.py"
+}

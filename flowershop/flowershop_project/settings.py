@@ -4,12 +4,11 @@ Django settings for flowershop_project project.
 
 import os
 from pathlib import Path
-import dj_database_url
 from decouple import config
-from django.db.backends.signals import connection_created
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / '.env')
 
 def local_env_value(key):
     """Read a value from the project .env before broad system environment variables."""
@@ -60,15 +59,6 @@ def derive_csrf_trusted_origins(hosts):
             origins.append(f"https://{normalized}")
 
     return origins
-
-
-def resolve_sqlite_name(name):
-    """Keep local SQLite paths anchored to the Django project directory."""
-    db_name = str(name)
-    if db_name in {':memory:', ''} or db_name.startswith('file:'):
-        return db_name
-    path = Path(db_name)
-    return path if path.is_absolute() else BASE_DIR / path
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -171,40 +161,13 @@ WSGI_APPLICATION = 'flowershop_project.wsgi.application'
 
 
 # Database
-DATABASE_URL = config('DATABASE_URL', default='')
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=not DEBUG,
-        )
+DATABASES = {
+    "default": {
+        "ENGINE": "django_libsql",
+        "NAME": os.getenv("TURSO_DATABASE_URL"),
+        "AUTH_TOKEN": os.getenv("TURSO_AUTH_TOKEN"),
     }
-else:
-    DB_ENGINE = config('DB_ENGINE', default='django.db.backends.sqlite3')
-    DB_NAME = config('DB_NAME', default=BASE_DIR / 'db.sqlite3')
-    DATABASES = {
-        'default': {
-            'ENGINE': DB_ENGINE,
-            'NAME': resolve_sqlite_name(DB_NAME) if DB_ENGINE == 'django.db.backends.sqlite3' else DB_NAME,
-            'USER': config('DB_USER', default=''),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default=''),
-            'PORT': config('DB_PORT', default=''),
-        }
-    }
-
-
-def configure_local_sqlite(sender, connection, **kwargs):
-    """Avoid commit failures on Windows folders that block journal deletion."""
-    if connection.vendor != 'sqlite':
-        return
-
-    connection.connection.execute('PRAGMA journal_mode=TRUNCATE')
-    connection.connection.execute('PRAGMA busy_timeout=5000')
-
-
-connection_created.connect(configure_local_sqlite)
+}
 
 
 # Password validation
