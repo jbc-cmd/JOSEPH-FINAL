@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from accounts.models import UserProfile
+from accounts.models import get_or_create_user_profile
 
 
 class Command(BaseCommand):
@@ -11,7 +11,7 @@ class Command(BaseCommand):
         synced_profiles = 0
 
         for user in User.objects.all().iterator():
-            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile, _ = get_or_create_user_profile(user=user)
             profile.sync_default_delivery_address()
             synced_profiles += 1
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
-from .models import UserProfile, DeliveryAddress
+from .models import UserProfile, DeliveryAddress, get_or_create_user_profile
 
 
 @admin.register(UserProfile)
@@ -58,5 +58,5 @@ from django.dispatch import receiver
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.get_or_create(user=instance)
+        get_or_create_user_profile(user=instance)
 

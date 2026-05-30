@@ -14,7 +14,7 @@ from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from accounts.models import UserProfile
+from accounts.models import UserProfile, get_or_create_user_profile
 from configurations.models import GeneralConfig, ServiceConfig
 from custom_bouquet.models import Bouquet, BouquetSize
 from delivery.models import Delivery, DeliveryStatusHistory, DeliveryTimeWindow
@@ -153,7 +153,7 @@ def user_list(request):
 
     user_page = _paginate(request, users, per_page=12)
     for managed_user in user_page.object_list:
-        UserProfile.objects.get_or_create(user=managed_user)
+        get_or_create_user_profile(user=managed_user)
 
     context = _admin_context(
         request,
@@ -170,7 +170,7 @@ def user_list(request):
 @admin_required
 def user_detail(request, user_id):
     managed_user = get_object_or_404(User, pk=user_id)
-    UserProfile.objects.get_or_create(user=managed_user)
+    get_or_create_user_profile(user=managed_user)
     managed_user = User.objects.select_related('profile').get(pk=user_id)
     status_form = UserStatusForm(instance=managed_user)
     reset_form = AdminResetPasswordForm(user=managed_user)
@@ -723,7 +723,7 @@ def notification_center(request):
 def settings_dashboard(request):
     general_config, _ = GeneralConfig.objects.get_or_create(pk=1)
     admin_settings = get_admin_settings()
-    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    profile, _ = get_or_create_user_profile(user=request.user)
     selected_service = None
 
     if request.method == 'POST':

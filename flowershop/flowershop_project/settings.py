@@ -288,7 +288,7 @@ CONTACT_FROM_EMAIL = config('CONTACT_FROM_EMAIL', default=DEFAULT_FROM_EMAIL)
 CONTACT_TO_EMAIL = config('CONTACT_TO_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = config('SESSION_ENGINE', default='django.contrib.sessions.backends.signed_cookies')
 
 # Security settings for production
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default='False', cast=env_bool)

@@ -1,4 +1,5 @@
 import base64
+import logging
 import re
 import uuid
 
@@ -17,12 +18,16 @@ from django.views.generic import CreateView, ListView, DetailView, DeleteView, U
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from .models import UserProfile, DeliveryAddress
+from .models import UserProfile, DeliveryAddress, get_or_create_user_profile
 from .forms import DeliveryAddressForm
 from orders.models import Order
 from admin_dashboard.models import LoginAttempt
 from admin_dashboard.utils import get_admin_settings, get_client_ip, log_admin_activity
+
+
+logger = logging.getLogger(__name__)
 
 
 def _avatar_extension_from_header(header):
@@ -201,10 +206,13 @@ def register(request):
                     last_name=last_name
                 )
 
-                user_profile, _ = UserProfile.objects.get_or_create(user=user)
+                user_profile, _ = get_or_create_user_profile(user=user)
                 user_profile.phone_number = phone_number
                 user_profile.full_clean()
-                user_profile.save()
+                UserProfile.objects.filter(user=user).update(
+                    phone_number=phone_number,
+                    updated_at=timezone.now(),
+                )
 
             login(request, user)
 
@@ -222,6 +230,7 @@ def register(request):
             errors['phone_number'] = exc.messages[0]
             return render(request, 'accounts/register.html', _build_register_context(form_data, errors, next_url))
         except Exception:
+            logger.exception('Account registration failed after validation for username=%s email=%s', username, email)
             messages.error(request, 'We could not create your account right now. Please try again.')
             return render(request, 'accounts/register.html', _build_register_context(form_data, {}, next_url))
 
@@ -250,9 +259,11 @@ def login_view(request):
                 user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
                 path=request.path,
             )
-            profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.last_active_at = user.last_login
-            profile.save(update_fields=['last_active_at', 'updated_at'])
+            get_or_create_user_profile(user=user)
+            UserProfile.objects.filter(user=user).update(
+                last_active_at=user.last_login,
+                updated_at=timezone.now(),
+            )
 
             if user.is_staff or user.is_superuser:
                 request.session.set_expiry(get_admin_settings().session_timeout_minutes * 60)
@@ -324,7 +335,7 @@ def logout_view(request):
 @login_required(login_url='accounts:login')
 def _update_profile(request, redirect_name):
     """Handle profile form updates and avatar changes."""
-    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    user_profile, _ = get_or_create_user_profile(user=request.user)
     first_name = request.POST.get('first_name', request.user.first_name)
     last_name = request.POST.get('last_name', request.user.last_name)
     email = request.POST.get('email', request.user.email)
@@ -381,7 +392,7 @@ def profile(request):
     if request.method == 'POST':
         return _update_profile(request, 'accounts:profile')
 
-    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    user_profile, _ = get_or_create_user_profile(user=request.user)
     addresses = request.user.delivery_addresses.all()
     recent_orders = request.user.orders.all()[:5]
     
@@ -400,7 +411,7 @@ def profile_information(request):
         return _update_profile(request, 'accounts:profile_information')
 
     context = {
-        'profile': UserProfile.objects.get_or_create(user=request.user)[0],
+        'profile': get_or_create_user_profile(user=request.user)[0],
         **_build_password_change_context(),
     }
     return render(request, 'accounts/profile_information.html', context)
@@ -441,7 +452,7 @@ def change_password(request):
 
     if errors:
         context = {
-            'profile': UserProfile.objects.get_or_create(user=request.user)[0],
+            'profile': get_or_create_user_profile(user=request.user)[0],
             **_build_password_change_context(errors=errors, should_open=True),
         }
         return render(request, 'accounts/profile_information.html', context)

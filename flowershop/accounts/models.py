@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import IntegrityError, models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db.models.signals import post_delete, post_save
@@ -49,6 +49,37 @@ class UserProfile(models.Model):
         self.save(update_fields=['address', 'default_delivery_address', 'updated_at'])
 
 
+def get_or_create_user_profile(*, user=None, user_id=None):
+    """Create profiles with an explicit id to avoid django-libsql lastrowid failures."""
+    if user is None and user_id is None:
+        raise ValueError('user or user_id is required')
+
+    lookup = {'user': user} if user is not None else {'user_id': user_id}
+    profile = UserProfile.objects.filter(**lookup).first()
+    if profile:
+        return profile, False
+
+    create_kwargs = {'user': user} if user is not None else {'user_id': user_id}
+    for _ in range(5):
+        next_id = (UserProfile.objects.aggregate(max_id=models.Max('id'))['max_id'] or 0) + 1
+        profile = UserProfile(id=next_id, **create_kwargs)
+        try:
+            profile.save(force_insert=True)
+            saved_profile = UserProfile.objects.filter(**lookup).first()
+            return saved_profile or profile, True
+        except IntegrityError:
+            existing = UserProfile.objects.filter(**lookup).first()
+            if existing:
+                return existing, False
+        except AttributeError:
+            existing = UserProfile.objects.filter(**lookup).first()
+            if existing:
+                return existing, True
+            raise
+
+    return UserProfile.objects.get_or_create(**lookup)
+
+
 class DeliveryAddress(models.Model):
     """Saved delivery addresses for quick checkout."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery_addresses')
@@ -75,7 +106,7 @@ class DeliveryAddress(models.Model):
 
 @receiver(post_save, sender=DeliveryAddress)
 def sync_profile_delivery_address_on_save(sender, instance, **kwargs):
-    profile, _ = UserProfile.objects.get_or_create(user=instance.user)
+    profile, _ = get_or_create_user_profile(user=instance.user)
     profile.sync_default_delivery_address()
 
 
@@ -85,5 +116,5 @@ def sync_profile_delivery_address_on_delete(sender, instance, **kwargs):
     if isinstance(origin, User) or getattr(origin, 'model', None) is User:
         return
 
-    profile, _ = UserProfile.objects.get_or_create(user_id=instance.user_id)
+    profile, _ = get_or_create_user_profile(user_id=instance.user_id)
     profile.sync_default_delivery_address()
