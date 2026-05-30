@@ -3,6 +3,7 @@ import re
 import uuid
 
 from django.db import transaction
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.validators import validate_email
@@ -13,7 +14,7 @@ from django.contrib import messages
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
 from django.views.generic import CreateView, ListView, DetailView, DeleteView, UpdateView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -69,6 +70,24 @@ def _build_password_change_context(errors=None, should_open=False):
         'password_change_errors': errors or {},
         'open_change_password_modal': should_open,
     }
+
+
+def _safe_redirect_target(request, fallback_name='products:home'):
+    next_url = (request.POST.get('next') or request.GET.get('next') or '').strip()
+    allowed_hosts = {
+        host
+        for host in getattr(settings, 'ALLOWED_HOSTS', [])
+        if host and host != '*'
+    }
+
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts=allowed_hosts,
+        require_https=request.is_secure(),
+    ):
+        return next_url
+
+    return reverse(fallback_name)
 
 
 def register(request):
@@ -247,7 +266,7 @@ def login_view(request):
                     target_label=user.username,
                 )
 
-            next_url = request.GET.get('next', 'products:home')
+            next_url = _safe_redirect_target(request)
             action = request.GET.get('action', '')
 
             # Clear all existing messages
@@ -264,7 +283,7 @@ def login_view(request):
             else:
                 messages.success(request, f'Welcome back, {user.first_name or user.username}!')
 
-            if (user.is_staff or user.is_superuser) and next_url == 'products:home':
+            if (user.is_staff or user.is_superuser) and next_url == reverse('products:home'):
                 return redirect('admin_dashboard:home')
             return redirect(next_url)
         else:

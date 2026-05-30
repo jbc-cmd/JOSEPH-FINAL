@@ -46,11 +46,36 @@ def env_list(value):
     return [item.strip() for item in str(value).split(',') if item.strip()]
 
 
+def production_host_candidates():
+    hosts = []
+
+    for key in ('RENDER_EXTERNAL_HOSTNAME', 'PUBLIC_SITE_HOST', 'PUBLIC_SITE_DOMAIN'):
+        value = os.getenv(key, '').strip()
+        if value:
+            hosts.append(value.replace('https://', '').replace('http://', '').strip('/'))
+
+    service_name = os.getenv('RENDER_SERVICE_NAME', '').strip()
+    if service_name:
+        hosts.append(f'{service_name}.onrender.com')
+
+    return hosts
+
+
+def env_hosts(value):
+    hosts = env_list(value)
+    for host in production_host_candidates():
+        if host and host not in hosts:
+            hosts.append(host)
+    return hosts
+
+
 def derive_csrf_trusted_origins(hosts):
     origins = []
     for host in hosts:
         normalized = str(host).strip()
-        if not normalized or normalized in {'localhost', '127.0.0.1'}:
+        if not normalized or normalized == '*':
+            continue
+        if normalized in {'localhost', '127.0.0.1'}:
             continue
 
         if normalized.startswith('.'):
@@ -71,7 +96,7 @@ DEBUG = env_bool(LOCAL_DEBUG if LOCAL_DEBUG is not None else config('DEBUG', def
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
     default='localhost,127.0.0.1',
-    cast=env_list,
+    cast=env_hosts,
 )
 ADMIN_URL = config('ADMIN_URL', default='admin/')
 
@@ -237,8 +262,9 @@ CORS_ALLOWED_ORIGINS = config(
     cast=env_list,
 )
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=env_list)
-if not CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS = derive_csrf_trusted_origins(ALLOWED_HOSTS)
+for origin in derive_csrf_trusted_origins(ALLOWED_HOSTS):
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 # Authentication settings
 LOGIN_URL = 'login'
