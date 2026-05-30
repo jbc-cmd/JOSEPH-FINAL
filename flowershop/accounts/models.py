@@ -15,7 +15,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
     address = models.TextField(blank=True)
     default_delivery_address = models.TextField(blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', max_length=255, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     is_subscribed_to_newsletter = models.BooleanField(default=True)
     last_active_at = models.DateTimeField(blank=True, null=True)

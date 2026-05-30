@@ -43,6 +43,26 @@ def _avatar_extension_from_header(header):
     return extension_map.get(mime_type)
 
 
+def _profile_picture_extension(uploaded_file):
+    content_type = (getattr(uploaded_file, 'content_type', '') or '').lower()
+    extension = _avatar_extension_from_header(f'data:{content_type};base64,') if content_type else None
+    if extension:
+        return extension
+
+    original_name = (getattr(uploaded_file, 'name', '') or '').rsplit('.', 1)
+    if len(original_name) == 2:
+        candidate = original_name[1].lower()
+        if candidate in {'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'}:
+            return 'jpg' if candidate == 'jpeg' else candidate
+
+    return 'jpg'
+
+
+def _prepare_profile_picture(uploaded_file, user_id):
+    uploaded_file.name = f'avatar_{user_id}_{uuid.uuid4().hex[:12]}.{_profile_picture_extension(uploaded_file)}'
+    return uploaded_file
+
+
 NAME_PATTERN = re.compile(r"^[A-Za-z]+(?:[ -][A-Za-z]+)*$")
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.]{4,30}$")
 PHONE_SANITIZE_PATTERN = re.compile(r"[\s\-()]")
@@ -361,7 +381,7 @@ def _update_profile(request, redirect_name):
             if phone_number is not None:
                 user_profile.phone_number = phone_number
             if profile_picture:
-                user_profile.profile_picture = profile_picture
+                user_profile.profile_picture = _prepare_profile_picture(profile_picture, request.user.id)
             elif avatar_choice.startswith('data:image/'):
                 try:
                     header, encoded = avatar_choice.split(',', 1)
