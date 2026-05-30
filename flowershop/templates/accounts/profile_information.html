@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load product_images %}
 
 {% block title %}Profile Information - Joseph Flowershop{% endblock %}
 
@@ -29,8 +30,9 @@
             <div class="bg-white rounded-2xl shadow-md p-6 lg:sticky lg:top-28 text-center lg:text-left">
                 <div class="mb-6 flex justify-center">
                     <div class="relative">
-                    {% if profile.profile_picture %}
-                    <img src="{{ profile.profile_picture.url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-[#ecd3da] shadow-sm">
+                    {% image_url profile.profile_picture as profile_picture_url %}
+                    {% if profile_picture_url %}
+                    <img src="{{ profile_picture_url }}?v={{ profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-4 border-[#ecd3da] shadow-sm">
                     {% else %}
                     <div class="profile-avatar-preview h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-[#fbf1f3] text-[#b75b77] border-4 border-[#ecd3da] shadow-sm flex items-center justify-center text-4xl">
                         <i class="fas fa-spa"></i>

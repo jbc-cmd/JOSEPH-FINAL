@@ -30,8 +30,9 @@
             {% if product.images.all %}
             <div class="grid grid-cols-4 gap-2">
                 {% for image in product.images.all %}
-                {% if image.image %}
-                <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75">
+                {% image_url image.image as gallery_image %}
+                {% if gallery_image %}
+                <img src="{{ gallery_image }}" alt="{{ image.alt_text }}" class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75">
                 {% endif %}
                 {% endfor %}
             </div>
@@ -178,9 +179,10 @@
                             <span class="text-gray-500 text-sm">{{ review.created_at|date:'M d, Y' }}</span>
                         </div>
                         <p class="text-gray-700 leading-7">{{ review.comment }}</p>
-                        {% if review.photo %}
+                        {% image_url review.photo as review_photo_url %}
+                        {% if review_photo_url %}
                         <div class="mt-4">
-                            <img src="{{ review.photo.url }}" alt="Review photo by {{ review.customer_name }}" class="h-48 w-48 rounded-2xl object-cover border border-gray-200">
+                            <img src="{{ review_photo_url }}" alt="Review photo by {{ review.customer_name }}" class="h-48 w-48 rounded-2xl object-cover border border-gray-200">
                         </div>
                         {% endif %}
                     </div>
@@ -230,9 +232,12 @@
                     <div>
                         <label for="review-photo" class="block text-sm font-semibold text-gray-700 mb-2">Upload Photo</label>
                         <input id="review-photo" type="file" name="photo" accept="image/*" class="block w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm text-gray-700 file:mr-4 file:rounded-xl file:border-0 file:bg-[#fbf1f3] file:px-4 file:py-2 file:font-semibold file:text-[#b75b77] hover:file:bg-[#f6e7eb]">
-                        {% if user_review and user_review.photo %}
+                        {% if user_review %}
+                        {% image_url user_review.photo as user_review_photo_url %}
+                        {% endif %}
+                        {% if user_review_photo_url %}
                         <div class="mt-3 flex items-center gap-3">
-                            <img src="{{ user_review.photo.url }}" alt="Your review photo" class="h-16 w-16 rounded-xl object-cover border border-gray-200">
+                            <img src="{{ user_review_photo_url }}" alt="Your review photo" class="h-16 w-16 rounded-xl object-cover border border-gray-200">
                             <label class="text-sm text-gray-600 flex items-center gap-2">
                                 <input type="checkbox" name="remove_photo" class="rounded border-gray-300">
                                 <span>Remove current photo</span>

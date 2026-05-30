@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
+from products.image_fallbacks import product_image_url
 from custom_bouquet.models import Bouquet
 from delivery.models import Delivery
 import uuid
@@ -212,7 +213,7 @@ class OrderItem(models.Model):
     
     def get_item_image(self):
         if self.product:
-            return self.product.image.url if self.product.image and self.product.image.name else None
+            return product_image_url(self.product)
         if self.bouquet:
             return self.bouquet.get_image_url()
         return None

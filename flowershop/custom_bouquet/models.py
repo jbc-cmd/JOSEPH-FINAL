@@ -1,5 +1,6 @@
 from django.db import models
 from products.models import Flower
+from products.image_fallbacks import stored_image_url
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.templatetags.static import static
 
@@ -131,8 +132,9 @@ class Bouquet(models.Model):
 
     def get_image_url(self):
         """Return the bouquet image URL or the shared custom bouquet fallback."""
-        if self.image and self.image.name:
-            return self.image.url
+        image_url = stored_image_url(self.image)
+        if image_url:
+            return image_url
         return static('images/custom-bouquet.png')
     
     def get_flower_count(self):

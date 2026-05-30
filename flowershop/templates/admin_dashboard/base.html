@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static product_images %}
 
 {% block title %}{{ page_title }} | Admin Dashboard{% endblock %}
 {% block body_class %}hide-nav admin-dashboard-body{% endblock %}
@@ -305,8 +305,9 @@
             </a>
             <div class="admin-profile-menu" data-admin-profile-menu>
                 <button class="admin-profile-button" id="adminProfileMenuButton" type="button" aria-label="Open admin profile menu" aria-haspopup="true" aria-expanded="false" aria-controls="adminProfileDropdown">
-                    {% if request.user.profile.profile_picture %}
-                    <img src="{{ request.user.profile.profile_picture.url }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
+                    {% image_url request.user.profile.profile_picture as admin_profile_picture %}
+                    {% if admin_profile_picture %}
+                    <img src="{{ admin_profile_picture }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
                     {% else %}
                     <i class="fa-solid fa-spa" aria-hidden="true"></i>
                     {% endif %}
@@ -314,8 +315,9 @@
                 <div class="admin-profile-dropdown" id="adminProfileDropdown" role="menu" aria-labelledby="adminProfileMenuButton" hidden>
                     <div class="admin-profile-dropdown-main">
                         <div class="admin-profile-dropdown-avatar" aria-hidden="true">
-                            {% if request.user.profile.profile_picture %}
-                            <img src="{{ request.user.profile.profile_picture.url }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
+                            {% image_url request.user.profile.profile_picture as admin_dropdown_profile_picture %}
+                            {% if admin_dropdown_profile_picture %}
+                            <img src="{{ admin_dropdown_profile_picture }}?v={{ request.user.profile.updated_at|date:'U' }}" alt="">
                             {% else %}
                             <i class="fa-solid fa-user" aria-hidden="true"></i>
                             {% endif %}

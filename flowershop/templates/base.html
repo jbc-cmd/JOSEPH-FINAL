@@ -1,3 +1,4 @@
+{% load product_images %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,8 +96,9 @@
                     {% if user.is_authenticated %}
                     <div class="relative group">
                         <button type="button" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 text-gray-700 overflow-hidden focus:outline-none focus:ring-2 focus:ring-pink-300">
-                            {% if user.profile.profile_picture %}
-                            <img src="{{ user.profile.profile_picture.url }}?v={{ user.profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover">
+                            {% image_url user.profile.profile_picture as nav_profile_picture %}
+                            {% if nav_profile_picture %}
+                            <img src="{{ nav_profile_picture }}?v={{ user.profile.updated_at|date:'U' }}" alt="{{ user.get_full_name|default:user.username }}" class="w-full h-full object-cover">
                             {% else %}
                             <i class="fas fa-spa text-sm"></i>
                             {% endif %}

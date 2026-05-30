@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
+from products.image_fallbacks import product_image_url
 from custom_bouquet.models import Bouquet
 from django.core.validators import MinValueValidator
 
@@ -71,10 +72,7 @@ class CartItem(models.Model):
     def get_item_image(self):
         """Get the image URL of the product or bouquet."""
         if self.product:
-            image = self.product.image
-            if image and image.name:
-                return image.url
-            return None
+            return product_image_url(self.product)
         if self.bouquet:
             return self.bouquet.get_image_url()
         return None

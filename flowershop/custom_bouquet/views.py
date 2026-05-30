@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Bouquet, BouquetItem, BouquetSize, WrappingStyle, RibbonColor, Extra, BouquetExtra
 from products.models import Flower
+from products.image_fallbacks import flower_image_url
 from cart.views import get_or_create_cart
 from cart.models import CartItem
 import json
@@ -265,7 +266,7 @@ def get_flower_details(request, flower_id):
         'id': flower.id,
         'name': flower.get_name_display(),
         'price': float(flower.price),
-        'image': flower.image.url if flower.image else '',
+        'image': flower_image_url(flower),
         'color': flower.color,
         'description': flower.description,
     })

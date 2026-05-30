@@ -1,4 +1,5 @@
 {% extends "admin_dashboard/base.html" %}
+{% load product_images %}
 
 {% block admin_extra_css %}
 <style>
@@ -503,8 +504,9 @@
                     <span><i class="fa-solid fa-check-double" aria-hidden="true"></i>Delivered {{ delivery.delivered_at|date:"M d, Y H:i" }}</span>
                     {% endif %}
                 </div>
-                {% if delivery.proof_of_delivery %}
-                <a class="delivery-proof-link" href="{{ delivery.proof_of_delivery.url }}" target="_blank" rel="noopener noreferrer">
+                {% image_url delivery.proof_of_delivery as proof_of_delivery_url %}
+                {% if proof_of_delivery_url %}
+                <a class="delivery-proof-link" href="{{ proof_of_delivery_url }}" target="_blank" rel="noopener noreferrer">
                     <i class="fa-regular fa-image" aria-hidden="true"></i>
                     View proof
                 </a>

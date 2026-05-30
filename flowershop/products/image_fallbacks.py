@@ -30,17 +30,17 @@ FLOWER_IMAGE_FALLBACKS = {
 }
 
 
-def _stored_image_url(image_field):
+def stored_image_url(image_field):
     if not image_field:
         return ''
     try:
         return image_field.url
-    except ValueError:
+    except (AttributeError, ValueError):
         return ''
 
 
 def product_image_url(product):
-    image_url = _stored_image_url(getattr(product, 'image', None))
+    image_url = stored_image_url(getattr(product, 'image', None))
     if image_url:
         return image_url
 
@@ -49,7 +49,7 @@ def product_image_url(product):
 
 
 def flower_image_url(flower):
-    image_url = _stored_image_url(getattr(flower, 'image', None))
+    image_url = stored_image_url(getattr(flower, 'image', None))
     if image_url:
         return image_url
 
