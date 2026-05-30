@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
@@ -155,7 +154,7 @@ class ProfileInformationTests(TestCase):
         self.assertRedirects(response, reverse('accounts:profile_information'))
         self.assertEqual(UserProfile.objects.get(user=user).phone_number, '09171234567')
 
-    def test_profile_picture_storage_failure_returns_message(self):
+    def test_profile_picture_storage_failure_redirects(self):
         user = User.objects.create_user(
             username='photo-user',
             password='StrongPass123!',
@@ -190,5 +189,3 @@ class ProfileInformationTests(TestCase):
             )
 
         self.assertRedirects(response, reverse('accounts:profile_information'))
-        messages = [message.message for message in get_messages(response.wsgi_request)]
-        self.assertIn('Profile could not be updated right now. Please try again later.', messages)

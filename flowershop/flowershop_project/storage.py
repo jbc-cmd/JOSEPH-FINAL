@@ -18,14 +18,19 @@ class CloudinaryMediaStorage(Storage):
 
     def _save(self, name, content):
         folder = posixpath.dirname(name).strip('/')
+        public_id = os.path.splitext(posixpath.basename(name))[0]
+        for upload_file in (content, getattr(content, 'file', None)):
+            if hasattr(upload_file, 'seek'):
+                upload_file.seek(0)
         options = {
             'resource_type': 'image',
             'folder': folder or None,
-            'use_filename': True,
+            'public_id': public_id,
             'unique_filename': True,
             'overwrite': False,
         }
-        result = cloudinary.uploader.upload(content, **{k: v for k, v in options.items() if v is not None})
+        upload_source = getattr(content, 'file', content)
+        result = cloudinary.uploader.upload(upload_source, **{k: v for k, v in options.items() if v is not None})
         return result['public_id']
 
     def delete(self, name):

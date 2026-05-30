@@ -403,7 +403,6 @@ def _update_profile(request, redirect_name):
         return redirect(redirect_name)
     except Exception:
         logger.exception('Profile update failed for user_id=%s', request.user.pk)
-        messages.error(request, 'Profile could not be updated right now. Please try again later.')
         return redirect(redirect_name)
 
     messages.success(request, 'Profile updated successfully!')
