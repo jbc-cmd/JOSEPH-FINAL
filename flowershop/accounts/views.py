@@ -63,6 +63,71 @@ def _prepare_profile_picture(uploaded_file, user_id):
     return uploaded_file
 
 
+def _rewind_file(uploaded_file):
+    for upload_file in (uploaded_file, getattr(uploaded_file, 'file', None)):
+        if hasattr(upload_file, 'seek'):
+            upload_file.seek(0)
+
+
+def _cloudinary_profile_public_id(user_id):
+    return f'avatar_{user_id}_{uuid.uuid4().hex[:12]}'
+
+
+def _upload_profile_picture_to_cloudinary(uploaded_file, user_id):
+    from cloudinary import uploader as cloudinary_uploader
+
+    _rewind_file(uploaded_file)
+    result = cloudinary_uploader.upload(
+        getattr(uploaded_file, 'file', uploaded_file),
+        folder='profile_pictures',
+        public_id=_cloudinary_profile_public_id(user_id),
+        unique_filename=False,
+        overwrite=True,
+        resource_type='image',
+    )
+    return result['public_id']
+
+
+def _upload_avatar_choice_to_cloudinary(avatar_choice, user_id):
+    from cloudinary import uploader as cloudinary_uploader
+
+    result = cloudinary_uploader.upload(
+        avatar_choice,
+        folder='profile_pictures',
+        public_id=_cloudinary_profile_public_id(user_id),
+        unique_filename=False,
+        overwrite=True,
+        resource_type='image',
+    )
+    return result['public_id']
+
+
+def _save_profile_picture_to_storage(uploaded_file, user_id):
+    uploaded_file = _prepare_profile_picture(uploaded_file, user_id)
+    _rewind_file(uploaded_file)
+    field = UserProfile._meta.get_field('profile_picture')
+    name = field.generate_filename(UserProfile(user_id=user_id), uploaded_file.name)
+    return field.storage.save(name, uploaded_file)
+
+
+def _save_avatar_choice_to_storage(avatar_choice, user_id):
+    try:
+        header, encoded = avatar_choice.split(',', 1)
+        extension = _avatar_extension_from_header(header)
+        if not extension:
+            raise ValueError('Unsupported avatar image type.')
+        content = ContentFile(
+            base64.b64decode(encoded),
+            name=f'avatar_{user_id}_{uuid.uuid4().hex[:8]}.{extension}',
+        )
+    except (ValueError, IndexError, base64.binascii.Error):
+        raise ValidationError('Selected avatar could not be applied.')
+
+    field = UserProfile._meta.get_field('profile_picture')
+    name = field.generate_filename(UserProfile(user_id=user_id), content.name)
+    return field.storage.save(name, content)
+
+
 NAME_PATTERN = re.compile(r"^[A-Za-z]+(?:[ -][A-Za-z]+)*$")
 USERNAME_PATTERN = re.compile(r"^[A-Za-z0-9_.]{4,30}$")
 PHONE_SANITIZE_PATTERN = re.compile(r"[\s\-()]")
@@ -366,38 +431,45 @@ def _update_profile(request, redirect_name):
         phone_number = _normalize_phone_number(raw_phone_number) if raw_phone_number else ''
     profile_picture = request.FILES.get('profile_picture')
     avatar_choice = request.POST.get('avatar_choice', '').strip()
+    profile_picture_name = None
 
     if phone_number is not None and phone_number and not PHONE_PATTERN.fullmatch(phone_number):
         messages.error(request, 'Enter a valid phone number using 10 to 15 digits.')
         return redirect(redirect_name)
 
     try:
-        with transaction.atomic():
-            request.user.first_name = first_name
-            request.user.last_name = last_name
-            request.user.email = email
-            request.user.save()
-
-            if phone_number is not None:
-                user_profile.phone_number = phone_number
+        if settings.CLOUDINARY_ENABLED:
             if profile_picture:
-                user_profile.profile_picture = _prepare_profile_picture(profile_picture, request.user.id)
+                profile_picture_name = _upload_profile_picture_to_cloudinary(profile_picture, request.user.id)
             elif avatar_choice.startswith('data:image/'):
-                try:
-                    header, encoded = avatar_choice.split(',', 1)
-                    extension = _avatar_extension_from_header(header)
-                    if not extension:
-                        raise ValueError('Unsupported avatar image type.')
-                    user_profile.profile_picture.save(
-                        f'avatar_{request.user.id}_{uuid.uuid4().hex[:8]}.{extension}',
-                        ContentFile(base64.b64decode(encoded)),
-                        save=False,
-                    )
-                except (ValueError, IndexError, base64.binascii.Error):
-                    messages.error(request, 'Selected avatar could not be applied.')
-                    return redirect(redirect_name)
-            user_profile.full_clean()
-            user_profile.save()
+                header = avatar_choice.split(',', 1)[0]
+                if not _avatar_extension_from_header(header):
+                    raise ValidationError('Selected avatar could not be applied.')
+                profile_picture_name = _upload_avatar_choice_to_cloudinary(avatar_choice, request.user.id)
+        elif profile_picture:
+            profile_picture_name = _save_profile_picture_to_storage(profile_picture, request.user.id)
+        elif avatar_choice.startswith('data:image/'):
+            profile_picture_name = _save_avatar_choice_to_storage(avatar_choice, request.user.id)
+
+        if phone_number is not None:
+            user_profile.phone_number = phone_number
+        if profile_picture_name:
+            user_profile.profile_picture = profile_picture_name
+        user_profile.full_clean()
+
+        with transaction.atomic():
+            User.objects.filter(pk=request.user.pk).update(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+            )
+
+            profile_updates = {'updated_at': timezone.now()}
+            if phone_number is not None:
+                profile_updates['phone_number'] = phone_number
+            if profile_picture_name:
+                profile_updates['profile_picture'] = profile_picture_name
+            UserProfile.objects.filter(pk=user_profile.pk).update(**profile_updates)
     except ValidationError as exc:
         messages.error(request, exc.messages[0] if exc.messages else 'Profile update could not be saved.')
         return redirect(redirect_name)
