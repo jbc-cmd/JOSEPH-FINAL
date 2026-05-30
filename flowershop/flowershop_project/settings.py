@@ -63,6 +63,9 @@ def production_host_candidates():
 
 def env_hosts(value):
     hosts = env_list(value)
+    for host in ('.onrender.com', 'joseph-flowershop.onrender.com'):
+        if host not in hosts:
+            hosts.append(host)
     for host in production_host_candidates():
         if host and host not in hosts:
             hosts.append(host)
