@@ -1,10 +1,11 @@
 from collections import Counter
+from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth.models import User
-from django.db.models import Count, DecimalField, IntegerField, Sum, Value
-from django.db.models.functions import Coalesce, TruncDate, TruncMonth
+from django.db.models import Count, IntegerField, Sum, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from accounts.models import UserProfile
@@ -17,8 +18,15 @@ from .models import AdminActivityLog, LoginAttempt
 from .utils import get_admin_settings
 
 
-MONEY_ZERO = Value(Decimal('0.00'), output_field=DecimalField(max_digits=10, decimal_places=2))
 INTEGER_ZERO = Value(0, output_field=IntegerField())
+
+
+def _money(value):
+    return Decimal(str(value or '0.00'))
+
+
+def _sum_money(queryset, field_name):
+    return sum((_money(value) for value in queryset.values_list(field_name, flat=True)), Decimal('0.00'))
 
 
 def get_overview_metrics():
@@ -27,10 +35,10 @@ def get_overview_metrics():
     month_start = today.replace(day=1)
 
     paid_orders = Order.objects.filter(payment_status='COMPLETED')
-    total_sales = paid_orders.aggregate(total=Coalesce(Sum('total_amount'), MONEY_ZERO))['total']
-    daily_sales = paid_orders.filter(created_at__date=today).aggregate(total=Coalesce(Sum('total_amount'), MONEY_ZERO))['total']
-    weekly_sales = paid_orders.filter(created_at__date__gte=week_start).aggregate(total=Coalesce(Sum('total_amount'), MONEY_ZERO))['total']
-    monthly_sales = paid_orders.filter(created_at__date__gte=month_start).aggregate(total=Coalesce(Sum('total_amount'), MONEY_ZERO))['total']
+    total_sales = _sum_money(paid_orders, 'total_amount')
+    daily_sales = _sum_money(paid_orders.filter(created_at__date=today), 'total_amount')
+    weekly_sales = _sum_money(paid_orders.filter(created_at__date__gte=week_start), 'total_amount')
+    monthly_sales = _sum_money(paid_orders.filter(created_at__date__gte=month_start), 'total_amount')
 
     return {
         'total_sales': total_sales,
@@ -49,14 +57,17 @@ def get_overview_metrics():
 def get_sales_chart_data(days=7):
     today = timezone.localdate()
     start_date = today - timedelta(days=days - 1)
-    series = (
-        Order.objects.filter(created_at__date__gte=start_date, created_at__date__lte=today, payment_status='COMPLETED')
-        .annotate(day=TruncDate('created_at', tzinfo=timezone.get_current_timezone()))
-        .values('day')
-        .annotate(total=Coalesce(Sum('total_amount'), MONEY_ZERO), count=Count('id'))
-        .order_by('day')
-    )
-    series_by_day = {item['day']: item for item in series}
+    series_by_day = defaultdict(lambda: {'total': Decimal('0.00'), 'count': 0})
+    rows = Order.objects.filter(
+        created_at__date__gte=start_date,
+        created_at__date__lte=today,
+        payment_status='COMPLETED',
+    ).values_list('created_at', 'total_amount')
+
+    for created_at, total_amount in rows:
+        day = timezone.localtime(created_at).date()
+        series_by_day[day]['total'] += _money(total_amount)
+        series_by_day[day]['count'] += 1
 
     chart_data = []
     for offset in range(days):
@@ -72,20 +83,23 @@ def get_sales_chart_data(days=7):
 
 
 def get_monthly_trends(limit=6):
-    rows = (
-        Order.objects.filter(payment_status='COMPLETED')
-        .annotate(month=TruncMonth('created_at'))
-        .values('month')
-        .annotate(total=Coalesce(Sum('total_amount'), MONEY_ZERO), count=Count('id'))
-        .order_by('-month')[:limit]
-    )
+    series_by_month = defaultdict(lambda: {'total': Decimal('0.00'), 'count': 0})
+    rows = Order.objects.filter(payment_status='COMPLETED').values_list('created_at', 'total_amount')
+
+    for created_at, total_amount in rows:
+        local_value = timezone.localtime(created_at)
+        month = local_value.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        series_by_month[month]['total'] += _money(total_amount)
+        series_by_month[month]['count'] += 1
+
+    sorted_rows = sorted(series_by_month.items(), key=lambda item: item[0], reverse=True)[:limit]
     return list(reversed([
         {
-            'label': row['month'].strftime('%b %Y'),
-            'revenue': float(row['total']),
-            'orders': row['count'],
+            'label': month.strftime('%b %Y'),
+            'revenue': float(item['total']),
+            'orders': item['count'],
         }
-        for row in rows
+        for month, item in sorted_rows
     ]))
 
 
@@ -226,7 +240,6 @@ def get_product_performance():
     return (
         Product.objects.annotate(
             total_units=Coalesce(Sum('orderitem__quantity'), INTEGER_ZERO),
-            total_revenue=Coalesce(Sum('orderitem__subtotal'), MONEY_ZERO),
         )
         .select_related('category')
         .order_by('-total_units', '-updated_at')
