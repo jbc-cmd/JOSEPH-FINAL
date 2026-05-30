@@ -1,4 +1,8 @@
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
@@ -150,3 +154,41 @@ class ProfileInformationTests(TestCase):
 
         self.assertRedirects(response, reverse('accounts:profile_information'))
         self.assertEqual(UserProfile.objects.get(user=user).phone_number, '09171234567')
+
+    def test_profile_picture_storage_failure_returns_message(self):
+        user = User.objects.create_user(
+            username='photo-user',
+            password='StrongPass123!',
+            first_name='Photo',
+            last_name='User',
+            email='photo@example.com',
+        )
+        UserProfile.objects.get_or_create(user=user)
+        upload = SimpleUploadedFile(
+            'avatar.png',
+            (
+                b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01'
+                b'\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde'
+                b'\x00\x00\x00\x0cIDATx\x9cc\xf8\xff\xff?\x00\x05'
+                b'\xfe\x02\xfeA\xdc\xcc\xb8\x00\x00\x00\x00IEND\xaeB`\x82'
+            ),
+            content_type='image/png',
+        )
+        storage = UserProfile._meta.get_field('profile_picture').storage
+
+        self.client.force_login(user)
+        with patch.object(storage, 'save', side_effect=OSError('media storage unavailable')):
+            response = self.client.post(
+                reverse('accounts:profile_information'),
+                {
+                    'first_name': 'Photo',
+                    'last_name': 'User',
+                    'email': 'photo@example.com',
+                    'phone_number': '09171234567',
+                    'profile_picture': upload,
+                },
+            )
+
+        self.assertRedirects(response, reverse('accounts:profile_information'))
+        messages = [message.message for message in get_messages(response.wsgi_request)]
+        self.assertIn('Profile could not be updated right now. Please try again later.', messages)

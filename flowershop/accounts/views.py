@@ -381,6 +381,10 @@ def _update_profile(request, redirect_name):
     except ValidationError as exc:
         messages.error(request, exc.messages[0] if exc.messages else 'Profile update could not be saved.')
         return redirect(redirect_name)
+    except Exception:
+        logger.exception('Profile update failed for user_id=%s', request.user.pk)
+        messages.error(request, 'Profile could not be updated right now. Please try again later.')
+        return redirect(redirect_name)
 
     messages.success(request, 'Profile updated successfully!')
     return redirect(redirect_name)
