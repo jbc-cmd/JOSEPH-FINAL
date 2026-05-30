@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load product_images %}
 
 {% block title %}Shop - Joseph Flowershop{% endblock %}
 
@@ -196,11 +197,12 @@
 
         <div class="shop-product-grid grid gap-3 sm:gap-5 md:gap-6 mb-8">
             {% for product in products %}
+            {% product_image product as display_image %}
             <article class="product-card shop-product-card">
                 <div class="shop-product-image relative overflow-hidden bg-gray-50">
                     <a href="{% url 'products:product_detail' product.slug %}" class="block h-full w-full">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-full w-full object-cover transition duration-300 hover:scale-105" style="object-position: center 32%;">
+                    {% if display_image %}
+                    <img src="{{ display_image }}" alt="{{ product.name }}" class="h-full w-full object-cover transition duration-300 hover:scale-105" style="object-position: center 32%;">
                     {% else %}
                     <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-rose-50 via-white to-orange-50 text-2xl text-rose-300">
                         <i class="fas fa-seedling"></i>

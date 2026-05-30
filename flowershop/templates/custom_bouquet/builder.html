@@ -1,5 +1,6 @@
 
 {% extends 'base.html' %}
+{% load product_images %}
 {% load static %}
 
 {% block title %}Custom Bouquet Builder - Joseph Flowershop{% endblock %}
@@ -364,10 +365,11 @@
 
                     <div class="grid builder-flower-grid">
                         {% for flower in flowers %}
-                        <article class="flower-card builder-flower-card min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white transition shadow-sm hover:border-orange-300 hover:shadow-md h-full" data-flower-card data-flower-id="{{ flower.id }}" data-flower-name="{{ flower.get_name_display }}" data-flower-price="{{ flower.price|floatformat:2 }}" data-flower-image="{% if flower.image %}{{ flower.image.url }}{% endif %}">
+                        {% flower_image flower as display_image %}
+                        <article class="flower-card builder-flower-card min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white transition shadow-sm hover:border-orange-300 hover:shadow-md h-full" data-flower-card data-flower-id="{{ flower.id }}" data-flower-name="{{ flower.get_name_display }}" data-flower-price="{{ flower.price|floatformat:2 }}" data-flower-image="{{ display_image }}">
                             <div class="builder-flower-card-inner">
-                                {% if flower.image %}
-                                <img src="{{ flower.image.url }}" alt="{{ flower.get_name_display }}" class="builder-flower-media object-cover shrink-0">
+                                {% if display_image %}
+                                <img src="{{ display_image }}" alt="{{ flower.get_name_display }}" class="builder-flower-media object-cover shrink-0">
                                 {% else %}
                                 <div class="builder-flower-media bg-orange-50 flex items-center justify-center text-orange-300 shrink-0"><i class="fas fa-seedling text-2xl"></i></div>
                                 {% endif %}

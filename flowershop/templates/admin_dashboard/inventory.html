@@ -1,4 +1,5 @@
 {% extends "admin_dashboard/base.html" %}
+{% load product_images %}
 
 {% block admin_extra_css %}
 <style>
@@ -355,10 +356,11 @@
 
         <div class="stock-panel-list">
             {% for product in snapshot.low_stock %}
+            {% product_image product as display_image %}
             <article class="stock-item-card">
                 <div class="stock-item-media">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% if display_image %}
+                    <img src="{{ display_image }}" alt="{{ product.name }}">
                     {% else %}
                     <i class="fa-solid fa-seedling" aria-hidden="true"></i>
                     {% endif %}
@@ -409,10 +411,11 @@
 
         <div class="stock-panel-list">
             {% for product in snapshot.out_of_stock %}
+            {% product_image product as display_image %}
             <article class="stock-item-card">
                 <div class="stock-item-media">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% if display_image %}
+                    <img src="{{ display_image }}" alt="{{ product.name }}">
                     {% else %}
                     <i class="fa-solid fa-box-open" aria-hidden="true"></i>
                     {% endif %}

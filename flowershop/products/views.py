@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.conf import settings
 from .models import Product, Category, Flower, ProductReview
+from .image_fallbacks import product_image_url
 from django.core.paginator import Paginator
 import logging
 import re
@@ -320,7 +321,7 @@ def quick_view(request, slug):
         'id': product.id,
         'name': product.name,
         'price': str(product.price),
-        'image': product.image.url if product.image else '',
+        'image': product_image_url(product),
         'description': product.description[:200],
         'rating': product.rating,
     })
@@ -339,7 +340,7 @@ def search_products(request):
         'id': p.id,
         'name': p.name,
         'slug': p.slug,
-        'image': p.image.url if p.image else '',
+        'image': product_image_url(p),
         'price': str(p.price),
     } for p in products]
 

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load product_images %}
 
 {% block title %}{{ product.name }} - Joseph Flowershop{% endblock %}
 
@@ -17,11 +18,12 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 py-8">
+    {% product_image product as display_image %}
     <div class="grid md:grid-cols-2 gap-12">
         <div>
             <div class="bg-gray-100 rounded-lg overflow-hidden mb-4">
-                {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-auto">
+                {% if display_image %}
+                <img src="{{ display_image }}" alt="{{ product.name }}" class="w-full h-auto">
                 {% endif %}
             </div>
 
@@ -268,10 +270,11 @@
 
         <div class="grid md:grid-cols-4 gap-6">
             {% for related in related_products %}
+            {% product_image related as related_image %}
             <div class="product-card bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="h-56 overflow-hidden bg-gray-200">
-                    {% if related.image %}
-                    <img src="{{ related.image.url }}" alt="{{ related.name }}" class="w-full h-full object-cover">
+                    {% if related_image %}
+                    <img src="{{ related_image }}" alt="{{ related.name }}" class="w-full h-full object-cover">
                     {% endif %}
                 </div>
 

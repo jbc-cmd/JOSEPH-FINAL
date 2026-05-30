@@ -1,4 +1,5 @@
 {% extends "admin_dashboard/base.html" %}
+{% load product_images %}
 
 {% block admin_content %}
 <section class="panel form-panel product-form-panel">
@@ -69,6 +70,9 @@
             </div>
 
             <aside class="product-form-side">
+                {% if mode == 'edit' %}
+                {% product_image product as display_image %}
+                {% endif %}
                 {% for field in form %}
                     {% if field.name == 'image' %}
                     <div class="product-side-section">
@@ -79,9 +83,9 @@
                                 <p>Use the image customers should see first.</p>
                             </div>
                         </div>
-                        {% if mode == 'edit' and product.image %}
+                        {% if mode == 'edit' and display_image %}
                         <div class="product-image-preview">
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            <img src="{{ display_image }}" alt="{{ product.name }}">
                         </div>
                         {% else %}
                         <div class="product-image-placeholder">
